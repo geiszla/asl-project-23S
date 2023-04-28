@@ -27,26 +27,31 @@
 *  along with this program. If not, see http://www.gnu.org/licenses/.
 */
 
-#include <list>
-#include <vector>
-#include <string>
-#include <iostream>
-#include <algorithm>
+#include <windows.h> // Include if under windows
 
+#include <algorithm>
+#include <iostream>
+#include <list>
+#include <string>
+#include <vector>
+
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
-#include <math.h>
 #include <string.h>
-#include "tsc_x86.h"
-#include "utils.h"
+#include <time.h>
+
+#include "main.h"
 #include "quaternion.h"
+#include "timing.cpp"
+#include "utils.h"
+
+#ifdef __x86_64__
+#include "tsc_x86.h"
+#endif
 
 using namespace std;
 
-#define NR 32
-#define CYCLES_REQUIRED 1e8
-#define REP 50
 #define EPS (1e-3)
 
 void kernel_base(quaternion_t x[N], quaternion_t y[N], quaternion_t A[N][N]) {
@@ -57,12 +62,7 @@ void kernel_base(quaternion_t x[N], quaternion_t y[N], quaternion_t A[N][N]) {
     }
 }
 
-/* prototype of the function you need to optimize */
-typedef void(*comp_func)(quaternion_t x[N], quaternion_t y[N], quaternion_t A[N][N]);
-
 void   register_functions();
-double get_perf_score(comp_func f);
-double perf_test(comp_func f, string desc, int flops);
 void   add_function(comp_func f, string name, int flop);
 
 /* Global vars, used to keep track of student functions */
@@ -87,12 +87,7 @@ void add_function(comp_func f, string name, int flops) {
 * Checks the given function for validity. If valid, then computes and
 * reports and returns the number of cycles required per iteration
 */
-double perf_test(comp_func f, string desc, int flops) {
-    double cycles = 0.;
-    long num_runs = 100;
-    double multiplier = 1;
-    myInt64 start, end;
-
+double perf_test(comp_func f) {
     alignas(32) quaternion_t x[N];
     alignas(32) quaternion_t y[N];
     alignas(32) quaternion_t A[N][N];
@@ -100,44 +95,8 @@ double perf_test(comp_func f, string desc, int flops) {
     rands((double*) y, 4*N, 1);
     rands((double*) A, 4*N, N);
 
-    // Warm-up phase: we determine a number of executions that allows
-    // the code to be executed for at least CYCLES_REQUIRED cycles.
-    // This helps excluding timing overhead when measuring small runtimes.
-    do {
-        num_runs = num_runs * multiplier;
-        start = start_tsc();
-        for (size_t i = 0; i < num_runs; i++) {
-            f(x, y, A);           
-        }
-        end = stop_tsc(start);
-
-        cycles = (double)end;
-        multiplier = (CYCLES_REQUIRED) / (cycles);
-        
-    } while (multiplier > 2);
-
-    list<double> cyclesList;
-
-    // Actual performance measurements repeated REP times.
-    // We simply store all results and compute medians during post-processing.
-    double total_cycles = 0;
-    for (size_t j = 0; j < REP; j++) {
-
-        start = start_tsc();
-        for (size_t i = 0; i < num_runs; ++i) {
-            f(x, y, A);           
-        }
-        end = stop_tsc(start);
-
-        cycles = ((double)end) / num_runs;
-        total_cycles += cycles;
-
-        cyclesList.push_back(cycles);
-    }
-    total_cycles /= REP;
-
-    cycles = total_cycles;
-    return  cycles;
+    // return 
+    return measure_runtime(f, x, y, A);
 }
 
 int main(int argc, char **argv) {
@@ -179,7 +138,7 @@ int main(int argc, char **argv) {
   }
 
   for (i = 0; i < numFuncs; i++) {
-    perf = perf_test(userFuncs[i], funcNames[i], 1);
+    perf = perf_test(userFuncs[i]);
     cout << endl << "Running: " << funcNames[i] << endl;
     cout << perf << " cycles" << endl;
   }
