@@ -110,8 +110,8 @@ double query_performance_counter(comp_func f, quaternion_t x[N], quaternion_t y[
         }
         QueryPerformanceCounter(&end);
 
-        cycles = (double)(end.QuadPart - start.QuadPart);
-        multiplier = (CYCLES_REQUIRED) / (cycles * (FREQUENCY / frequency.QuadPart));
+        cycles = (double)(end.QuadPart - start.QuadPart) * (FREQUENCY / frequency.QuadPart);
+        multiplier = CYCLES_REQUIRED / cycles;
     } while (multiplier > 2);
 #endif
 
@@ -130,6 +130,8 @@ double query_performance_counter(comp_func f, quaternion_t x[N], quaternion_t y[
         QueryPerformanceCounter(&end);
 
         cycles = (double)(end.QuadPart - start.QuadPart) / num_runs;
+        cycles *= (FREQUENCY / frequency.QuadPart);
+
         total_cycles += cycles;
 
         cyclesList.push_back(cycles);
