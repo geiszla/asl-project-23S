@@ -46,6 +46,35 @@ void vecSum(double *x, double *e_res){
 }
 
 /**
+Implementation of VecSumErrBranch algorithm (Algorithm 7)
+
+Input: e vector size n (S-nonoverlapping), output vector size m
+Output: f vector size m
+
+**/
+double* vecSumErrBranch(double* e, int n, int m){
+   double* err = (double *)malloc(n*sizeof(double));
+   double* f = (double *)malloc(m*sizeof(double));
+   int j = 0;
+   err[0] = e[0];
+   for (int i = 0; i <= n-2; i++) {
+      twoSum(err[i], e[i+1], &f[j], &err[i+1]);
+      if (err[i+1] != 0) {
+         if (j >= m - 1){ // enough output terms
+            return f;
+         }
+         j++;
+      } else {
+         err[i+1] = f[j];
+      }
+   }
+   if (err[n-1] != 0 && j < m) {
+      f[j] = err[n-1];
+   }
+   return f;
+}
+
+/**
 Implementation of VecSumErr algorithm (Algorithm 8)
 
 Input: f vector size n

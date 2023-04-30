@@ -48,11 +48,54 @@ double fast_two_sum(const double a, const double b, double* err){
   *err = FPadd_rn(b, -z);
   return s;
 }
+
+void fast_VecSumErrBranch(double *x, int sX, int sR){
+	int ptr = 0, i = 1;
+	double e = x[0];
+
+  	while(i<sX && ptr<sR){
+		x[ptr] = fast_two_sum(e, x[i], &e); i++;
+		if(e == 0.) e = x[ptr]; else ptr++;
+  	}
+  	if(ptr<sR && e!=0.){ x[ptr] = e; ptr++; }
+		for(i=ptr; i<sR; i++) x[i] = 0.;
+}
+
 void fast_VecSumErr(double *x, int sX){
 	double e;
 	x[0] = fast_two_sum(x[0], x[1], &e);
 	for(int i=2; i<sX-1; i++) x[i-1] = fast_two_sum(e, x[i], &e);
 	x[sX-2] = fast_two_sum(e, x[sX-1], &x[sX-1]);
+}
+
+
+/**
+Implementation of VecSumErrBranch algorithm (Algorithm 7)
+
+Input: e vector size n (S-nonoverlapping), output vector size m
+Output: f vector size m
+
+**/
+double* vecSumErrBranch(double* e, int n, int m){
+   double* err = (double *)malloc(n*sizeof(double));
+   double* f = (double *)malloc(m*sizeof(double));
+   int j = 0;
+   err[0] = e[0];
+   for (int i = 0; i <= n-2; i++) {
+	  twoSum(err[i], e[i+1], &f[j], &err[i+1]);
+	  if (err[i+1] != 0) {
+		 if (j >= m - 1){ // enough output terms
+			return f;
+		 }
+		 j++;
+	  } else {
+		 err[i+1] = f[j];
+	  }
+   }
+   if (err[n-1] != 0 && j < m) {
+	  f[j] = err[n-1];
+   }
+   return f;
 }
 
 
@@ -100,6 +143,9 @@ int main()
 	double* f = (double *)malloc(n*sizeof(double));
 	fill_matrix(f,n);
 	
+	double* e = (double *)malloc(n*sizeof(double));
+	fill_matrix(e, n);
+	
 	
 	// print
 	printf("Input:\n");
@@ -110,8 +156,18 @@ int main()
 	double* g = vecSumErr(f,n); // apply function
 	fast_VecSumErr(f,n); // compute correct results (inplace)
 	
+	double* h = vecSumErrBranch(e, n, n); // apply function
+	fast_VecSumErrBranch(e, n, n); // compute correct results (inplace)
+	
 	// compare
-	printf("Output:\n");
+	printf("Output Algo 7:\n");
+	printf("OUR\t\t CAMPARY\n");
+	for (int i=0; i< n; i++){
+		printf("%f\t %f \n", e[i], h[i]);
+		assert(e[i]==h[i]);
+	}
+	
+	printf("Output Algo 8:\n");
 	printf("OUR\t\t CAMPARY\n");
 	for (int i=0; i< n; i++){
 		printf("%f\t %f \n", f[i], g[i]);
