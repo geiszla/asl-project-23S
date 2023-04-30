@@ -45,6 +45,29 @@ void vecSum(double *x, double *e_res){
 
 }
 
+/**
+Implementation of VecSumErr algorithm (Algorithm 8)
+
+Input: f vector size n
+Output: g vector size n
+
+Only correct if n>2!!
+
+Info: Probably faster to do it inplace in f then creating new g, but I tried to do it as similar as the algorithm.
+**/
+double* vecSumErr(double* f, int n){
+	int m = n-1;
+	double* err = (double *)malloc(n*sizeof(double));
+	double* g = (double *)malloc(n*sizeof(double));
+	err[0] = f[0];
+	
+	for (int i=0; i<= m-1; i++){
+		twoSum(err[i],f[i+1],&g[i],&err[i+1]);
+	}
+	g[m] = err[m];
+	free(err);
+	return g;
+}
 
 
 
