@@ -63,10 +63,11 @@ void kernel_base(quaternion_t x[N], quaternion_t y[N], quaternion_t A[N][N]) {
 }
 
 void   register_functions();
-void   add_function(comp_func f, string name, int flop);
 
 /* Global vars, used to keep track of student functions */
-vector<comp_func> userFuncs;
+template<typename T_compute_return, class... T_compute_args>
+vector<compute_function<T_compute_return, T_compute_args...>> userFuncs;
+
 vector<string> funcNames;
 vector<int> funcFlops;
 int numFuncs = 0;
@@ -75,7 +76,8 @@ int numFuncs = 0;
 * Registers a user function to be tested by the driver program. Registers a
 * string description of the function as well
 */
-void add_function(comp_func f, string name, int flops) {
+template<typename T_compute_return, class... T_compute_args>
+void add_function(compute_function<T_compute_return, T_compute_args...> f, string name, int flops) {
     userFuncs.push_back(f);
     funcNames.emplace_back(name);
     funcFlops.push_back(flops);
@@ -87,7 +89,8 @@ void add_function(comp_func f, string name, int flops) {
 * Checks the given function for validity. If valid, then computes and
 * reports and returns the number of cycles required per iteration
 */
-double perf_test(comp_func f) {
+template<typename T_compute_return, class... T_compute_args>
+double perf_test(compute_function<T_compute_return, T_compute_args...> f) {
     alignas(32) quaternion_t x[N];
     alignas(32) quaternion_t y[N];
     alignas(32) quaternion_t A[N][N];
@@ -127,7 +130,7 @@ int main(int argc, char **argv) {
   kernel_base(x, y, A_base);
 
   for (i = 0; i < numFuncs; i++) {
-    comp_func f = userFuncs[i];
+    auto f = userFuncs<void, quaternion_t[N], quaternion_t[N], quaternion_t[N][N]>[i];
     f(x, y, A);
     
     double error = nrm_sqr_diff((double*) A, (double*) A_base, 4*N*N);
@@ -138,7 +141,7 @@ int main(int argc, char **argv) {
   }
 
   for (i = 0; i < numFuncs; i++) {
-    perf = perf_test(userFuncs[i]);
+    perf = perf_test(userFuncs<void, quaternion_t[N], quaternion_t[N], quaternion_t[N][N]>[i]);
     cout << endl << "Running: " << funcNames[i] << endl;
     cout << perf << " cycles" << endl;
   }

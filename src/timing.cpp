@@ -27,7 +27,8 @@ using namespace std;
  */
 #ifdef __x86_64__
 
-double rdtsc(comp_func f, quaternion_t x[N], quaternion_t y[N], quaternion_t A[N][N])
+template <typename T_compute_function, class... T_compute_arguments>
+double query_performance_counter(T_compute_function f, T_compute_arguments... arguments)
 {
     double cycles = 0.;
     long num_runs = 100;
@@ -48,7 +49,7 @@ double rdtsc(comp_func f, quaternion_t x[N], quaternion_t y[N], quaternion_t A[N
         start = start_tsc();
         for (size_t i = 0; i < num_runs; i++)
         {
-            f(x, y, A);
+            f(arguments...);
         }
         end = stop_tsc(start);
 
@@ -69,7 +70,7 @@ double rdtsc(comp_func f, quaternion_t x[N], quaternion_t y[N], quaternion_t A[N
         start = start_tsc();
         for (size_t i = 0; i < num_runs; ++i)
         {
-            f(x, y, A);
+            f(arguments...);
         }
         end = stop_tsc(start);
 
@@ -86,8 +87,8 @@ double rdtsc(comp_func f, quaternion_t x[N], quaternion_t y[N], quaternion_t A[N
 
 #else
 
-double query_performance_counter(comp_func f, quaternion_t x[N], quaternion_t y[N],
-                                 quaternion_t A[N][N])
+template <typename T_compute_function, class... T_compute_arguments>
+double query_performance_counter(T_compute_function f, T_compute_arguments... arguments)
 {
     LARGE_INTEGER frequency;
     QueryPerformanceFrequency(&frequency);
@@ -106,7 +107,7 @@ double query_performance_counter(comp_func f, quaternion_t x[N], quaternion_t y[
         QueryPerformanceCounter(&start);
         for (size_t i = 0; i < num_runs; ++i)
         {
-            f(x, y, A);
+            f(arguments...);
         }
         QueryPerformanceCounter(&end);
 
@@ -125,7 +126,7 @@ double query_performance_counter(comp_func f, quaternion_t x[N], quaternion_t y[
         QueryPerformanceCounter(&start);
         for (size_t i = 0; i < num_runs; ++i)
         {
-            f(x, y, A);
+            f(arguments...);
         }
         QueryPerformanceCounter(&end);
 
@@ -144,11 +145,13 @@ double query_performance_counter(comp_func f, quaternion_t x[N], quaternion_t y[
 
 #endif
 
-double measure_runtime(comp_func f, quaternion_t x[N], quaternion_t y[N], quaternion_t A[N][N])
+template <typename T_compute_return, class... T_compute_arguments>
+double query_performance_counter(compute_function<T_compute_return, T_compute_arguments...> f,
+                                 T_compute_arguments... arguments)
 {
 #ifdef rdtsc
-    return rdtsc(f, x, y, A);
+    return rdtsc(f, arguments...);
 #else
-    return query_performance_counter(f, x, y, A);
+    return query_performance_counter(f, arguments...);
 #endif
 }
