@@ -183,7 +183,7 @@ static inline void truncatedMul(const double *x, const double *y, double *r, int
 		      B[sh+2] = FPadd_rn(B[sh+2], p);
 		  }}
 		
-  }else 
+  }else{ 
   	if(R < K+L-1){
   		double p;
   		int sh;
@@ -196,7 +196,7 @@ static inline void truncatedMul(const double *x, const double *y, double *r, int
 		      B[sh+2] = FPadd_rn(B[sh+2], p);
 			}}
 	}
-
+}
 	/* unbias the B's */
 	for (i=0; i<LBN; i++) B[i] = FPadd_rn(B[i], -lim[i]);
   fast_VecSumErrBranch(B, r, LBN,R);
@@ -220,8 +220,9 @@ Output: pi vector size r (ulp-nonoverlapping) = x*y
 
 Constraint: n >=m
 **/
+/*
 double* mult2(double* x, double* y, int n, int m, int r){
-	int const LBN = R*dbl_prec/binSize + 2; // number of allocated bins 
+	int const LBN = r*dbl_prec/binSize + 2; // number of allocated bins 
 	double B[LBN+2];
 	// get sum of first exponents
 	int e = exponent(x[0]) + exponent(y[0]);
@@ -231,17 +232,17 @@ double* mult2(double* x, double* y, int n, int m, int r){
 		B[i] = ldexp(1.5,e-(i+1)*binSize+dbl_prec-1); // 1.5*2^(e-(i+1)b+p-1)
 	}
 	int j,l,sh;
-	double p,e;
-	for(int i=0; i<= min(n-1, r); i++){
-		for(int j=0;j<= min(m-1,r-1-i); j++){
-			p = two_prod(x[i], y[j], &e);
+	double p, err;
+	for(int i=0; i<= fmin(n-1, r); i++){
+		for(j=0;j<= fmin(m-1,r-1-i); j++){
+			p = two_prod(x[i], y[j], &err);
 			l = e- exponent(x[i]) - exponent(y[i]); 
 			sh = (int) (l/binSize); // bin of the first pair
 			l = l- sh*binSize; // number of leading bits
-			accumulate(p,e,B,sh,l); // add to correct bins
+			accumulate(p,err,B,sh,l); // add to correct bins
 		}
 		if (j < m-1){ // if min(m-1,r-1-i) = r-1-i: I don't get what this part does
-			p = two_prod(x[i],y[j]);
+			p = two_prod(x[i],y[j], &err);
 			l = e- exponent(x[i]) - exponent(y[i]); 
 			sh = (int) (l/binSize); 
 			l = l- sh*binSize; 
@@ -252,28 +253,44 @@ double* mult2(double* x, double* y, int n, int m, int r){
 		B[i] = B[i]-ldexp(1.5,e-(i+1)*binSize+dbl_prec-1); // B_i - 1.5*2^(e-(i+1)b+p-1)
 	}
 	
-	double* pi = renormalize(B);
 	
-	return pi;
-}
+	
+	return renormalize(B);
+}*/
 
 // helpers
+double ulp(double x){
+                                                                   
+   int exponent;                                                                       
+                                                                                                                                                   
+   frexp(x, &exponent);                                                            
+                                                                                
+   return ldexp(1.0,exponent); // 1.0*2^exponent = ulp
+}
 double pseudorand(double max)
 {   
     return (max / RAND_MAX) * rand();
 }
 void fill_matrix(double * A, int n) {
+	double m;
+	int exp = 30; // -1022 to +1023 in double
     for(int i=0; i < n; i++) {
-        A[i] = pseudorand(100);
+        m  = pseudorand(1);
+        A[i] = ldexp(m,exp);
+        exp -= 1;
+        if (i>0){
+        	assert(ulp(A[i-1]) >= A[i]);//assert ulp-nonoverlapping
+		}
+        
     }
 }
 
 // test
 int main()    
 {  
-	int n = 7; 
-	int m = 5;
-	int R = 10;
+	int n = 3; // n >=m
+	int m = 2;
+	int R = 5;
 	printf("n= %d, m= %d, r= %d\n",n,m ,R);
 	srand((unsigned) time(0)); //init random
 	double* x = (double *)malloc(n*sizeof(double));
