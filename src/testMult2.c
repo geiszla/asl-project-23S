@@ -216,52 +216,7 @@ void deposit(double *p, double *b1, double *b2) {
 	*b2 = *b2 + *p;
 }
 
-/**
-Implementation of Multiplication algorithm (Algorithm 1, Paper 2)
 
-Input: x vector size n (ulp-nonoverlapping)
-		y vector size m (ulp-nonoverlapping)
-Output: pi vector size r (ulp-nonoverlapping) = x*y
-
-Constraint: n >=m
-**/
-/*
-double* mult2(double* x, double* y, int n, int m, int r){
-	int const LBN = r*dbl_prec/binSize + 2; // number of allocated bins 
-	double B[LBN+2];
-	// get sum of first exponents
-	int e = exponent(x[0]) + exponent(y[0]);
-	
-	// initialize each Bin with starting value
-	for (int i=0; i<LBN+2;i++){
-		B[i] = ldexp(1.5,e-(i+1)*binSize+dbl_prec-1); // 1.5*2^(e-(i+1)b+p-1)
-	}
-	int j,l,sh;
-	double p, err;
-	for(int i=0; i<= fmin(n-1, r); i++){
-		for(j=0;j<= fmin(m-1,r-1-i); j++){
-			p = two_prod(x[i], y[j], &err);
-			l = e- exponent(x[i]) - exponent(y[i]); 
-			sh = (int) (l/binSize); // bin of the first pair
-			l = l- sh*binSize; // number of leading bits
-			accumulate(p,err,B,sh,l); // add to correct bins
-		}
-		if (j < m-1){ // if min(m-1,r-1-i) = r-1-i: I don't get what this part does
-			p = two_prod(x[i],y[j], &err);
-			l = e- exponent(x[i]) - exponent(y[i]); 
-			sh = (int) (l/binSize); 
-			l = l- sh*binSize; 
-			accumulate(p,0.,B,sh,l);
-		}
-	}
-	for (int i=0;  i<LBN+2;i++){
-		B[i] = B[i]-ldexp(1.5,e-(i+1)*binSize+dbl_prec-1); // B_i - 1.5*2^(e-(i+1)b+p-1)
-	}
-	
-	
-	
-	return renormalize(B);
-}*/
 
 /**
 Implementation of Accumulate algorithm (Algorithm 2, Paper 2)
@@ -316,7 +271,52 @@ double* renormalize(double *x, int n, int k) {
 	}
 	return r;
 }
+/**
+Implementation of Multiplication algorithm (Algorithm 1, Paper 2)
 
+Input: x vector size n (ulp-nonoverlapping)
+		y vector size m (ulp-nonoverlapping)
+Output: pi vector size r (ulp-nonoverlapping) = x*y
+
+Constraint: n >=m
+**/
+
+double* mult2(double* x, double* y, int n, int m, int r){
+	int const LBN = r*dbl_prec/binSize + 2; // number of allocated bins 
+	double B[LBN+2];
+	// get sum of first exponents
+	int e = exponent(x[0]) + exponent(y[0]);
+	
+	// initialize each Bin with starting value
+	for (int i=0; i<LBN+2;i++){
+		B[i] = ldexp(1.5,e-(i+1)*binSize+dbl_prec-1); // 1.5*2^(e-(i+1)b+p-1)
+	}
+	int j,l,sh;
+	double p, err;
+	for(int i=0; i<= fmin(n-1, r); i++){
+		for(j=0;j<= fmin(m-1,r-1-i); j++){
+			p = two_prod(x[i], y[j], &err);
+			l = e- exponent(x[i]) - exponent(y[i]); 
+			sh = (int) (l/binSize); // bin of the first pair
+			l = l- sh*binSize; // number of leading bits
+			accumulate(p,err,B,sh,l); // add to correct bins
+		}
+		if (j < m-1){ // if min(m-1,r-1-i) = r-1-i: I don't get what this part does
+			p = two_prod(x[i],y[j], &err);
+			l = e- exponent(x[i]) - exponent(y[i]); 
+			sh = (int) (l/binSize); 
+			l = l- sh*binSize; 
+			accumulate(p,0.,B,sh,l);
+		}
+	}
+	for (int i=0;  i<LBN+2;i++){
+		B[i] = B[i]-ldexp(1.5,e-(i+1)*binSize+dbl_prec-1); // B_i - 1.5*2^(e-(i+1)b+p-1)
+	}
+	
+	
+	
+	return renormalize(B,n,r);
+}
 // helpers
 double ulp(double x){
                                                                    
@@ -332,11 +332,11 @@ double pseudorand(double max)
 }
 void fill_matrix(double * A, int n) {
 	double m;
-	int exp = 30; // -1022 to +1023 in double
+	int exp = 500; // -1022 to +1023 in double
     for(int i=0; i < n; i++) {
         m  = pseudorand(1);
         A[i] = ldexp(m,exp);
-        exp -= 1;
+        exp -= 4;
         if (i>0){
         	assert(ulp(A[i-1]) >= A[i]);//assert ulp-nonoverlapping
 		}
@@ -347,24 +347,28 @@ void fill_matrix(double * A, int n) {
 // test
 int main()    
 {  
-	int n = 3; // n >=m
-	int m = 2;
-	int R = 5;
+	int n = 4; // n >=m
+	int m = 6;
+	int R = 6;
 	printf("n= %d, m= %d, r= %d\n",n,m ,R);
 	srand((unsigned) time(0)); //init random
 	double* x = (double *)malloc(n*sizeof(double));
 	double* y = (double *)malloc(m*sizeof(double));
-	double* r = (double *)malloc(R*sizeof(double));
+	double* r_true = (double *)malloc(R*sizeof(double));
+	double* r_ours ;
 	fill_matrix(x,n);
 	fill_matrix(y, m);
 	
 	// apply correct function from CAMPARY
-	truncatedMul(x, y, r, n, m,R);
+	truncatedMul(x, y, r_true, n, m,R);
 	
+	// apply our function
+	r_ours = mult2(x,y,n,m,R);
 	
 	double sum_x=0.0;
 	double sum_y=0.0;
-	double sum_r=0.0;
+	double sum_r_true=0.0;
+	double sum_r_ours=0.0;
 	// print
 	printf("Input:\nx\t\ty\n");
 	for (int i=0; i< n; i++){
@@ -374,10 +378,10 @@ int main()
 	}
 	printf("Output:\nCAMPARY\t\tOurs\n");
 	for (int i=0; i< R; i++){
-		printf("%f\t\n", r[i]);
-		sum_r+=r[i];
-	}	
-	printf("Quick check of result: %f =? %f\n", sum_x*sum_y, sum_r ); // should be similar iff R >= 2nm and the random numbers are not too big
+		printf("%f\n%f\n\n", r_true[i], r_ours[i]);
+		sum_r_true+=r_true[i];
+		sum_r_ours+=r_ours[i];}
+	printf("Quick check of result:\n%f\n%f\n%f\n", sum_x*sum_y, sum_r_true, sum_r_ours ); // should be similar iff R >= 2nm and the random numbers are not too big
 	printf("Test was successfull\n");
 	
 
