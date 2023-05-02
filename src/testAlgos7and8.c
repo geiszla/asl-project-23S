@@ -3,6 +3,7 @@
 #include <math.h>
 #include "time.h"
 #include <stdlib.h>
+#define dbl_prec 53
 ////////////////////////////////////////copied from basefunctions.c//////////////////////////
 void twoSum(double a, double b, double *s_res, double *e_res){
     double s = a+b;
@@ -76,26 +77,26 @@ Input: e vector size n (S-nonoverlapping), output vector size m
 Output: f vector size m
 
 **/
-double* vecSumErrBranch(double* e, int n, int m){
-   double* err = (double *)malloc(n*sizeof(double));
-   double* f = (double *)malloc(m*sizeof(double));
-   int j = 0;
-   err[0] = e[0];
-   for (int i = 0; i <= n-2; i++) {
-	  twoSum(err[i], e[i+1], &f[j], &err[i+1]);
-	  if (err[i+1] != 0) {
-		 if (j >= m - 1){ // enough output terms
-			return f;
-		 }
-		 j++;
-	  } else {
-		 err[i+1] = f[j];
-	  }
-   }
-   if (err[n-1] != 0 && j < m) {
-	  f[j] = err[n-1];
-   }
-   return f;
+	double* vecSumErrBranch(double* e, int n, int m){
+	double* err = (double *)malloc(n*sizeof(double));
+	double* f = (double *)malloc(m*sizeof(double));
+	int j = 0;
+	err[0] = e[0];
+	for (int i = 0; i <= n-2; i++) {
+		twoSum(err[i], e[i+1], &f[j], &err[i+1]);
+		if (err[i+1] != 0) {
+			if (j >= m - 1){ // enough output terms
+				return f;
+			}
+		j++;
+		} else {
+			err[i+1] = f[j];
+		}
+	}
+	if (err[n-1] != 0 && j < m) {
+		f[j] = err[n-1];
+	}
+	return f;
 }
 
 
@@ -124,20 +125,41 @@ double* vecSumErr(double* f, int n){
 }
 
 // helpers
+double ulp(double x){
+                                                                   
+   int exponent;                                                                       
+                                                                                                                                                   
+   frexp(x, &exponent);                                                            
+                                                                                
+   return ldexp(1.0,exponent); // 1.0*2^exponent = ulp
+}
+
+int exponent(double d)
+{
+  int result;
+  frexp(d,&result);
+  return result;
+}
+
 double pseudorand(double max)
 {   
     return (max / RAND_MAX) * rand();
 }
 void fill_matrix(double * A, int n) {
+	// assert P-nonoverlapping i.e. e_a[i-1] - e_a[i] >= p which implies also S nonoverlapping
+	double m;
+	int exp = 1023; // -1022 to +1023 in double
     for(int i=0; i < n; i++) {
-        A[i] = pseudorand(1);
+    	m  = pseudorand(1);
+        A[i] = ldexp(m,exp);
+        exp -= 53;
     }
 }
 
 // test
 int main()    
 {  
-	int n = 5; //length of fp expansion
+	int n = 38; //length of fp expansion: max of 38, otherwise matrix can't be nonoverlapping anymore and result will be trivial?
 	printf("n= %d\n",n);
 	srand((unsigned) time(0)); //init random
 	double* f = (double *)malloc(n*sizeof(double));
@@ -151,6 +173,7 @@ int main()
 	printf("Input:\n");
 	for (int i=0; i< n; i++){
 		printf("%f\n", f[i]);
+		
 	}
 	
 	double* g = vecSumErr(f,n); // apply function
@@ -174,7 +197,7 @@ int main()
 		assert(f[i]==g[i]);
 	}
 	
-	printf("Test was successfull\n");
+	printf("Tests were successfull\n");
 	
 
 	
