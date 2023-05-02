@@ -100,6 +100,20 @@ double* vecSumErr(double* f, int n){
 
 
 
+/** implementation of Algorithm 6 renormalization
+ **/
+
+void renormalizationalgorithm(double *x, double *f, int m){
+    int length = sizeof(x)/sizeof(x[0]);
+    double e[length];
+    vecSum(x,&e);
+    f = vecSumErrBranch(e, length,m+1);
+    for (int i =0; i<=m-2; i++){
+        double *arr = vecSumErr(&f[i],m);
+        for (int b=0; b<m; b++){f[b+i]=arr[b];}
+    }
+
+}
 
 
 // testing stuff
