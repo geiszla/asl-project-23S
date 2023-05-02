@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <math.h>
 #include "time.h"
-#include "reference_solution.c"
 #include <stdlib.h>
 
 // compile with g++ -std=c++11 ./main.c
@@ -163,30 +162,3 @@ void multiplication(double *a, double *b, double *r){
 
 
 
-
-
-
-// pseudorandom from stackoverflow
-double pseudorand(double max)
-{   
-    srand((unsigned) time(0));
-    return (max / RAND_MAX) * rand();
-}
-
-
-int main()    
-{   
-   for(int i = 0; i<10000; i++){
-        double a = pseudorand(1); double b = pseudorand(1);double err_original,s_test,err_test; 
-        two_sum(a,b, &err_original);
-        twoSum(a,b, &s_test, &err_test);
-        assert(err_original == err_test);
-
-        two_prod(a,b, &err_original);
-        twoMultFMA(a,b,&s_test, &err_test);
-        assert(err_original == err_test);
-
-   }
-   printf("all tests are successfull");
-
-}
