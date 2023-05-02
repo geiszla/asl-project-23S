@@ -202,6 +202,15 @@ static inline void truncatedMul(const double *x, const double *y, double *r, int
   fast_VecSumErrBranch(B, r, LBN,R);
 }
 
+
+// helper
+int exponent(double d)
+{
+  int result;
+  frexp(d,&result);
+  return result;
+}
+
 /**
 Implementation of Multiplication algorithm (Algorithm 1, Paper 2)
 
@@ -209,10 +218,43 @@ Input: x vector size n (ulp-nonoverlapping)
 		y vector size m (ulp-nonoverlapping)
 Output: pi vector size r (ulp-nonoverlapping) = x*y
 
+Constraint: n >=m
 **/
 double* mult2(double* x, double* y, int n, int m, int r){
-	//TODO: implement 
-	return 0;
+	int const LBN = R*dbl_prec/binSize + 2; // number of allocated bins 
+	double B[LBN+2];
+	// get sum of first exponents
+	int e = exponent(x[0]) + exponent(y[0]);
+	
+	// initialize each Bin with starting value
+	for (int i=0; i<LBN+2;i++){
+		B[i] = ldexp(1.5,e-(i+1)*binSize+dbl_prec-1); // 1.5*2^(e-(i+1)b+p-1)
+	}
+	int j,l,sh;
+	double p,e;
+	for(int i=0; i<= min(n-1, r); i++){
+		for(int j=0;j<= min(m-1,r-1-i); j++){
+			p = two_prod(x[i], y[j], &e);
+			l = e- exponent(x[i]) - exponent(y[i]); 
+			sh = (int) (l/binSize); // bin of the first pair
+			l = l- sh*binSize; // number of leading bits
+			accumulate(p,e,B,sh,l); // add to correct bins
+		}
+		if (j < m-1){ // if min(m-1,r-1-i) = r-1-i: I don't get what this part does
+			p = two_prod(x[i],y[j]);
+			l = e- exponent(x[i]) - exponent(y[i]); 
+			sh = (int) (l/binSize); 
+			l = l- sh*binSize; 
+			accumulate(p,0.,B,sh,l);
+		}
+	}
+	for (int i=0;  i<LBN+2;i++){
+		B[i] = B[i]-ldexp(1.5,e-(i+1)*binSize+dbl_prec-1); // B_i - 1.5*2^(e-(i+1)b+p-1)
+	}
+	
+	double* pi = renormalize(B);
+	
+	return pi;
 }
 
 // helpers
