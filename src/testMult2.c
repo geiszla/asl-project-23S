@@ -211,6 +211,11 @@ int exponent(double d)
   return result;
 }
 
+void deposit(double *p, double *b1, double *b2) {
+	twoSum(*b1, *p, b1, p);
+	*b2 = *b2 + *p;
+}
+
 /**
 Implementation of Multiplication algorithm (Algorithm 1, Paper 2)
 
@@ -257,6 +262,60 @@ double* mult2(double* x, double* y, int n, int m, int r){
 	
 	return renormalize(B);
 }*/
+
+/**
+Implementation of Accumulate algorithm (Algorithm 2, Paper 2)
+
+Input: 	double p, e
+		vector<double> b
+		int sh, l
+Output: vector<double> b
+
+**/
+
+void accumulate(double p, double e, double *b, int sh, int l) {
+	int c = dbl_prec - binSize - 1;
+	if (l < binSize - 2*c - 1){
+		deposit(&p, &b[sh], &b[sh+1]);
+		deposit(&e, &b[sh+1], &b[sh+2]);
+	} else if (l < binSize - c){
+		deposit(&p, &b[sh], &b[sh+1]);
+		twoSum(b[sh+1], e, &b[sh+1], &e);
+		deposit(&e, &b[sh+2], &b[sh+3]);
+	} else {
+		twoSum(b[sh], p, &b[sh], &p);
+		deposit(&p, &b[sh+1], &b[sh+2]);
+		deposit(&e, &b[sh+2], &b[sh+3]);
+	}
+}
+
+/**
+Implementation of Renormalize algorithm (Algorithm 3, Paper 2)
+
+Input: 	vector<double> x (size n)
+		int n, k
+Output: vector<double> r (ulp-nonoverlapping) (size k)
+**/
+
+double* renormalize(double *x, int n, int k) {
+	double eps = x[0];
+	double* r = (double *)malloc(k*sizeof(double));
+	int j = 0;
+	int i = 1;
+	while (i < n && j < k) {
+		twoSum(eps, x[i], &r[j], &eps);
+		if (eps == 0) {
+			eps = r[j];
+		} else {
+			j++;
+		}
+		i++;
+	}
+	if (eps != 0 && j < k) {
+		r[j] = eps;
+	}
+	return r;
+}
 
 // helpers
 double ulp(double x){
