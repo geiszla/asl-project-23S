@@ -3,19 +3,11 @@
 #include <math.h>
 #include "time.h"
 #include <stdlib.h>
-#include "reference_solution.c"
+//#include "reference_solution.c"
 #include "mult2.c"
 
 
 // helper
-
-double mantissa(double d)
-{
-  int result;
-  double m = frexp(d,&result);
-  return m;
-}
-
 
 
 
@@ -41,7 +33,7 @@ double pseudorand(double max)
 double* create_matrix(int n) {
 	double* A = (double *)malloc(n*sizeof(double));
 	double m;
-	int exp = 200; // -1022 to +1023 in double
+	int exp = 300; // -1022 to +1023 in double
     for(int i=0; i < n; i++) {
     	exp -= 53;
 		
@@ -69,7 +61,7 @@ int main()
 	double* r_ours = (double *)malloc(R*sizeof(double));
 	
 	// apply correct function from CAMPARY
-	truncatedMul(x, y, r_true, n, m,R);	
+	certifiedMul(x, y, r_true, n, m,R);	
 
 	double sum_x=0.0;
 	double sum_y=0.0;

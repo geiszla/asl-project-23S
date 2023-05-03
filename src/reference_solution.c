@@ -225,3 +225,67 @@ static inline void truncatedMul(const double *x, const double *y, double *r, int
 	for (i=0; i<LBN; i++) B[i] = FPadd_rn(B[i], -lim[i]);
   fast_VecSumErrBranch(B, r, LBN,R);
 }
+
+/** Multiplies x and y and returns the result in r, as an ulp-nonoverlapping expansion. 
+    K - size of x, L - size of y, R - size of r.
+    Computes all partial products based on scalar products and then accumulates 
+    them in a special designed structure that has a fixed-point flavour.
+    double-precision = 53, bin size = 45; **/
+// Multiplication_accurate with relative error <= 2^{-(p-1)R}( 1 + (r+1)2^{-p} )
+
+static inline void certifiedMul(const double *x, const double *y, double *r, int K, int L, int R){
+	int const LBN = R*dbl_prec/binSize + 2;
+	double B[LBN+2], lim[LBN+2];
+	int i;
+	
+	int exp_x[K], exp_y[L];
+	for(i=0; i<K; i++) frexp(x[i], &exp_x[i]);
+	for(i=0; i<L; i++) frexp(y[i], &exp_y[i]);
+	
+	double factor = ldexp(1.0, -binSize); /* 2^(-45) */
+	int exp_start = exp_x[0] + exp_y[0];
+	lim[0] = ldexp(1.5, exp_start - binSize + dbl_prec-1); 
+	
+	B[0] = lim[0];
+	for(i=1; i<LBN+2; i++){ 
+		lim[i] = FPmul_rn(lim[i-1], factor); 
+		B[i] = lim[i]; 
+	}
+
+
+	double p, e;
+	int j, sh, l;
+	for(i=0; i<K; i++){
+	  for(j=0; j<L; j++){
+	    l  = exp_start - (exp_x[i]+exp_y[j]);
+	    sh = (int)(l/binSize);
+	    l  = l - sh*binSize;
+	    if(sh < LBN-1){
+	      p = two_prod(x[i], y[j], &e);
+	      if(l < 30){ // binSize - 2*(dbl_prec-binSize-1) - 1){
+	        B[sh] = fast_two_sum(B[sh], p, &p);
+	        B[sh+1] = FPadd_rn(B[sh+1], p);
+	
+	        B[sh+1] = fast_two_sum(B[sh+1], e, &e);
+	        B[sh+2] = FPadd_rn(B[sh+2], e);
+	      }else if(l < 37){ // binSize - (dbl_prec-binSize-1) - 1){
+	        B[sh] = fast_two_sum(B[sh], p, &p);
+	        B[sh+1] = FPadd_rn(B[sh+1], p);
+	
+	        B[sh+1] = fast_two_sum(B[sh+1], e, &e);
+	        B[sh+2] = fast_two_sum(B[sh+2], e, &e);
+	        B[sh+3] = FPadd_rn(B[sh+3], e);
+	      }else{
+	        B[sh] = fast_two_sum(B[sh], p, &p);
+	        B[sh+1] = fast_two_sum(B[sh+1], p, &p);
+	        B[sh+2] = FPadd_rn(B[sh+2], p);
+	
+	        B[sh+2] = fast_two_sum(B[sh+2], e, &e);
+	        B[sh+3] = FPadd_rn(B[sh+3], e);
+	}}}}
+	
+
+	/* unbias the B's */
+	for (i=0; i<LBN; i++) B[i] = FPadd_rn(B[i], -lim[i]);
+	fast_VecSumErrBranch(B, r, LBN,R);
+}
