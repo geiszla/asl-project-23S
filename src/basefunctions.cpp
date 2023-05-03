@@ -4,7 +4,7 @@
 #include "time.h"
 #include <stdlib.h>
 
-// compile with g++ -std=c++11 ./main.c
+// compile with g++ -std=c++11 ./main.cpp
 // error free transforms 
 /*
 */
@@ -32,7 +32,7 @@ void twoMultFMA(double a, double b,double *pi_res, double *e_res){
 void vecSum(double *x, double *e_res){
     int length = sizeof(x)/sizeof(x[0]);
     assert(length == (sizeof(e_res)/sizeof(e_res[0])));
-    double s[length]; 
+    double *s = new double[length];
     s[length-1] = x[length-1];
     for(int i = length-2; i>=0; i--){
         double s_tmp,e_tmp; 

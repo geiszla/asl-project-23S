@@ -146,7 +146,7 @@ double query_performance_counter(T_compute_function f, T_compute_arguments... ar
 #endif
 
 template <typename T_compute_return, class... T_compute_arguments>
-double query_performance_counter(compute_function<T_compute_return, T_compute_arguments...> f,
+double measure_runtime(compute_function<T_compute_return, T_compute_arguments...> f,
                                  T_compute_arguments... arguments)
 {
 #ifdef rdtsc
