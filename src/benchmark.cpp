@@ -6,9 +6,55 @@
 #include "timing.cpp"
 
 // compile with g++ -std=c++17 ./benchmark.cpp
-// TODO: measure all functions only once, factor out common code
+// TODO: make sure input is non-overlapping,
+//       fix multiplication flop count
+//       calculate median of measurements
 
 #define OUTPUT_PATH "../results"
+
+// Flop counts
+
+#define TWO_SUM_FLOPS 6
+#define TWO_MULT_FMA_FLOPS 2
+
+unsigned int get_vec_sum_flops(int vector_length)
+{
+    return (vector_length - 1) * TWO_SUM_FLOPS;
+}
+
+unsigned int get_vec_sum_err_branch_flops(int input_expansion_length)
+{
+    return (input_expansion_length - 1) * TWO_SUM_FLOPS;
+}
+
+unsigned int get_vec_sum_err_flops(int expansion_length)
+{
+    return (expansion_length - 1) * TWO_SUM_FLOPS;
+}
+
+unsigned int get_renormalization_flops(int input_expansion_length, int output_expansion_length)
+{
+    int vec_sum_flops = get_vec_sum_flops(input_expansion_length);
+    int vec_sum_err_branch_flops = get_vec_sum_err_branch_flops(input_expansion_length);
+    int vec_sum_err_flops = get_vec_sum_err_flops(output_expansion_length);
+
+    return vec_sum_flops + vec_sum_err_branch_flops +
+           (output_expansion_length - 1) * vec_sum_err_flops;
+}
+
+unsigned int get_addition_flops(int a_length, int b_length, int result_length)
+{
+    return get_renormalization_flops(a_length + b_length, result_length);
+}
+
+unsigned int get_multiplication_flops(int expansion_length)
+{
+    return expansion_length * (expansion_length - 1) / 2 * TWO_MULT_FMA_FLOPS +
+           (expansion_length / 2) * get_vec_sum_flops(expansion_length) +
+           (expansion_length - 1) * 2 +
+           pow(expansion_length, 2) +
+           get_renormalization_flops(expansion_length, expansion_length);
+}
 
 // Helpers
 
@@ -21,12 +67,22 @@ double generate_random_double(double max)
 void fill_vector(double x[], size_t size)
 {
     // -1022 to +1023 in double
-    int exponent = 1023;
+    int exponent = 500;
 
     for (size_t i = 0; i < size; i++)
     {
         x[i] = ldexp(generate_random_double(1), exponent);
     }
+}
+
+void write_results(string algorithm_name, double runtime, double performance, int input_size,
+                   int input_size_exponent, ostream &output_file)
+{
+    output_file << algorithm_name << ";" << input_size << ";" << runtime << ";" << performance << endl;
+
+    cout << "Input size: 2^" << input_size_exponent
+         << "     runtime: " << runtime << " cycles, performance: "
+         << performance << " flops/cycles" << endl;
 }
 
 // Benchmarking functions
@@ -44,7 +100,8 @@ void benchmark_two_sum()
     delete result;
     delete error;
 
-    cout << "2Sum runtime: " << runtime << " cycles" << endl;
+    cout << "2Sum\t\truntime: " << runtime << " cycles, performance: "
+         << (TWO_SUM_FLOPS / runtime) << " flops/cycles" << endl;
 }
 
 void benchmark_two_mult_FMA()
@@ -60,14 +117,16 @@ void benchmark_two_mult_FMA()
     delete result;
     delete error;
 
-    cout << "2MultFMA runtime: " << runtime << " cycles" << endl;
+    cout << "2MultFMA\truntime: " << runtime << " cycles, performance: "
+         << (TWO_MULT_FMA_FLOPS / runtime) << " flops/cycles" << endl;
 }
 
 void benchmark_vec_sum(ofstream &output_file)
 {
-    cout << endl << "VecSum runtime: " << endl;
+    cout << endl
+         << "VecSum: " << endl;
 
-    for (size_t i = 4; i < 20; i++)
+    for (size_t i = 4; i < 15; i++)
     {
         int input_size = pow(2, i);
 
@@ -77,17 +136,18 @@ void benchmark_vec_sum(ofstream &output_file)
         double *errors = new double[input_size];
 
         double runtime = measure_runtime(&vecSum, x, errors);
+        double performance = get_vec_sum_flops(input_size) / runtime;
 
-        output_file << input_size << ";" << runtime << endl;
-        cout << "Input size: 2^" << i << ", Runtime: " << runtime << " cycles" << endl;
+        write_results("VecSum", runtime, performance, input_size, i, output_file);
     }
 }
 
 void benchmark_vec_sum_err_branch(ofstream &output_file)
 {
-    cout << endl << "VecSumErrBranch runtime: " << endl;
+    cout << endl
+         << "VecSumErrBranch: " << endl;
 
-    for (size_t i = 4; i < 20; i++)
+    for (size_t i = 4; i < 15; i++)
     {
         int input_size = pow(2, i);
 
@@ -95,17 +155,18 @@ void benchmark_vec_sum_err_branch(ofstream &output_file)
         fill_vector(expansion, input_size);
 
         double runtime = measure_runtime(&vecSumErrBranch, expansion, input_size, input_size);
+        double performance = get_vec_sum_err_branch_flops(input_size) / runtime;
 
-        output_file << input_size << ";" << runtime << endl;
-        cout << "Input size: 2^" << i << ", Runtime: " << runtime << " cycles" << endl;
+        write_results("VecSumErrBranch", runtime, performance, input_size, i, output_file);
     }
 }
 
 void benchmark_vec_sum_err(ofstream &output_file)
 {
-    cout << endl << "VecSumErr runtime: " << endl;
+    cout << endl
+         << "VecSumErr: " << endl;
 
-    for (size_t i = 4; i < 20; i++)
+    for (size_t i = 4; i < 15; i++)
     {
         int input_size = pow(2, i);
 
@@ -113,17 +174,18 @@ void benchmark_vec_sum_err(ofstream &output_file)
         fill_vector(expansion, input_size);
 
         double runtime = measure_runtime(&vecSumErr, expansion, input_size);
+        double performance = get_vec_sum_err_flops(input_size) / runtime;
 
-        output_file << input_size << ";" << runtime << endl;
-        cout << "Input size: 2^" << i << ", Runtime: " << runtime << " cycles" << endl;
+        write_results("VecSumErr", runtime, performance, input_size, i, output_file);
     }
 }
 
 void benchmark_renormalization(ofstream &output_file)
 {
-    cout << endl << "Renormalization runtime: " << endl;
+    cout << endl
+         << "Renormalization: " << endl;
 
-    for (size_t i = 4; i < 20; i++)
+    for (size_t i = 4; i < 15; i++)
     {
         int input_size = pow(2, i);
 
@@ -134,15 +196,42 @@ void benchmark_renormalization(ofstream &output_file)
         fill_vector(expansion, input_size);
 
         double runtime = measure_runtime(&renormalizationalgorithm, x, expansion, input_size);
+        double performance = get_renormalization_flops(input_size, input_size) / runtime;
 
-        output_file << input_size << ";" << runtime << endl;
-        cout << "Input size: 2^" << i << ", Runtime: " << runtime << " cycles" << endl;
+        write_results("Renormalization", runtime, performance, input_size, i, output_file);
+    }
+}
+
+void benchmark_addition(ofstream &output_file)
+{
+    cout << endl
+         << "Addition: " << endl;
+
+    for (size_t i = 4; i < 20; i++)
+    {
+        int input_size = pow(2, i);
+
+        double *a = new double[input_size];
+        fill_vector(a, input_size);
+
+        double *b = new double[input_size];
+        fill_vector(b, input_size);
+
+        double *result = new double[input_size];
+
+        double runtime = measure_runtime(&addition, a, b, result, input_size, input_size,
+                                         input_size);
+
+        double performance = get_addition_flops(input_size, input_size, input_size) / runtime;
+
+        write_results("Addition", runtime, performance, input_size, i, output_file);
     }
 }
 
 void benchmark_multiplication(ofstream &output_file)
 {
-    cout << endl << "Multiplication runtime: " << endl;
+    cout << endl
+         << "Multiplication: " << endl;
 
     for (size_t i = 4; i < 20; i++)
     {
@@ -157,9 +246,9 @@ void benchmark_multiplication(ofstream &output_file)
         double *result = new double[input_size];
 
         double runtime = measure_runtime(&multiplication, a, b, result);
+        double performance = get_multiplication_flops(input_size) / runtime;
 
-        output_file << input_size << ";" << runtime << endl;
-        cout << "Input size: 2^" << i << ", Runtime: " << runtime << " cycles" << endl;
+        write_results("Multiplication", runtime, performance, input_size, i, output_file);
     }
 }
 
@@ -187,7 +276,7 @@ int main()
         return 1;
     }
 
-    output_file << "Input size;Runtime" << endl;
+    output_file << "Algorithm;Input size;Runtime;Performance" << endl;
 
     cout.setf(ios::fixed);
     cout.precision(2);
@@ -200,6 +289,7 @@ int main()
     benchmark_vec_sum_err(output_file);
 
     benchmark_renormalization(output_file);
+    benchmark_addition(output_file);
     benchmark_multiplication(output_file);
 
     output_file.close();

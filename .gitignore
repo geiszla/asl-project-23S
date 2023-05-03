@@ -58,3 +58,4 @@
 
 # Custom rules
 results/
+*.pdb

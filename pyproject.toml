@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "asl-team13"
+version = "0.1.0"
+description = ""
+authors = ["Andras Geiszl <ageiszl@student.ethz.ch>"]
+readme = "README.md"
+packages = [{include = "asl_project"}]
+
+[tool.poetry.scripts]
+plot = "asl_project.plot:main"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pandas = "^2.0.1"
+matplotlib = "^3.7.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
