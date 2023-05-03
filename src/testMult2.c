@@ -4,7 +4,7 @@
 #include "time.h"
 #include <stdlib.h>
 #include "reference_solution.c"
-#include "mult2.cpp"
+#include "mult2.c"
 
 
 // helper
