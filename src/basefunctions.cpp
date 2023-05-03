@@ -120,7 +120,7 @@ void renormalizationalgorithm(double *x, double *f, int m){
  * Input a and b of length k 
  * Output r of length k
 */
-void multiplication(double *a, double *b, double *s, int length_a,int length_b, int length_result){
+void addition(double *a, double *b, double *s, int length_a,int length_b, int length_result){
      double*  tmp = new double[length_a+length_b];
      for(int i = 0; i<length_a; i++){
          tmp[i] = a[i];
