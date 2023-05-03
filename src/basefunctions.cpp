@@ -115,7 +115,23 @@ void renormalizationalgorithm(double *x, double *f, int m){
 }
 
 
-/**Implementation of FP exansion with k terms 
+
+/**Implementation of FP exansionaddition with k terms 
+ * Input a and b of length k 
+ * Output r of length k
+*/
+void multiplication(double *a, double *b, double *s, int length_a,int length_b, int length_result){
+     double*  tmp = new double[length_a+length_b];
+     for(int i = 0; i<length_a; i++){
+         tmp[i] = a[i];
+     }
+     for(int i = length_a; i<length_a+length_b; i++){
+         tmp[i]= b[i];
+     }
+     renormalizationalgorithm(tmp,s,length_result);
+}
+
+/**Implementation of FP exansion multiplication with k terms 
  * Input a and b of length k 
  * Output r of length k
 */
