@@ -3,6 +3,7 @@
 #include <math.h>
 #include "time.h"
 #include <stdlib.h>
+#include "reference_solution.c"
 
 #define dbl_prec 53
 #define binSize 45
@@ -10,7 +11,12 @@
 // error free transforms 
 /*
 */
-
+double mantissa(double d)
+{
+  int result;
+  double m = frexp(d,&result);
+  return m;
+}
 // Sorry a function can't start with a 2 therefore I took the nearest solution of it
 void twoSum(double a, double b, double *s_res, double *e_res){
     double s = a+b;
@@ -90,7 +96,7 @@ void renormalize(double *x,double* r, int n, int k) {
 	int i = 1;
 	while (i < n && j < k) {
 		twoSum(eps, x[i], &r[j], &eps);
-		if (eps == 0) {
+		if (eps == 0) { // no overflow
 			eps = r[j];
 		} else {
 			j++;
@@ -100,7 +106,6 @@ void renormalize(double *x,double* r, int n, int k) {
 	if (eps != 0 && j < k) {
 		r[j] = eps;
 	}
-	return r;
 }
 
 // helper
@@ -151,11 +156,11 @@ double* mult2(double* x, double* y,double*pi, int n, int m, int r){
 	for (int i=0;  i<LBN+2;i++){
 		B[i] = B[i]-ldexp(1.5,e-(i+1)*binSize+dbl_prec-1); // B_i - 1.5*2^(e-(i+1)b+p-1)
 	}
+
 	
-	
-	//renorm_rand2L(B, pi, n,r);
-	//fast_VecSumErrBranch(B,pi,n,r);
-	renormalize(B,pi,n,r);
+	//renorm_rand2L(B, pi, LBN+2,r);
+	//fast_VecSumErrBranch(B,pi,LBN+2,r);
+	renormalize(B,pi,LBN+2,r);
 	return pi;
 }
 
