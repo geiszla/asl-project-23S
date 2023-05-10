@@ -31,6 +31,8 @@ double* create_ulp_non_overlaping_array(const int n) {
 	double *x = (double*) malloc(sizeof(double) * n);
 	for (int i = 0; i < n; i++) {
 		x[i] = dist(gen);
+	}
+	for (int i = 0; i < n; i++) {
 		for (int j = n; j > i; j--) {
 			x[i] *= 2; //TODO: assert ulp-nonoverlapping
 		}
@@ -67,12 +69,13 @@ TEST(ReferenceSolution, TruncatedMult) {
 	big_float sum_y = get_sum(y, L);
 	truncatedMul(x, y, r, K, L, R);
 	
-	big_float relative_error = get_sum(r, R) / (sum_x * sum_y);
-
-	if (relative_error > 1) {
-		relative_error = 1 / relative_error;
-	}
-	EXPECT_LT(THRESHOLD, relative_error);
+	big_float x0 = x[0];
+	big_float y0 = y[0];
+	
+	big_float err_tolerance =  get_error_tolerance(x0, y0, K,L,R);
+	big_float abs_error = fabs((sum_x * sum_y)-get_sum(r, R));
+	
+	EXPECT_LT(abs_error, err_tolerance);
 }
 TEST(Multiplication, Mult2) {
 	int K = 4;
