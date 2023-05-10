@@ -12,7 +12,6 @@ extern "C" {
 
 using namespace boost::multiprecision;
 typedef number<cpp_dec_float<1000> > big_float;
-
 #define dbl_prec 53
 #define binSize 45
 
