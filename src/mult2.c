@@ -3,7 +3,6 @@
 #include <math.h>
 #include "time.h"
 #include <stdlib.h>
-#include "reference_solution.c"
 
 #define dbl_prec 53
 #define binSize 45
@@ -139,15 +138,17 @@ double* mult2(double* x, double* y,double*pi, int n, int m, int r){
 	double p, err;
 	for(int i=0; i<= fmin(n-1, r); i++){
 		for(j=0;j<= fmin(m-1,r-1-i); j++){
-			p = two_prod(x[i], y[j], &err);
-			l = e- exponent(x[i]) - exponent(y[i]); 
+			//p = two_prod(x[i], y[j], &err); this leads to more similar result as CAMPARY
+			twoMultFMA(x[i], y[j],&p,&err);
+			l = e- exponent(x[i]) - exponent(y[j]); 
 			sh = floor(l/binSize); // bin of the first pair
 			l = l- sh*binSize; // number of leading bits
 			accumulate(p,err,B,sh,l); // add to correct bins
 		}
+		j-=1;
 		if (j < m-1){ //  I don't get what this part does
-			p = two_prod(x[i],y[j], &err);
-			l = e- exponent(x[i]) - exponent(y[i]); 
+			p = x[i]*y[j];
+			l = e- exponent(x[i]) - exponent(y[j]); 
 			sh = floor(l/binSize); 
 			l = l- sh*binSize; 
 			accumulate(p,0.,B,sh,l);
