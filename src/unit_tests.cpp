@@ -5,7 +5,10 @@
 #include <gtest/gtest.h>
 extern "C" {
 #include "reference_solution.c"
+#include "mult2.c"
 }
+
+
 
 using namespace boost::multiprecision;
 typedef number<cpp_dec_float<1000> > big_float;
@@ -18,12 +21,12 @@ double THRESHOLD = 0.9; // THIS NEEDS TO CHANGE AND DEPEND ON THE INPUT
 double* create_ulp_non_overlaping_array(const int n) {
 	std::random_device rd;
 	std::mt19937 gen(rd());
-	std::uniform_real_distribution<double> dist(0, 1);
+	std::uniform_real_distribution<double> dist(0.5, 1);
 	double *x = (double*) malloc(sizeof(double) * n);
 	for (int i = 0; i < n; i++) {
 		x[i] = dist(gen);
 		for (int j = n; j > i; j--) {
-			x[i] *= 2;
+			x[i] *= 2; //TODO: assert ulp-nonoverlapping
 		}
 	}
 	return x;
@@ -37,6 +40,15 @@ big_float get_sum(double* x, const int n) {
 	return sum;
 }
 
+void print_array(double* x, const int n){
+	for (int i = 0; i < n; i++) {
+			double m;
+			int exp;
+			m = frexp(x[i],&exp);
+			std::cout << x[i] <<"=" << m<< "*2^"<<exp<< "\n";
+		}
+}
+
 TEST(ReferenceSolution, TruncatedMult) {
 	int K = 4;
 	int L = 4;
@@ -48,13 +60,35 @@ TEST(ReferenceSolution, TruncatedMult) {
 	big_float sum_x = get_sum(x, K);
 	big_float sum_y = get_sum(y, L);
 	truncatedMul(x, y, r, K, L, R);
+	
 	big_float relative_error = get_sum(r, R) / (sum_x * sum_y);
+	std::cout << "sum our: " << get_sum(r, R)<< "\n";
+	std::cout << "sum test: " << (sum_x * sum_y)<< "\n";
 	if (relative_error > 1) {
 		relative_error = 1 / relative_error;
 	}
 	EXPECT_LT(THRESHOLD, relative_error);
 }
-
+TEST(Multiplication, Mult2) {
+	int K = 4;
+	int L = 4;
+	int R = 8;
+	double *x = create_ulp_non_overlaping_array(K);
+	double *y = create_ulp_non_overlaping_array(L);
+	double *r = (double*) malloc(sizeof(double) * R);
+	
+	big_float sum_x = get_sum(x, K);
+	big_float sum_y = get_sum(y, L);
+	r = mult2(x, y, r, K, L, R);
+	
+	big_float relative_error = get_sum(r, R) / (sum_x * sum_y);
+	std::cout << "sum our: " << get_sum(r, R)<< "\n";
+	std::cout << "sum test: " << (sum_x * sum_y)<< "\n";
+	if (relative_error > 1) {
+		relative_error = 1 / relative_error;
+	}
+	EXPECT_LT(THRESHOLD, relative_error);
+}
 int main(int argc, char** argv) {
 	testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();
