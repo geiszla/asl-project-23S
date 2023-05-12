@@ -3,14 +3,14 @@
 #include <math.h>
 #include "time.h"
 #include <stdlib.h>
-
+const double trennung = 0.000000000000000001;// 10^-18
 // compile with g++ -std=c++11 ./main.cpp
 // error free transforms 
 /*
 */
 
 // Sorry a function can't start with a 2 therefore I took the nearest solution of it
-void twoSum(double a, double b, double *s_res, double *e_res){
+void twoSum(const double a,const  double b, double *s_res, double *e_res){
     double s = a+b;
     double t = s-b; 
     double e = (a-t) + (b-(s-t));
@@ -19,7 +19,7 @@ void twoSum(double a, double b, double *s_res, double *e_res){
     return;
 }
 
-void twoMultFMA(double a, double b,double *pi_res, double *e_res){
+void twoMultFMA(const double a,const double b,double *pi_res, double *e_res){
     double pi = a*b;
     double e = fma(a,b,-pi);
     *pi_res = pi; *e_res = e;
@@ -29,9 +29,8 @@ void twoMultFMA(double a, double b,double *pi_res, double *e_res){
 
 
 // call it with the array x and a array of the same size 
-void vecSum(double *x, double *e_res){
-    int length = sizeof(x)/sizeof(x[0]);
-    assert(length == (sizeof(e_res)/sizeof(e_res[0])));
+void vecSum(double *x, double *e_res, int in_out_size){
+    int length = in_out_size;
     double *s = new double[length];
     s[length-1] = x[length-1];
     for(int i = length-2; i>=0; i--){
@@ -52,8 +51,8 @@ Output: f vector size m
 
 **/
 double* vecSumErrBranch(double* e, int n, int m){
-   double* err = (double *)malloc(n*sizeof(double));
-   double* f = (double *)malloc(m*sizeof(double));
+   double* err = new double[n];
+   double* f = new double[n];
    int j = 0;
    err[0] = e[0];
    for (int i = 0; i <= n-2; i++) {
@@ -85,15 +84,15 @@ Info: Probably faster to do it inplace in f then creating new g, but I tried to 
 **/
 double* vecSumErr(double* f, int n){
 	int m = n-1;
-	double* err = (double *)malloc(n*sizeof(double));
-	double* g = (double *)malloc(n*sizeof(double));
+	double* err =  new double[n];
+	double* g =  new double[n];
 	err[0] = f[0];
 	
 	for (int i=0; i<= m-1; i++){
 		twoSum(err[i],f[i+1],&g[i],&err[i+1]);
 	}
 	g[m] = err[m];
-	free(err);
+	
 	return g;
 }
 
@@ -102,15 +101,22 @@ double* vecSumErr(double* f, int n){
 /** implementation of Algorithm 6 renormalization
  **/
 
-void renormalizationalgorithm(double *x, double *f, int m){
-    int length = sizeof(x)/sizeof(x[0]);
+void renormalizationalgorithm(double x[],int size_of_x , double f[], int m){
+    int length = size_of_x;
     double* e = new double[length];
-    vecSum(x,e);
-    f = vecSumErrBranch(e, length,m+1);
+    
+    vecSum(x,e,size_of_x);
+    double* f_tmp = vecSumErrBranch(e, length,m+1);
     for (int i =0; i<=m-2; i++){
-        double *arr = vecSumErr(&f[i],m);
-        for (int b=0; b<m; b++){f[b+i]=arr[b];}
+        double *arr = vecSumErr(&f_tmp[i],m);
+        for (int b=0; b<m; b++){
+             double tmp=arr[b];
+             f_tmp[b+i] = tmp;
+            }
+       double t= f_tmp[i];
+       f[i] =t;
     }
+     f[m-1]= f_tmp[m-1];
     delete[] e;
 }
 
@@ -128,7 +134,7 @@ void addition(double *a, double *b, double *s, int length_a,int length_b, int le
      for(int i = length_a; i<length_a+length_b; i++){
          tmp[i]= b[i];
      }
-     renormalizationalgorithm(tmp,s,length_result);
+     renormalizationalgorithm(tmp,length_a+length_b,s,length_result);
 }
 
 /**Implementation of FP exansion multiplication with k terms 
@@ -154,7 +160,7 @@ void multiplication(double *a, double *b, double *r){
         for(int b =n+1; b<n*n+n; b++){
             tmp2[b]=err[b-n];
         }
-        vecSum(tmp2, tmp);
+        vecSum(tmp2, tmp,1);
         r[n] = tmp[0];
         for(int b = 1; b<=n*n+n; b++){
             err[b-1] = tmp[b];
@@ -169,12 +175,9 @@ void multiplication(double *a, double *b, double *r){
     for(int i = 1; i<=k-1; i++){
         r[k]= r[k]+ err[i];
     }
-    renormalizationalgorithm(r,r,k);
+    renormalizationalgorithm(r,2,r,k);
     // return
 }
 
 // testing stuff
-
-
-
 
