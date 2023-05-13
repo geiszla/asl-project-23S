@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <chrono>
 
 #include "main.h"
 
@@ -80,6 +81,65 @@ double rdtsc(T_compute_function f, T_compute_arguments... arguments)
         cyclesList.push_back(cycles);
     }
     total_cycles /= MEASUREMENT_COUNT;
+
+    cycles = total_cycles;
+    return cycles;
+}
+#elif defined __MACH__
+
+#define ctime_t std::chrono::high_resolution_clock::time_point
+
+template <typename T_compute_function, class... T_compute_arguments>
+double query_performance_counter(T_compute_function f, T_compute_arguments... arguments)
+{
+    uint64_t frequency = 3.5e9;
+
+    double cycles = 0.;
+    long num_runs = 100;
+    double multiplier = 1;
+
+    ctime_t start, end;
+
+#ifdef CALIBRATE
+    do
+    {
+        num_runs = num_runs * multiplier;
+
+        start = std::chrono::high_resolution_clock::now();
+        for (size_t i = 0; i < num_runs; ++i)
+        {
+            f(arguments...);
+        }
+        end = std::chrono::high_resolution_clock::now();
+
+        std::chrono::duration<double> elapsed = end - start;
+        cycles = elapsed.count() * frequency;
+        multiplier = CYCLES_REQUIRED / cycles;
+    } while (multiplier > 2);
+#endif
+
+    list<double> cyclesList;
+
+    // Actual performance measurements repeated MEASUREMENT_COUNT times.
+    // We simply store all results and compute medians during post-processing.
+    double total_cycles = 0;
+    for (size_t j = 0; j < MEASUREMENT_COUNT; j++)
+    {
+        start = std::chrono::high_resolution_clock::now();
+        for (size_t i = 0; i < num_runs; ++i)
+        {
+            f(arguments...);
+        }
+        end = std::chrono::high_resolution_clock::now();
+
+        std::chrono::duration<double> elapsed = end - start;
+        cycles = elapsed.count() * frequency;
+
+        total_cycles += cycles;
+
+        cyclesList.push_back(cycles);
+    }
+    total_cycles /= MEASUREMENT_COUNT * num_runs;
 
     cycles = total_cycles;
     return cycles;

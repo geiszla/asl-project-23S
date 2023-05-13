@@ -1,6 +1,8 @@
 // #error Please comment out the next two lines under linux, then comment this error
 // #include "stdafx.h"  //Visual studio expects this line to be the first one, comment out if different compiler
+#ifdef _WIN32
 #include <windows.h> // Include if under windows
+#endif
 
 #include "quaternion.h"
 
