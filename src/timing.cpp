@@ -28,7 +28,7 @@ using namespace std;
 #ifdef __x86_64__
 
 template <typename T_compute_function, class... T_compute_arguments>
-double query_performance_counter(T_compute_function f, T_compute_arguments... arguments)
+double rdtsc(T_compute_function f, T_compute_arguments... arguments)
 {
     double cycles = 0.;
     long num_runs = 100;
