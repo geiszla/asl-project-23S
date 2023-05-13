@@ -281,16 +281,16 @@ int main()
     cout.setf(ios::fixed);
     cout.precision(2);
 
-    //benchmark_two_sum();
-    //benchmark_two_mult_FMA();
+    benchmark_two_sum();
+    benchmark_two_mult_FMA();
 
     benchmark_vec_sum(output_file);
-    //benchmark_vec_sum_err_branch(output_file);
-    //benchmark_vec_sum_err(output_file);
+    benchmark_vec_sum_err_branch(output_file);
+    benchmark_vec_sum_err(output_file);
 
-    //benchmark_renormalization(output_file);
-    //benchmark_addition(output_file);
-    //benchmark_multiplication(output_file);
+    benchmark_renormalization(output_file);
+    benchmark_addition(output_file);
+    benchmark_multiplication(output_file);
 
     output_file.close();
 }
