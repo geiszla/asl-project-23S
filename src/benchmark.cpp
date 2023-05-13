@@ -6,9 +6,8 @@
 #include "timing.cpp"
 
 // compile with g++ -std=c++17 ./benchmark.cpp
-// TODO: make sure input is non-overlapping,
-//       fix multiplication flop count
-//       calculate median of measurements
+// TODO: make sure input is non-overlapping, calculate median of measurements,
+//       clean up `pyproject.toml` (authors, repo link, license. etc.)
 
 #define OUTPUT_PATH "../results"
 
@@ -36,10 +35,10 @@ unsigned int get_renormalization_flops(int input_expansion_length, int output_ex
 {
     int vec_sum_flops = get_vec_sum_flops(input_expansion_length);
     int vec_sum_err_branch_flops = get_vec_sum_err_branch_flops(input_expansion_length);
-    int vec_sum_err_flops = get_vec_sum_err_flops(output_expansion_length);
+    int vec_sum_err_flops = get_vec_sum_err_flops(
+        (output_expansion_length * (output_expansion_length + 1) / 2.0));
 
-    return vec_sum_flops + vec_sum_err_branch_flops +
-           (output_expansion_length - 1) * vec_sum_err_flops;
+    return vec_sum_flops + vec_sum_err_branch_flops + vec_sum_err_flops;
 }
 
 unsigned int get_addition_flops(int a_length, int b_length, int result_length)
@@ -49,11 +48,11 @@ unsigned int get_addition_flops(int a_length, int b_length, int result_length)
 
 unsigned int get_multiplication_flops(int expansion_length)
 {
-    return expansion_length * (expansion_length - 1) / 2 * TWO_MULT_FMA_FLOPS +
+    return expansion_length * (expansion_length + 1) / 2 * TWO_MULT_FMA_FLOPS +
            (expansion_length / 2) * get_vec_sum_flops(expansion_length) +
            (expansion_length - 1) * 2 +
            pow(expansion_length, 2) +
-           get_renormalization_flops(expansion_length, expansion_length);
+           get_renormalization_flops(expansion_length + 1, expansion_length);
 }
 
 // Helpers
@@ -135,7 +134,7 @@ void benchmark_vec_sum(ofstream &output_file)
 
         double *errors = new double[input_size];
 
-        double runtime = measure_runtime(&vecSum, x, errors);
+        double runtime = measure_runtime(&vecSum, x, errors, input_size);
         double performance = get_vec_sum_flops(input_size) / runtime;
 
         write_results("VecSum", runtime, performance, input_size, i, output_file);
@@ -195,7 +194,8 @@ void benchmark_renormalization(ofstream &output_file)
         double *expansion = new double[input_size];
         fill_vector(expansion, input_size);
 
-        double runtime = measure_runtime(&renormalizationalgorithm, x, expansion, input_size);
+        double runtime = measure_runtime(
+            &renormalizationalgorithm, x, input_size, expansion, input_size);
         double performance = get_renormalization_flops(input_size, input_size) / runtime;
 
         write_results("Renormalization", runtime, performance, input_size, i, output_file);
