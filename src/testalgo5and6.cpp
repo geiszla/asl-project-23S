@@ -101,13 +101,7 @@ static inline void renorm_rand2L(int sX, int sR, double x[]){
   if(ptr<sR && pr!=0.){ x[ptr] = pr; ptr++; }
   for(i=ptr; i<sX; i++) x[i] = 0.;
 }
-static inline void merge(double const *x, double const *y, double *z,int K,int L){
-  int i=0, j=0;
-  for(int n=0; n<K+L; n++){
-    if(i==K || (j<L && fabs(y[j])>fabs(x[i]))){ z[n] = y[j]; j++; }
-    else{ z[n] = x[i]; i++; }
-  }
-}
+
 static inline void certifiedAdd(const double *x, const double *y, double *r,int K,int L,int R){
 
     double f[K+L];
@@ -173,7 +167,7 @@ void testrenormalization(){
       double rt = renorm[n]; double st = solution[n];
       double a = 0;
       // test for reduction onto size 1 thus if failed thats the problem 
-      assert(rt-st<0.00001);
+      assert(abs(rt-st)<0.00001);
     }
     double a=0;
 	}
@@ -192,7 +186,7 @@ void testrenormalization(){
       double rt = renorm[n]; double st = solution[n];
       double a = 0;
       // test for reduction onto size 2 thus if failed thats the problem 
-      assert(rt-st<0.00001);
+      assert(abs(rt-st)<0.00001);
     }
     double a=0;
 	}
@@ -212,7 +206,7 @@ void testrenormalization(){
       double a = 0;
       
       // test for reduction onto size 2 thus if failed thats the problem 
-      assert(rt-st<0.00001);
+      assert(abs(rt-st)<0.00001);
     }
     double a=0;
 	}
@@ -220,23 +214,37 @@ void testrenormalization(){
 
 
 void testaddition(){
-  for(int c = 2; c<200; c+=1){
+  // assumption that the numbers are still non p-2 overlapping simmilar to the renormalization 
+  // as addition is calling it and therefore it is kind of a natural implicit constraint
+  for(int c = 2; c<20; c+=1){
 		double* a =  new double[c];
     double* b =  new double[c];
     double*   sol =  new double[c];
     double*   sol_ref =  new double[c];
 		for(int i = 0; i<c; i++){
-			a[i] = 1;
-      b[i] =1;
+			a[i] = (allonesindouble*1024)/(pow(8,2*i));
+      b[i] = (allonesindouble*1024)/(pow(8,2*i+1));
 		}
+    // every 8 entries they go into the same "box"
+    for(int i = 0; i<c; i+=8){
+      for(int x = 0; x<8; x++){
+        if(i+x < c){
+          sol_ref[i/8] += (a[i+x]+b[i+x]);
+        }
+        
+      }
+    }
 		addition(a,b,sol,c,c,c);
-    certifiedAdd(a,b,sol_ref,c,c,c);
+   
     for(int i =0; i<c; i++){
-      double sol1 = sol[i]; double sol2 = sol_ref[i];
-      assert(sol1-(c*2 )<0.001);
+      double ref = sol_ref[i]; double sol_our = sol[i];
+      
+      assert(abs(sol_our-ref) <0.000001);
     }
 	}
 
+
+   
 
 }
 

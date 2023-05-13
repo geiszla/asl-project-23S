@@ -120,7 +120,14 @@ void renormalizationalgorithm(double x[],int size_of_x , double f[], int m){
     delete[] e;
 }
 
-
+// camapry merge only for testing
+static inline void merge(double const *x, double const *y, double *z,int K,int L){
+  int i=0, j=0;
+  for(int n=0; n<K+L; n++){
+    if(i==K || (j<L && fabs(y[j])>fabs(x[i]))){ z[n] = y[j]; j++; }
+    else{ z[n] = x[i]; i++; }
+  }
+}
 
 /**Implementation of FP exansionaddition with k terms 
  * Input a and b of length k 
@@ -128,12 +135,7 @@ void renormalizationalgorithm(double x[],int size_of_x , double f[], int m){
 */
 void addition(double *a, double *b, double *s, int length_a,int length_b, int length_result){
      double*  tmp = new double[length_a+length_b];
-     for(int i = 0; i<length_a; i++){
-         tmp[i] = a[i];
-     }
-     for(int i = length_a; i<length_a+length_b; i++){
-         tmp[i]= b[i];
-     }
+     merge(a,b,tmp,length_a,length_b);
      renormalizationalgorithm(tmp,length_a+length_b,s,length_result);
 }
 
