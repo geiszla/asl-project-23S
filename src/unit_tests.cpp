@@ -12,10 +12,11 @@
 
 
 extern "C" {
-
-#include "mult2.c"
+#include "basefunctions.cpp"
 }
 
+// on windows compile with g++ unit_tests.cpp -lgtest -lgtest_main  -pthread -std=c++14 -o test.exe (or run "make test" to use makefile)
+// for that you need to download the googleTest library and boost/multiprecision library. On windows i downloaded mingw-w64-i686-gtest and mingw-w64-boost from MSYS2 packages
 
 using namespace std;
 
