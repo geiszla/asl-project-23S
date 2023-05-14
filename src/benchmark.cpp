@@ -54,7 +54,10 @@ unsigned int get_multiplication_flops(int expansion_length)
            pow(expansion_length, 2) +
            get_renormalization_flops(expansion_length + 1, expansion_length);
 }
-
+unsigned int get_multiplication2_flops(int expansion_length)
+{   // return Flp count from paper 2, Proposition 3.7
+    return 13/2*pow(expansion_length,2) +33/2*expansion_length + 6*(floor(expansion_length*53/45)+2)+55;
+}
 // Helpers
 
 double generate_random_double(double max)
@@ -71,6 +74,7 @@ void fill_vector(double x[], size_t size)
     for (size_t i = 0; i < size; i++)
     {
         x[i] = ldexp(generate_random_double(1), exponent);
+        exponent -= 53;
     }
 }
 
@@ -245,13 +249,35 @@ void benchmark_multiplication(ofstream &output_file)
 
         double *result = new double[input_size];
 
-        double runtime = measure_runtime(&multiplication, a, b, result);
+        double runtime = measure_runtime(&multiplication, a, b, result, input_size, input_size, input_size);
         double performance = get_multiplication_flops(input_size) / runtime;
 
         write_results("Multiplication", runtime, performance, input_size, i, output_file);
     }
 }
+void benchmark_multiplication2(ofstream &output_file)
+{
+    cout << endl
+         << "Multiplication2: " << endl;
 
+    for (size_t i = 0; i < 5; i++)
+    {
+        int input_size = pow(2, i);
+
+        double *a = new double[input_size];
+        fill_vector(a, input_size);
+
+        double *b = new double[input_size];
+        fill_vector(b, input_size);
+
+        double *result = new double[input_size];
+
+        double runtime = measure_runtime(&mult2, a, b, result, input_size, input_size, input_size);
+        double performance = get_multiplication2_flops(input_size) / runtime;
+
+        write_results("Multiplication2", runtime, performance, input_size, i, output_file);
+    }
+}
 // Main
 
 int main()
@@ -291,6 +317,8 @@ int main()
     benchmark_renormalization(output_file);
     benchmark_addition(output_file);
     benchmark_multiplication(output_file);
+
+    benchmark_multiplication2(output_file);
 
     output_file.close();
 }
