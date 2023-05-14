@@ -283,7 +283,7 @@ Constraint: n >=m
 
 double* mult2(double* x, double* y,double*pi, int n, int m, int r){
 	int const LBN = r*dbl_prec/binSize; // number of allocated bins 
-	double* B = (double *)malloc((LBN+2)*sizeof(double));
+	double B[LBN+2];
 	// get sum of first exponents
 	int e = exponent(x[0]) + exponent(y[0]);
 	
