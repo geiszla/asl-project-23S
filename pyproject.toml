@@ -1,10 +1,17 @@
 [tool.poetry]
 name = "asl-team13"
 version = "0.1.0"
-description = ""
-authors = ["Andras Geiszl <ageiszl@student.ethz.ch>"]
+description = "Team 13's Project for the Advanced Systems Lab course"
+authors = [
+  "Alec Pauli <paulia@student.ethz.ch>",
+  "Andras Geiszl <ageiszl@student.ethz.ch>",
+  "Tom Wartmann <tomw@ethz.ch>",
+  "Luca Pinter <pinterl@student.ethz.ch>",
+]
+license = "UNLICENSED"
 readme = "README.md"
-packages = [{include = "asl_project"}]
+repository = "https://gitlab.inf.ethz.ch/COURSE-ASL/asl23/team13"
+packages = [{ include = "asl_project" }]
 
 [tool.poetry.scripts]
 plot = "asl_project.plot:main"
