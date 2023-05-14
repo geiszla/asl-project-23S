@@ -44,8 +44,10 @@ void vecSum(double *x, double *e_res, int in_out_size){
         s[i] = s_tmp; e_res[i] = e_tmp;
     }
     e_res[0]=s[0];
-    return;
 
+    delete[] s;
+
+    return;
 }
 
 /**
@@ -55,9 +57,9 @@ Input: e vector size n (S-nonoverlapping), output vector size m
 Output: f vector size m
 
 **/
-double* vecSumErrBranch(double* e, int n, int m){
+double* vecSumErrBranch(double* e, int n, int m, double *f){
    double* err = new double[n];
-   double* f = new double[n];
+
    int j = 0;
    err[0] = e[0];
    for (int i = 0; i <= n-2; i++) {
@@ -74,6 +76,9 @@ double* vecSumErrBranch(double* e, int n, int m){
    if (err[n-1] != 0 && j < m) {
       f[j] = err[n-1];
    }
+
+   delete[] err;
+
    return f;
 }
 
@@ -87,17 +92,19 @@ Only correct if n>2!!
 
 Info: Probably faster to do it inplace in f then creating new g, but I tried to do it as similar as the algorithm.
 **/
-double* vecSumErr(double* f, int n){
+double* vecSumErr(double* f, int n, double* g){
 	int m = n-1;
 	double* err =  new double[n];
-	double* g =  new double[n];
+
 	err[0] = f[0];
 	
 	for (int i=0; i<= m-1; i++){
 		twoSum(err[i],f[i+1],&g[i],&err[i+1]);
 	}
 	g[m] = err[m];
-	
+
+    delete[] err;
+
 	return g;
 }
 
@@ -109,11 +116,13 @@ double* vecSumErr(double* f, int n){
 void renormalizationalgorithm(double x[],int size_of_x , double f[], int m){
     int length = size_of_x;
     double* e = new double[length];
+    double* temp = new double[length];
+    double* g = new double[m];
     
     vecSum(x,e,size_of_x);
-    double* f_tmp = vecSumErrBranch(e, length,m+1);
+    double* f_tmp = vecSumErrBranch(e, length,m+1, temp);
     for (int i =0; i<=m-2; i++){
-        double *arr = vecSumErr(&f_tmp[i],m);
+        double *arr = vecSumErr(&f_tmp[i],m, g);
         for (int b=0; b<m; b++){
              double tmp=arr[b];
              f_tmp[b+i] = tmp;
@@ -122,7 +131,10 @@ void renormalizationalgorithm(double x[],int size_of_x , double f[], int m){
        f[i] =t;
     }
      f[m-1]= f_tmp[m-1];
+
     delete[] e;
+    delete[] temp;
+    delete[] g;
 }
 
 // camapry merge only for testing
@@ -283,7 +295,7 @@ Constraint: n >=m
 
 double* mult2(double* x, double* y,double*pi, int n, int m, int r){
 	int const LBN = r*dbl_prec/binSize; // number of allocated bins 
-	double B[LBN+2];
+	double *B = new double[LBN+2];
 	// get sum of first exponents
 	int e = exponent(x[0]) + exponent(y[0]);
 	
