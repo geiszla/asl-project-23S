@@ -96,6 +96,21 @@ double *generate_maximally_overlapping_expansion(int term_count)
     return terms;
 }
 
+double *generate_ulp_nonoverlapping_expansion(int term_count)
+{
+    int exponent = 1023;
+    double mantissa = generate_random_double();
+
+    double *terms = new double[term_count];
+
+    for (int i = 0; i < term_count; i++)
+    {
+        terms[i] = ldexp(mantissa, exponent);
+        exponent-=53;
+    }
+
+    return terms;
+}
 void write_results(string algorithm_name, double runtime, double performance, int input_size,
                    ostream &output_file)
 {
@@ -281,10 +296,10 @@ void benchmark_multiplication2(ofstream &output_file)
     cout << endl
          << "Multiplication2: " << endl;
 
-    for (int term_count = 22; term_count < 1023; term_count += 50)
+    for (int term_count = 0; term_count < 50; term_count += 10)
     {
-        double *a = generate_maximally_overlapping_expansion(term_count);
-        double *b = generate_maximally_overlapping_expansion(term_count);
+        double *a = generate_ulp_nonoverlapping_expansion(term_count);
+        double *b = generate_ulp_nonoverlapping_expansion(term_count);
 
         double *result = new double[term_count];
 
@@ -327,18 +342,18 @@ int main()
     cout.setf(ios::fixed);
     cout.precision(3);
 
-    benchmark_two_sum();
+/*     benchmark_two_sum();
     benchmark_two_mult_FMA();
 
     benchmark_vec_sum(output_file);
     benchmark_vec_sum_err_branch(output_file);
-    benchmark_vec_sum_err(output_file);
+    benchmark_vec_sum_err(output_file); */
 
     // benchmark_renormalization(output_file);
     // benchmark_addition(output_file);
     // benchmark_multiplication(output_file);
 
-    // benchmark_multiplication2(output_file);
+    benchmark_multiplication2(output_file);
 
     output_file.close();
 }
