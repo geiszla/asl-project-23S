@@ -336,6 +336,28 @@ void benchmark_multiplication2_0(ofstream &output_file)
         write_results("Multiplication2_0", runtime, performance, term_count, output_file);
     }
 }
+void benchmark_multiplication2_1(ofstream &output_file)
+{
+    cout << endl
+         << "Multiplication2_1: " << endl;
+
+    for (int term_count = 1; term_count < 129; term_count *= 2)
+    {
+        double *a = generate_ulp_nonoverlapping_expansion(term_count);
+        double *b = generate_ulp_nonoverlapping_expansion(term_count);
+
+        double *result = new double[term_count];
+
+        double runtime = measure_runtime(&mult2_1, a, b, result, term_count, term_count, term_count);
+        double performance = get_multiplication2_flops(term_count) / runtime;
+
+        delete[] a;
+        delete[] b;
+        delete[] result;
+
+        write_results("Multiplication2_1", runtime, performance, term_count, output_file);
+    }
+}
 // Main
 
 int main()
@@ -353,7 +375,6 @@ int main()
     // Open output file
     ofstream output_file;
     output_file.open(string(OUTPUT_PATH) + "/benchmark.csv");
-
     if (!output_file.is_open())
     {
         cerr << "Error: cannot open output file: " << strerror(errno) << endl;
@@ -378,6 +399,6 @@ int main()
 
     benchmark_multiplication2(output_file);
     benchmark_multiplication2_0(output_file);
-
+    benchmark_multiplication2_1(output_file);
     output_file.close();
 }
