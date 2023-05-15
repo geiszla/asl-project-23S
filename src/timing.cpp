@@ -209,7 +209,7 @@ template <typename T_compute_return, class... T_compute_arguments>
 double measure_runtime(compute_function<T_compute_return, T_compute_arguments...> f,
                                  T_compute_arguments... arguments)
 {
-#ifdef rdtsc
+#ifdef __x86_64__
     return rdtsc(f, arguments...);
 #else
     return query_performance_counter(f, arguments...);
