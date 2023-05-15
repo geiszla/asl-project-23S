@@ -7,6 +7,7 @@
 #include <random>
 
 #include "basefunctions.cpp"
+#include "mult2_optimizations.cpp"
 #include "timing.cpp"
 
 // compile with g++ -std=c++17 ./benchmark.cpp
@@ -98,7 +99,7 @@ double *generate_maximally_overlapping_expansion(int term_count)
 
 double *generate_ulp_nonoverlapping_expansion(int term_count)
 {
-    int exponent = 1023;
+    int exponent = 500;
     double mantissa = generate_random_double();
 
     double *terms = new double[term_count];
@@ -296,7 +297,7 @@ void benchmark_multiplication2(ofstream &output_file)
     cout << endl
          << "Multiplication2: " << endl;
 
-    for (int term_count = 0; term_count < 50; term_count += 10)
+    for (int term_count = 1; term_count < 129; term_count *= 2)
     {
         double *a = generate_ulp_nonoverlapping_expansion(term_count);
         double *b = generate_ulp_nonoverlapping_expansion(term_count);
@@ -311,6 +312,28 @@ void benchmark_multiplication2(ofstream &output_file)
         delete[] result;
 
         write_results("Multiplication2", runtime, performance, term_count, output_file);
+    }
+}
+void benchmark_multiplication2_0(ofstream &output_file)
+{
+    cout << endl
+         << "Multiplication2_0: " << endl;
+
+    for (int term_count = 1; term_count < 129; term_count *= 2)
+    {
+        double *a = generate_ulp_nonoverlapping_expansion(term_count);
+        double *b = generate_ulp_nonoverlapping_expansion(term_count);
+
+        double *result = new double[term_count];
+
+        double runtime = measure_runtime(&mult2_0, a, b, result, term_count, term_count, term_count);
+        double performance = get_multiplication2_flops(term_count) / runtime;
+
+        delete[] a;
+        delete[] b;
+        delete[] result;
+
+        write_results("Multiplication2_0", runtime, performance, term_count, output_file);
     }
 }
 // Main
@@ -354,6 +377,7 @@ int main()
     // benchmark_multiplication(output_file);
 
     benchmark_multiplication2(output_file);
+    benchmark_multiplication2_0(output_file);
 
     output_file.close();
 }

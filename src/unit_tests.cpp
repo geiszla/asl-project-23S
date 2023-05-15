@@ -13,6 +13,7 @@
 
 extern "C" {
 #include "basefunctions.cpp"
+#include "mult2_optimizations.cpp"
 }
 
 // on windows compile with g++ unit_tests.cpp -lgtest -lgtest_main  -pthread -std=c++14 -o test.exe (or run "make test" to use makefile)
@@ -57,12 +58,12 @@ big_float get_error_tolerance(big_float x0, big_float y0, int N, int M, int R ){
 }
 big_float get_error_tolerance_certifiedMul(big_float r, int R ){
 	// error tolerance from function description of certifiedMul in "/lib/CAMPARY/Doubles/src_cpu/multiplication.h"
-	return pow(2,-(dbl_prec-1)*R)* (1+(r+1)*pow(2,-dbl_prec)); 
+	return pow(2,-(dbl_prec-1)*R)* (1+(fabs(r)+1)*pow(2,-dbl_prec)); 
 }
 
 big_float get_error_tolerance_truncatedMul(big_float r, int K, int L, int R ){
 	// error tolerance from function description of truncatedMul in "/lib/CAMPARY/Doubles/src_cpu/multiplication.h"
-	return pow(2,-(dbl_prec-1)*R)* (1+(r+1)*pow(2,-dbl_prec) + pow(2,-dbl_prec+2)*(K+L-R-2)); 
+	return pow(2,-(dbl_prec-1)*R)* (1+(fabs(r)+1)*pow(2,-dbl_prec) + pow(2,-dbl_prec+2)*(K+L-R-2)); 
 }
 
 
@@ -148,6 +149,27 @@ TEST(Multiplication, Mult2_error_tolerance_truncatedMul ) {
 	big_float sum_x = get_sum(x, K);
 	big_float sum_y = get_sum(y, L);
 	r = mult2(x, y, r, K, L, R);
+	
+
+	big_float err_tolerance =  get_error_tolerance_truncatedMul(get_sum(r, R),K,L,R);
+	big_float abs_error = fabs((sum_x * sum_y)-get_sum(r, R));
+	big_float rel_error = abs_error/get_sum(r, R);
+
+	EXPECT_LT(rel_error, err_tolerance);
+}
+TEST(Multiplication, Mult2_0 ) {
+	int K = 4;
+	int L = 4;
+	int R = 4;
+	double *x = create_ulp_non_overlaping_array(K);
+	double *y = create_ulp_non_overlaping_array(L);
+	double *r = (double*) malloc(sizeof(double) * R);
+	for (int i = 0; i < R; i++){
+		r[i] = 0.0;
+	}	
+	big_float sum_x = get_sum(x, K);
+	big_float sum_y = get_sum(y, L);
+	r = mult2_0(x, y, r, K, L, R);
 	
 
 	big_float err_tolerance =  get_error_tolerance_truncatedMul(get_sum(r, R),K,L,R);
