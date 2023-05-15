@@ -294,13 +294,13 @@ Constraint: n >=m
 **/
 
 double* mult2(double* x, double* y,double*pi, int n, int m, int r){
-	int const LBN = r*dbl_prec/binSize; // number of allocated bins 
-	double *B = new double[LBN+2];
+    
+	double B[r*dbl_prec/binSize+2];
 	// get sum of first exponents
 	int e = exponent(x[0]) + exponent(y[0]);
 	
 	// initialize each Bin with starting value
-	for (int i=0; i<LBN+2;i++){
+	for (int i=0; i<r*dbl_prec/binSize+2;i++){
 		B[i] = ldexp(1.5,e-(i+1)*binSize+dbl_prec-1); // 1.5*2^(e-(i+1)b+p-1)
 	}
 	int j,l,sh;
@@ -323,14 +323,12 @@ double* mult2(double* x, double* y,double*pi, int n, int m, int r){
 			accumulate(p,0.,B,sh,l);
 		}
 	}
-	for (int i=0;  i<LBN+2;i++){
+	for (int i=0;  i<r*dbl_prec/binSize+2;i++){
 		B[i] = B[i]-ldexp(1.5,e-(i+1)*binSize+dbl_prec-1); // B_i - 1.5*2^(e-(i+1)b+p-1)
 	}
 
 	
-	//renorm_rand2L(B, pi, LBN+2,r);
-	//fast_VecSumErrBranch(B,pi,LBN+2,r);
-	renormalize(B,pi,LBN+2,r);
+	renormalize(B,pi,r*dbl_prec/binSize+2,r);
 	return pi;
 }
 
