@@ -1,15 +1,10 @@
 #include <assert.h>
-#include <stdio.h>
 #include <math.h>
-#include "time.h"
+#include <stdio.h>
+#include <stdlib.h>
 
-#include <stdlib.h>
-#include "basefunctions.cpp"
-#include <assert.h>
-#include <stdio.h>
-#include <math.h>
+#include "basefunctions.h"
 #include "time.h"
-#include <stdlib.h>
 
 const double onedifference = pow(10,-16);
 const double allonesindouble = 4.503599627370496 ;
@@ -104,7 +99,7 @@ static inline void renorm_rand2L(int sX, int sR, double x[]){
 
 static inline void certifiedAdd(const double *x, const double *y, double *r,int K,int L,int R){
 
-    double f[K+L];
+    double *f = new double[K+L];
     merge( x, y, f ,K,L);
     renorm_rand2L( K+L,R,f );
   
@@ -123,7 +118,7 @@ double randfrom(double min, double max)
 }
 
 
-void testtwosum(){
+void testtwosum(void (*implementation)(double, double, double *, double *) = twoSum){
 		// test case modified as fast two sum gives sometimes results 
 	for(double b = 1; b<100; b+=0.01){
 		double a = randfrom(-onedifference*onedifference,+onedifference*onedifference );
@@ -131,7 +126,7 @@ void testtwosum(){
 
 		double err_ours,err_ref; double res;
 		
-		twoSum(a,b,&res,&err_ours);
+		implementation(a,b,&res,&err_ours);
 		two_sum(a,b,err_ref);
 		assert(err_ref==err_ours|| b ==0);
 			
@@ -139,19 +134,19 @@ void testtwosum(){
 
 }
 
-void testfastfma(){
+void testfastfma(void (*implementation)(double, double, double *, double *) = twoMultFMA){
 	// 2MultFMA
 	for(double c = 1; c<100; c+=0.01){
 		double a =  randfrom(-onedifference,+onedifference );
 		double b =  randfrom(-onedifference,+onedifference);
 		double res, err,error_ref;
-		twoMultFMA(a,b,&res,&err);
+		implementation(a,b,&res,&err);
 		two_prod(a,b,error_ref);
 		assert(error_ref==err||  b ==0);
 	}
 }
 
-void testrenormalization(){
+void testrenormalization(void (*implementation)(double *, int, double *, int) = renormalizationalgorithm){
 	// Test size 1 
 	for(int c = 2; c<100; c+=5){
 		double* renorm =  new double[c];
@@ -161,7 +156,7 @@ void testrenormalization(){
 			renorm[i] = allonesindouble;
 
 		}
-		renormalizationalgorithm(renorm,c,solution,1);
+		implementation(renorm,c,solution,1);
     renorm_rand2L(c,1,renorm);
     for(int n = 0; n<1; n++){
       double rt = renorm[n]; double st = solution[n];
@@ -213,7 +208,7 @@ void testrenormalization(){
 }
 
 
-void testaddition(){
+void testaddition(void (*implementation)(double *, double *, double *, int, int, int) = addition){
   // assumption that the numbers are still non p-2 overlapping simmilar to the renormalization 
   // as addition is calling it and therefore it is kind of a natural implicit constraint
   for(int c = 2; c<20; c+=1){
@@ -234,7 +229,7 @@ void testaddition(){
         
       }
     }
-		addition(a,b,sol,c,c,c);
+		implementation(a,b,sol,c,c,c);
    
     for(int i =0; i<c; i++){
       double ref = sol_ref[i]; double sol_our = sol[i];
@@ -246,23 +241,4 @@ void testaddition(){
 
    
 
-}
-
-
-
-
-int main()    
-{  
-  // testing framework 
-  // two sum 
-
-	testtwosum();
-	testfastfma();
-	testrenormalization();
-  testaddition(); 
-
-	
-
-
-	printf("successfully runned all test cases");
 }

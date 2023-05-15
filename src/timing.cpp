@@ -1,16 +1,16 @@
+#ifdef _WIN32
+#include <windows.h> // Include if under windows
+#endif
+
 #include <list>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <chrono>
 
-#include "main.h"
-
 #ifndef WIN32
 #include <sys/time.h>
 #endif
-
-#include "main.h"
 
 #ifdef __x86_64__
 #include "tsc_x86.h"
@@ -28,8 +28,8 @@ using namespace std;
  */
 #ifdef __x86_64__
 
-template <typename T_compute_function, class... T_compute_arguments>
-double rdtsc(T_compute_function f, T_compute_arguments... arguments)
+template <typename T_Function, class... T_compute_arguments>
+double rdtsc(T_Function f, T_compute_arguments... arguments)
 {
     double cycles = 0.;
     long num_runs = 100;
@@ -89,8 +89,8 @@ double rdtsc(T_compute_function f, T_compute_arguments... arguments)
 
 #define ctime_t std::chrono::high_resolution_clock::time_point
 
-template <typename T_compute_function, class... T_compute_arguments>
-double query_performance_counter(T_compute_function f, T_compute_arguments... arguments)
+template <typename T_Function, class... T_compute_arguments>
+double high_resolution_clock(T_Function f, T_compute_arguments... arguments)
 {
     uint64_t frequency = 3.5e9;
 
@@ -147,8 +147,8 @@ double query_performance_counter(T_compute_function f, T_compute_arguments... ar
 
 #else
 
-template <typename T_compute_function, class... T_compute_arguments>
-double query_performance_counter(T_compute_function f, T_compute_arguments... arguments)
+template <typename T_Function, class... T_compute_arguments>
+double query_performance_counter(T_Function f, T_compute_arguments... arguments)
 {
     LARGE_INTEGER frequency;
     QueryPerformanceFrequency(&frequency);
@@ -206,11 +206,13 @@ double query_performance_counter(T_compute_function f, T_compute_arguments... ar
 #endif
 
 template <typename T_compute_return, class... T_compute_arguments>
-double measure_runtime(compute_function<T_compute_return, T_compute_arguments...> f,
-                                 T_compute_arguments... arguments)
+double measure_runtime(T_compute_return (*f)(T_compute_arguments...),
+                       T_compute_arguments... arguments)
 {
 #ifdef __x86_64__
     return rdtsc(f, arguments...);
+#elif defined __MACH__
+    return high_resolution_clock(f, arguments...);
 #else
     return query_performance_counter(f, arguments...);
 #endif

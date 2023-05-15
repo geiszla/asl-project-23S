@@ -12,11 +12,12 @@ void renormalize(double *x,double* r, int n, int k);
 /*
 Optimization 0: Precompute 
 */
-double* mult2_0(double* x, double* y,double*pi, int n, int m, int r){
+void mult2_0(double* x, double* y,double*pi, int n, int m, int r){
     int bins = r*dbl_prec/binSize+2;
-	double B[bins];
+		double *B = new double[bins];
     // get exponents
-    int exp_x[n], exp_y[m];
+    int *exp_x = new int[n];
+		int *exp_y = new int[m];
     for(int i=0;i<n;i++){
         exp_x[i] = exponent(x[i]);
     }
@@ -27,7 +28,7 @@ double* mult2_0(double* x, double* y,double*pi, int n, int m, int r){
 	int e = exp_x[0] + exp_x[0];
 	
 
-    double B_start[bins];
+    double *B_start = new double[bins];
 	// initialize each Bin with starting value
     B_start[0] = ldexp(1.5,e+dbl_prec-1-binSize); // since 1.5*2^(e-(i+1)b+p-1) == 1.5*2^(e-b+p-1)*2^(-b*i)
     B[0] = B_start[0];
@@ -63,19 +64,19 @@ double* mult2_0(double* x, double* y,double*pi, int n, int m, int r){
 
 	
 	renormalize(B,pi,bins,r);
-	return pi;
 }
 /*
 Optimization 0: Precompute 
 Optimization 1: replace complex with simpler functions: fmin(a,b) -> a<b?a:b, floor -> (int),a/b -> a*b^-1
 
 */
-double* mult2_1(double* x, double* y,double*pi, int n, int m, int r){
+void mult2_1(double* x, double* y,double*pi, int n, int m, int r){
     int bins = r*dbl_prec/binSize+2;
     int b_inv = 1/binSize;
-	double B[bins];
+	double *B = new double[bins];
     // get exponents
-    int exp_x[n], exp_y[m];
+    int *exp_x = new int[n];
+		int *exp_y = new int[m];
     for(int i=0;i<n;i++){
         exp_x[i] = exponent(x[i]);
     }
@@ -86,7 +87,7 @@ double* mult2_1(double* x, double* y,double*pi, int n, int m, int r){
 	int e = exp_x[0] + exp_x[0];
 	
 
-    double B_start[bins];
+    double *B_start = new double[bins];
 	// initialize each Bin with starting value
     B_start[0] = ldexp(1.5,e+dbl_prec-1-binSize); // since 1.5*2^(e-(i+1)b+p-1) == 1.5*2^(e-b+p-1)*2^(-b*i)
     B[0] = B_start[0];
@@ -123,5 +124,4 @@ double* mult2_1(double* x, double* y,double*pi, int n, int m, int r){
 
 	
 	renormalize(B,pi,bins,r);
-	return pi;
 }

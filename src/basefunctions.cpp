@@ -57,7 +57,7 @@ Input: e vector size n (S-nonoverlapping), output vector size m
 Output: f vector size m
 
 **/
-double* vecSumErrBranch(double* e, int n, int m, double *f){
+void vecSumErrBranch(double* e, int n, int m, double *f){
    double* err = new double[n];
 
    int j = 0;
@@ -66,7 +66,7 @@ double* vecSumErrBranch(double* e, int n, int m, double *f){
       twoSum(err[i], e[i+1], &f[j], &err[i+1]);
       if (err[i+1] != 0) {
          if (j >= m - 1){ // enough output terms
-            return f;
+            return;
          }
          j++;
       } else {
@@ -78,8 +78,6 @@ double* vecSumErrBranch(double* e, int n, int m, double *f){
    }
 
    delete[] err;
-
-   return f;
 }
 
 /**
@@ -92,7 +90,7 @@ Only correct if n>2!!
 
 Info: Probably faster to do it inplace in f then creating new g, but I tried to do it as similar as the algorithm.
 **/
-double* vecSumErr(double* f, int n, double* g){
+void vecSumErr(double* f, int n, double* g){
 	int m = n-1;
 	double* err =  new double[n];
 
@@ -104,8 +102,6 @@ double* vecSumErr(double* f, int n, double* g){
 	g[m] = err[m];
 
     delete[] err;
-
-	return g;
 }
 
 
@@ -120,17 +116,17 @@ void renormalizationalgorithm(double x[],int size_of_x , double f[], int m){
     double* g = new double[m];
     
     vecSum(x,e,size_of_x);
-    double* f_tmp = vecSumErrBranch(e, length,m+1, temp);
+    vecSumErrBranch(e, length,m+1, temp);
     for (int i =0; i<=m-2; i++){
-        double *arr = vecSumErr(&f_tmp[i],m, g);
+        vecSumErr(&temp[i],m, g);
         for (int b=0; b<m; b++){
-             double tmp=arr[b];
-             f_tmp[b+i] = tmp;
+             double tmp=g[b];
+             temp[b+i] = tmp;
             }
-       double t= f_tmp[i];
+       double t= temp[i];
        f[i] =t;
     }
-     f[m-1]= f_tmp[m-1];
+     f[m-1]= temp[m-1];
 
     delete[] e;
     delete[] temp;
@@ -293,9 +289,9 @@ Output: pi vector size r (ulp-nonoverlapping) = x*y
 Constraint: n >=m
 **/
 
-double* mult2(double* x, double* y,double*pi, int n, int m, int r){
+void mult2(double* x, double* y, double*pi, int n, int m, int r){
     
-	double B[r*dbl_prec/binSize+2];
+	double *B = new double[r*dbl_prec/binSize+2];
 	// get sum of first exponents
 	int e = exponent(x[0]) + exponent(y[0]);
 	
@@ -329,7 +325,6 @@ double* mult2(double* x, double* y,double*pi, int n, int m, int r){
 
 	
 	renormalize(B,pi,r*dbl_prec/binSize+2,r);
-	return pi;
 }
 
 

@@ -1,18 +1,14 @@
-#define NOMINMAX
-
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <limits>
-#include <random>
 
-#include "basefunctions.cpp"
-#include "mult2_optimizations.cpp"
-#include "timing.cpp"
+#include "measure.cpp"
 
-// compile with g++ -std=c++17 ./benchmark.cpp
-// TODO: make sure input is non-overlapping, calculate median of measurements,
-//       clean up `pyproject.toml` (authors, repo link, license. etc.)
+// Compile with `g++ -std=c++17 ./benchmark.cpp` (plus additional optimization flags)
+// TODO: make sure input is non-S-overlapping, check validity of d-non-overlapping expansion
+//       calculate median of measurements, remove comment about validity of non-overlap
+//       take out memory allocation from measured functions,
+//       change `basefunctions.cpp` to `.c`
 
 #define OUTPUT_PATH "../results"
 
@@ -67,51 +63,6 @@ unsigned int get_multiplication2_flops(int expansion_length)
 
 // Helpers
 
-double generate_random_double()
-{
-    random_device random_device;
-    mt19937 generator(random_device());
-
-    double double_minimum = numeric_limits<double>::min();
-    double double_maximum = numeric_limits<double>::max();
-
-    default_random_engine random_engine;
-    uniform_real_distribution<double> distribution(0., 1.);
-
-    return distribution(generator);
-}
-
-// `term_count` needs to be at most 1022
-double *generate_maximally_overlapping_expansion(int term_count)
-{
-    int exponent = 1023;
-    double mantissa = generate_random_double();
-
-    double *terms = new double[term_count];
-
-    for (int i = 0; i < term_count; i++)
-    {
-        terms[i] = ldexp(mantissa, exponent - 2 * i);
-    }
-
-    return terms;
-}
-
-double *generate_ulp_nonoverlapping_expansion(int term_count)
-{
-    int exponent = 500;
-    double mantissa = generate_random_double();
-
-    double *terms = new double[term_count];
-
-    for (int i = 0; i < term_count; i++)
-    {
-        terms[i] = ldexp(mantissa, exponent);
-        exponent-=53;
-    }
-
-    return terms;
-}
 void write_results(string algorithm_name, double runtime, double performance, int input_size,
                    ostream &output_file)
 {
@@ -127,16 +78,7 @@ void write_results(string algorithm_name, double runtime, double performance, in
 
 void benchmark_two_sum()
 {
-    double a = generate_random_double();
-    double b = generate_random_double();
-
-    double *result = new double;
-    double *error = new double;
-
-    double runtime = measure_runtime(&twoSum, a, b, result, error);
-
-    delete result;
-    delete error;
+    double runtime = measure_two_sum();
 
     cout << "2Sum\t\truntime: " << runtime << " cycles, performance: "
          << (TWO_SUM_FLOPS / runtime) << " flops/cycles" << endl;
@@ -144,16 +86,7 @@ void benchmark_two_sum()
 
 void benchmark_two_mult_FMA()
 {
-    double a = generate_random_double();
-    double b = generate_random_double();
-
-    double *result = new double;
-    double *error = new double;
-
-    double runtime = measure_runtime(&twoMultFMA, a, b, result, error);
-
-    delete result;
-    delete error;
+    double runtime = measure_two_mult_FMA();
 
     cout << "2MultFMA\truntime: " << runtime << " cycles, performance: "
          << (TWO_MULT_FMA_FLOPS / runtime) << " flops/cycles" << endl;
@@ -166,14 +99,8 @@ void benchmark_vec_sum(ofstream &output_file)
 
     for (int term_count = 22; term_count < 1023; term_count += 50)
     {
-        double *expansion = generate_maximally_overlapping_expansion(term_count);
-        double *result = new double[term_count];
-
-        double runtime = measure_runtime(&vecSum, expansion, result, term_count);
+        double runtime = measure_vec_sum(vecSum, term_count);
         double performance = get_vec_sum_flops(term_count) / runtime;
-
-        delete[] expansion;
-        delete[] result;
 
         write_results("VecSum", runtime, performance, term_count, output_file);
     }
@@ -186,16 +113,8 @@ void benchmark_vec_sum_err_branch(ofstream &output_file)
 
     for (int term_count = 22; term_count < 1023; term_count += 50)
     {
-        double *expansion = generate_maximally_overlapping_expansion(term_count);
-        double *result = new double[term_count];
-
-        double runtime = measure_runtime(&vecSumErrBranch, expansion, term_count, term_count,
-                                         result);
-
+        double runtime = measure_vec_sum_err_branch(vecSumErrBranch, term_count);
         double performance = get_vec_sum_err_branch_flops(term_count) / runtime;
-
-        delete[] expansion;
-        delete[] result;
 
         write_results("VecSumErrBranch", runtime, performance, term_count, output_file);
     }
@@ -208,14 +127,8 @@ void benchmark_vec_sum_err(ofstream &output_file)
 
     for (int term_count = 22; term_count < 1023; term_count += 50)
     {
-        double *expansion = generate_maximally_overlapping_expansion(term_count);
-        double *result = new double[term_count];
-
-        double runtime = measure_runtime(&vecSumErr, expansion, term_count, result);
+        double runtime = measure_vec_sum_err(vecSumErr, term_count);
         double performance = get_vec_sum_err_flops(term_count) / runtime;
-
-        delete[] expansion;
-        delete[] result;
 
         write_results("VecSumErr", runtime, performance, term_count, output_file);
     }
@@ -228,15 +141,8 @@ void benchmark_renormalization(ofstream &output_file)
 
     for (int term_count = 22; term_count < 1023; term_count += 50)
     {
-        double *expansion = generate_maximally_overlapping_expansion(term_count);
-        double *result = generate_maximally_overlapping_expansion(term_count);
-
-        double runtime = measure_runtime(
-            &renormalizationalgorithm, expansion, term_count, result, term_count);
+        double runtime = measure_renormalization(renormalizationalgorithm, term_count);
         double performance = get_renormalization_flops(term_count, term_count) / runtime;
-
-        delete[] expansion;
-        delete[] result;
 
         write_results("Renormalization", runtime, performance, term_count, output_file);
     }
@@ -249,19 +155,8 @@ void benchmark_addition(ofstream &output_file)
 
     for (int term_count = 22; term_count < 1023; term_count += 50)
     {
-        double *a = generate_maximally_overlapping_expansion(term_count);
-        double *b = generate_maximally_overlapping_expansion(term_count);
-
-        double *result = new double[term_count];
-
-        double runtime = measure_runtime(&addition, a, b, result, term_count, term_count,
-                                         term_count);
-
+        double runtime = measure_addition(addition, term_count);
         double performance = get_addition_flops(term_count, term_count, term_count) / runtime;
-
-        delete[] a;
-        delete[] b;
-        delete[] result;
 
         write_results("Addition", runtime, performance, term_count, output_file);
     }
@@ -274,19 +169,8 @@ void benchmark_multiplication(ofstream &output_file)
 
     for (int term_count = 22; term_count < 1023; term_count += 50)
     {
-        double *a = generate_maximally_overlapping_expansion(term_count);
-        double *b = generate_maximally_overlapping_expansion(term_count);
-
-        double *result = new double[term_count];
-
-        double runtime = measure_runtime(&multiplication, a, b, result, term_count, term_count,
-                                         term_count);
-
+        double runtime = measure_multiplication(multiplication, term_count);
         double performance = get_multiplication_flops(term_count) / runtime;
-
-        delete[] a;
-        delete[] b;
-        delete[] result;
 
         write_results("Multiplication", runtime, performance, term_count, output_file);
     }
@@ -299,21 +183,13 @@ void benchmark_multiplication2(ofstream &output_file)
 
     for (int term_count = 1; term_count < 129; term_count *= 2)
     {
-        double *a = generate_ulp_nonoverlapping_expansion(term_count);
-        double *b = generate_ulp_nonoverlapping_expansion(term_count);
-
-        double *result = new double[term_count];
-
-        double runtime = measure_runtime(&mult2, a, b, result, term_count, term_count, term_count);
+        double runtime = measure_multiplication2(mult2, term_count);
         double performance = get_multiplication2_flops(term_count) / runtime;
-
-        delete[] a;
-        delete[] b;
-        delete[] result;
 
         write_results("Multiplication2", runtime, performance, term_count, output_file);
     }
 }
+
 void benchmark_multiplication2_0(ofstream &output_file)
 {
     cout << endl
@@ -321,21 +197,13 @@ void benchmark_multiplication2_0(ofstream &output_file)
 
     for (int term_count = 1; term_count < 129; term_count *= 2)
     {
-        double *a = generate_ulp_nonoverlapping_expansion(term_count);
-        double *b = generate_ulp_nonoverlapping_expansion(term_count);
-
-        double *result = new double[term_count];
-
-        double runtime = measure_runtime(&mult2_0, a, b, result, term_count, term_count, term_count);
+        double runtime = measure_multiplication2(mult2_0, term_count);
         double performance = get_multiplication2_flops(term_count) / runtime;
-
-        delete[] a;
-        delete[] b;
-        delete[] result;
 
         write_results("Multiplication2_0", runtime, performance, term_count, output_file);
     }
 }
+
 void benchmark_multiplication2_1(ofstream &output_file)
 {
     cout << endl
@@ -343,17 +211,8 @@ void benchmark_multiplication2_1(ofstream &output_file)
 
     for (int term_count = 1; term_count < 129; term_count *= 2)
     {
-        double *a = generate_ulp_nonoverlapping_expansion(term_count);
-        double *b = generate_ulp_nonoverlapping_expansion(term_count);
-
-        double *result = new double[term_count];
-
-        double runtime = measure_runtime(&mult2_1, a, b, result, term_count, term_count, term_count);
+        double runtime = measure_multiplication2(mult2_1, term_count);
         double performance = get_multiplication2_flops(term_count) / runtime;
-
-        delete[] a;
-        delete[] b;
-        delete[] result;
 
         write_results("Multiplication2_1", runtime, performance, term_count, output_file);
     }
@@ -386,19 +245,20 @@ int main()
     cout.setf(ios::fixed);
     cout.precision(3);
 
-/*     benchmark_two_sum();
+    benchmark_two_sum();
     benchmark_two_mult_FMA();
 
     benchmark_vec_sum(output_file);
     benchmark_vec_sum_err_branch(output_file);
-    benchmark_vec_sum_err(output_file); */
+    benchmark_vec_sum_err(output_file);
 
     // benchmark_renormalization(output_file);
     // benchmark_addition(output_file);
     // benchmark_multiplication(output_file);
 
-    benchmark_multiplication2(output_file);
-    benchmark_multiplication2_0(output_file);
-    benchmark_multiplication2_1(output_file);
+    // benchmark_multiplication2(output_file);
+    // benchmark_multiplication2_0(output_file);
+    // benchmark_multiplication2_1(output_file);
+
     output_file.close();
 }
