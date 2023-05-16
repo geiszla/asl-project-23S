@@ -17,12 +17,12 @@ enum Algorithm
     multiplication2_algorithm
 };
 
-template <typename T_compute_function>
-map<Algorithm, T_compute_function> tests{
-    {two_sum_algorithm, (T_compute_function)testtwosum},
-    {two_mult_FMA_algorithm, (T_compute_function)testfastfma},
-    {renormalization_algorithm, (T_compute_function)testrenormalization},
-    {addition_algorithm, (T_compute_function)testaddition}};
+template <typename T_test_function>
+map<Algorithm, T_test_function> tests{
+    {two_sum_algorithm, (T_test_function)testtwosum},
+    {two_mult_FMA_algorithm, (T_test_function)testfastfma},
+    {renormalization_algorithm, (T_test_function)testrenormalization},
+    {addition_algorithm, (T_test_function)testaddition}};
 
 template <typename T_measure_function>
 map<Algorithm, T_measure_function> measurement_functions{
@@ -39,8 +39,8 @@ map<Algorithm, T_measure_function> measurement_functions{
 /**
  * Evaluates an implementation of an algorithm
  *
- * @param implementation The function implementation to evaluate
- * @param name Name of the implementation (only used for display in command line)
+ * @param implementation The implementated function to evaluate
+ * @param name Name of the implementation (only used to display in command line)
  * @param algorithm The algorithm from `Algorithm` enum that is being implemented
  * @param naive_runtime If passed, the speedup of the implementation compared to this
  * will be calculated

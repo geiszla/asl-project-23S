@@ -21,6 +21,7 @@ def main():
         input_size = optimization_data["Input size"]
         performance = optimization_data["Performance"]
 
+        pyplot.xscale('log')
         pyplot.plot(
             input_size,
             performance,

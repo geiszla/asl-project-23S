@@ -8,11 +8,6 @@
 #include "mult2_optimizations.c"
 #include "timing.cpp"
 
-// compile with g++ -std=c++17 ./benchmark.cpp
-// TODO: make sure input is non-S-overlapping, check validity of d-non-overlapping expansion
-//       calculate median of measurements, remove comment about validity of non-overlap
-//       take out memory allocation from measured functions
-
 #define DEFAULT_TERM_COUNT 256
 
 double generate_random_double()
@@ -24,24 +19,46 @@ double generate_random_double()
     double double_maximum = numeric_limits<double>::max();
 
     default_random_engine random_engine;
-    uniform_real_distribution<double> distribution(0., 1.);
+    uniform_real_distribution<double> double_distribution(1., 2.);
 
-    return distribution(generator);
+    return double_distribution(generator);
 }
 
-// `term_count` needs to be at most 1022
-// Note: this function does not necessarily generate a valid d-digit-non-overlapping representation
-// (inequality (4) in the definition is not always met), it's only used for benchmarking
-double *generate_maximally_overlapping_expansion(int term_count)
+double generate_random_mantissa(int ending_zeros_count)
+{
+    random_device random_device;
+    mt19937 generator(random_device());
+    uniform_int_distribution<mt19937::result_type> boolean_distribution(0, 1);
+
+    double mantissa = 1;
+
+    for (int i = 1; i < 53 - ending_zeros_count; i++)
+    {
+        mantissa += boolean_distribution(generator) * pow(2, -i);
+    }
+
+    return mantissa;
+}
+
+/**
+ * Generates an expansion that is at most d-overlapping and also S-nonoverlapping
+ * @param term_count The number of terms to generate. Needs to be at most 998
+ */
+double *generate_d_nonoverlapping_expansion(int term_count)
 {
     int exponent = 1023;
-    double mantissa = generate_random_double();
 
     double *terms = new double[term_count];
 
-    for (int i = 0; i < term_count; i++)
+    // For this to be S-nonoverlapping, there needs to be at least 2 zeros at the
+    // end of the first term
+    terms[0] = ldexp(generate_random_mantissa(2), exponent);
+
+    for (int i = 1; i < term_count; i++)
     {
-        terms[i] = ldexp(mantissa, exponent - 2 * i);
+        // For this to be at most d-overlapping, exponent needs to decrease by at least 2
+        // term-by-term and there needs to be at least 49 zeros at the end of each term
+        terms[i] = ldexp(generate_random_mantissa(49), exponent - 51 - 2 * (i - 1));
     }
 
     return terms;
@@ -116,7 +133,7 @@ double measure_vec_sum(
     void (*implementation)(double *, double *, int) = vecSum,
     int term_count = DEFAULT_TERM_COUNT)
 {
-    double *expansion = generate_maximally_overlapping_expansion(term_count);
+    double *expansion = generate_d_nonoverlapping_expansion(term_count);
     double *result = new double[term_count];
 
     double runtime = measure_runtime(implementation, expansion, result, term_count);
@@ -131,7 +148,7 @@ double measure_vec_sum_err_branch(
     void (*implementation)(double *, int, int, double *) = vecSumErrBranch,
     int term_count = DEFAULT_TERM_COUNT)
 {
-    double *expansion = generate_maximally_overlapping_expansion(term_count);
+    double *expansion = generate_d_nonoverlapping_expansion(term_count);
     double *result = new double[term_count];
 
     double runtime = measure_runtime(implementation, expansion, term_count, term_count,
@@ -147,7 +164,7 @@ double measure_vec_sum_err(
     void (*implementation)(double *, int, double *) = vecSumErr,
     int term_count = DEFAULT_TERM_COUNT)
 {
-    double *expansion = generate_maximally_overlapping_expansion(term_count);
+    double *expansion = generate_d_nonoverlapping_expansion(term_count);
     double *result = new double[term_count];
 
     double runtime = measure_runtime(implementation, expansion, term_count, result);
@@ -162,8 +179,8 @@ double measure_renormalization(
     void (*implementation)(double *, int, double *, int) = renormalizationalgorithm,
     int term_count = DEFAULT_TERM_COUNT)
 {
-    double *expansion = generate_maximally_overlapping_expansion(term_count);
-    double *result = generate_maximally_overlapping_expansion(term_count);
+    double *expansion = generate_d_nonoverlapping_expansion(term_count);
+    double *result = generate_d_nonoverlapping_expansion(term_count);
 
     double runtime = measure_runtime(implementation, expansion, term_count, result, term_count);
 
@@ -177,8 +194,8 @@ double measure_addition(
     void (*implementation)(double *, double *, double *, int, int, int) = addition,
     int term_count = DEFAULT_TERM_COUNT)
 {
-    double *a = generate_maximally_overlapping_expansion(term_count);
-    double *b = generate_maximally_overlapping_expansion(term_count);
+    double *a = generate_d_nonoverlapping_expansion(term_count);
+    double *b = generate_d_nonoverlapping_expansion(term_count);
 
     double *result = new double[term_count];
 
@@ -196,8 +213,8 @@ double measure_multiplication(
     void (*implementation)(double *, double *, double *, int, int, int) = multiplication,
     int term_count = DEFAULT_TERM_COUNT)
 {
-    double *a = generate_maximally_overlapping_expansion(term_count);
-    double *b = generate_maximally_overlapping_expansion(term_count);
+    double *a = generate_d_nonoverlapping_expansion(term_count);
+    double *b = generate_d_nonoverlapping_expansion(term_count);
 
     double *result = new double[term_count];
 

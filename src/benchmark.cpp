@@ -5,10 +5,7 @@
 #include "measure.cpp"
 
 // Compile with `g++ -std=c++17 ./benchmark.cpp` (plus additional optimization flags)
-// TODO: make sure input is non-S-overlapping, check validity of d-non-overlapping expansion
-//       calculate median of measurements, remove comment about validity of non-overlap
-//       take out memory allocation from measured functions,
-//       change `basefunctions.cpp` to `.c`
+// TODO: calculate median of measurements, generalize benchmark logic
 
 #define OUTPUT_PATH "../results"
 
@@ -97,7 +94,7 @@ void benchmark_vec_sum(ofstream &output_file)
     cout << endl
          << "VecSum: " << endl;
 
-    for (int term_count = 22; term_count < 1023; term_count += 50)
+    for (int term_count = 3; term_count < 999; (int)(term_count *= 1.5))
     {
         double runtime = measure_vec_sum(vecSum, term_count);
         double performance = get_vec_sum_flops(term_count) / runtime;
@@ -111,7 +108,7 @@ void benchmark_vec_sum_err_branch(ofstream &output_file)
     cout << endl
          << "VecSumErrBranch: " << endl;
 
-    for (int term_count = 22; term_count < 1023; term_count += 50)
+    for (int term_count = 3; term_count < 999; (int)(term_count *= 1.4))
     {
         double runtime = measure_vec_sum_err_branch(vecSumErrBranch, term_count);
         double performance = get_vec_sum_err_branch_flops(term_count) / runtime;
@@ -125,7 +122,7 @@ void benchmark_vec_sum_err(ofstream &output_file)
     cout << endl
          << "VecSumErr: " << endl;
 
-    for (int term_count = 22; term_count < 1023; term_count += 50)
+    for (int term_count = 3; term_count < 999; (int)(term_count *= 1.4))
     {
         double runtime = measure_vec_sum_err(vecSumErr, term_count);
         double performance = get_vec_sum_err_flops(term_count) / runtime;
@@ -139,7 +136,7 @@ void benchmark_renormalization(ofstream &output_file)
     cout << endl
          << "Renormalization: " << endl;
 
-    for (int term_count = 22; term_count < 1023; term_count += 50)
+    for (int term_count = 3; term_count < 999; (int)(term_count *= 1.4))
     {
         double runtime = measure_renormalization(renormalizationalgorithm, term_count);
         double performance = get_renormalization_flops(term_count, term_count) / runtime;
@@ -153,7 +150,7 @@ void benchmark_addition(ofstream &output_file)
     cout << endl
          << "Addition: " << endl;
 
-    for (int term_count = 22; term_count < 1023; term_count += 50)
+    for (int term_count = 3; term_count < 999; (int)(term_count *= 1.4))
     {
         double runtime = measure_addition(addition, term_count);
         double performance = get_addition_flops(term_count, term_count, term_count) / runtime;
@@ -167,7 +164,7 @@ void benchmark_multiplication(ofstream &output_file)
     cout << endl
          << "Multiplication: " << endl;
 
-    for (int term_count = 22; term_count < 1023; term_count += 50)
+    for (int term_count = 3; term_count < 999; (int)(term_count *= 1.4))
     {
         double runtime = measure_multiplication(multiplication, term_count);
         double performance = get_multiplication_flops(term_count) / runtime;
