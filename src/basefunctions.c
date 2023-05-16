@@ -7,7 +7,6 @@
 #define dbl_prec 53
 #define binSize 45
 
-
 const double trennung = 0.000000000000000001;// 10^-18
 // compile with g++ -std=c++11 ./main.cpp
 // error free transforms 
@@ -36,7 +35,7 @@ void twoMultFMA(const double a,const double b,double *pi_res, double *e_res){
 // call it with the array x and a array of the same size 
 void vecSum(double *x, double *e_res, int in_out_size){
     int length = in_out_size;
-    double* s = (double *)alloca(length*sizeof(double));
+    double* s = (double *)_alloca(length*sizeof(double));
     s[length-1] = x[length-1];
     for(int i = length-2; i>=0; i--){
         double s_tmp,e_tmp; 
@@ -57,7 +56,7 @@ Output: f vector size m
 
 **/
 void vecSumErrBranch(double* e, int n, int m, double *f){
-   double* err = (double *)alloca(n*sizeof(double));
+   double* err = (double *)_alloca(n*sizeof(double));
 
    int j = 0;
    err[0] = e[0];
@@ -91,7 +90,7 @@ Info: Probably faster to do it inplace in f then creating new g, but I tried to 
 **/
 void vecSumErr(double* f, int n, double* g){
 	int m = n-1;
-	double* err = (double *)alloca(n*sizeof(double));
+	double* err = (double *)_alloca(n*sizeof(double));
 
 	err[0] = f[0];
 	
@@ -109,9 +108,9 @@ void vecSumErr(double* f, int n, double* g){
 
 void renormalizationalgorithm(double x[],int size_of_x , double f[], int m){
     int length = size_of_x;
-    double* e = (double *)alloca(length*sizeof(double));
-    double* temp = (double *)alloca(length*sizeof(double));
-    double* g = (double *)alloca(m*sizeof(double));
+    double* e = (double *)_alloca(length*sizeof(double));
+    double* temp = (double *)_alloca(length*sizeof(double));
+    double* g = (double *)_alloca(m*sizeof(double));
     
     vecSum(x,e,size_of_x);
     vecSumErrBranch(e, length,m+1, temp);
@@ -143,7 +142,7 @@ static inline void merge(double const *x, double const *y, double *z,int K,int L
  * Output r of length k
 */
 void addition(double *a, double *b, double *s, int length_a,int length_b, int length_result){
-     double*  tmp = (double *)alloca((length_a+length_b)*sizeof(double));
+     double*  tmp = (double *)_alloca((length_a+length_b)*sizeof(double));
      merge(a,b,tmp,length_a,length_b);
      renormalizationalgorithm(tmp,length_a+length_b,s,length_result);
 }
@@ -154,18 +153,18 @@ void addition(double *a, double *b, double *s, int length_a,int length_b, int le
 */
 void multiplication(double *a, double *b, double *r,int sizea, int sizeb, int sizer){
     int k = sizea;
-    double* err = (double *)alloca((sizea*sizea -1)*sizeof(double));
-    double* pi_res = (double *)alloca(sizea*sizeof(double));
-    double* r_ext = (double *)alloca(sizea*sizeof(double));
+    double* err = (double *)_alloca((sizea*sizea -1)*sizeof(double));
+    double* pi_res = (double *)_alloca(sizea*sizeof(double));
+    double* r_ext = (double *)_alloca(sizea*sizeof(double));
     twoMultFMA(a[0],b[0],&(r_ext[0]), &(err[0]));
     for(int n=1; n<sizea; n++){
-        double  e_tmp[n];
-        double p[n];
+        double* e_tmp = (double *)_alloca(n*sizeof(double));
+        double* p = (double *)_alloca(n*sizeof(double));
         for(int i = 0; i<=n; i++){
             twoMultFMA(a[i],b[n-i],&(p[i]), &(e_tmp[i]));
         }
-        double  tmp[n*n+n];
-        double  tmp2[n*n+n+1];
+        double* tmp = (double *)_alloca((n*n+n)*sizeof(double));
+        double* tmp2 = (double *)_alloca((n*n+n+1)*sizeof(double));
         for(int b =0; b<=n; b++){
             tmp2[b]=p[b];
         }
@@ -284,7 +283,7 @@ Constraint: n >=m
 
 void mult2(double* x, double* y, double*pi, int n, int m, int r){
     
-	double* B = (double *)alloca((r*dbl_prec/binSize+2)*sizeof(double));
+	double* B = (double *)_alloca((r*dbl_prec/binSize+2)*sizeof(double));
 	// get sum of first exponents
 	int e = exponent(x[0]) + exponent(y[0]);
 	
