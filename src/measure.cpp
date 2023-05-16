@@ -3,9 +3,9 @@
 #include <limits>
 #include <random>
 
-#include "basefunctions.h"
+#include "basefunctions.c"
 
-#include "mult2_optimizations.cpp"
+#include "mult2_optimizations.c"
 #include "timing.cpp"
 
 // compile with g++ -std=c++17 ./benchmark.cpp

@@ -14,10 +14,10 @@ Optimization 0: Precompute
 */
 void mult2_0(double* x, double* y,double*pi, int n, int m, int r){
     int bins = r*dbl_prec/binSize+2;
-		double *B = new double[bins];
+		double B[bins];
     // get exponents
-    int *exp_x = new int[n];
-		int *exp_y = new int[m];
+    int exp_x[n];
+	int exp_y[m];
     for(int i=0;i<n;i++){
         exp_x[i] = exponent(x[i]);
     }
@@ -28,7 +28,7 @@ void mult2_0(double* x, double* y,double*pi, int n, int m, int r){
 	int e = exp_x[0] + exp_x[0];
 	
 
-    double *B_start = new double[bins];
+    double B_start[bins];
 	// initialize each Bin with starting value
     B_start[0] = ldexp(1.5,e+dbl_prec-1-binSize); // since 1.5*2^(e-(i+1)b+p-1) == 1.5*2^(e-b+p-1)*2^(-b*i)
     B[0] = B_start[0];
@@ -73,10 +73,10 @@ Optimization 1: replace complex with simpler functions: fmin(a,b) -> a<b?a:b, fl
 void mult2_1(double* x, double* y,double*pi, int n, int m, int r){
     int bins = r*dbl_prec/binSize+2;
     int b_inv = 1/binSize;
-	double *B = new double[bins];
+	double B[bins];
     // get exponents
-    int *exp_x = new int[n];
-		int *exp_y = new int[m];
+    int exp_x[n];
+		int exp_y[m];
     for(int i=0;i<n;i++){
         exp_x[i] = exponent(x[i]);
     }
@@ -87,7 +87,7 @@ void mult2_1(double* x, double* y,double*pi, int n, int m, int r){
 	int e = exp_x[0] + exp_x[0];
 	
 
-    double *B_start = new double[bins];
+    double B_start[bins];
 	// initialize each Bin with starting value
     B_start[0] = ldexp(1.5,e+dbl_prec-1-binSize); // since 1.5*2^(e-(i+1)b+p-1) == 1.5*2^(e-b+p-1)*2^(-b*i)
     B[0] = B_start[0];

@@ -36,7 +36,7 @@ void twoMultFMA(const double a,const double b,double *pi_res, double *e_res){
 // call it with the array x and a array of the same size 
 void vecSum(double *x, double *e_res, int in_out_size){
     int length = in_out_size;
-    double *s = new double[length];
+    double s[length];
     s[length-1] = x[length-1];
     for(int i = length-2; i>=0; i--){
         double s_tmp,e_tmp; 
@@ -45,7 +45,6 @@ void vecSum(double *x, double *e_res, int in_out_size){
     }
     e_res[0]=s[0];
 
-    delete[] s;
 
     return;
 }
@@ -58,7 +57,7 @@ Output: f vector size m
 
 **/
 void vecSumErrBranch(double* e, int n, int m, double *f){
-   double* err = new double[n];
+   double err[n];
 
    int j = 0;
    err[0] = e[0];
@@ -77,7 +76,7 @@ void vecSumErrBranch(double* e, int n, int m, double *f){
       f[j] = err[n-1];
    }
 
-   delete[] err;
+   
 }
 
 /**
@@ -92,7 +91,7 @@ Info: Probably faster to do it inplace in f then creating new g, but I tried to 
 **/
 void vecSumErr(double* f, int n, double* g){
 	int m = n-1;
-	double* err =  new double[n];
+	double err[n];
 
 	err[0] = f[0];
 	
@@ -101,7 +100,6 @@ void vecSumErr(double* f, int n, double* g){
 	}
 	g[m] = err[m];
 
-    delete[] err;
 }
 
 
@@ -111,9 +109,9 @@ void vecSumErr(double* f, int n, double* g){
 
 void renormalizationalgorithm(double x[],int size_of_x , double f[], int m){
     int length = size_of_x;
-    double* e = new double[length];
-    double* temp = new double[length];
-    double* g = new double[m];
+    double e[length];
+    double temp[length];
+    double g[m];
     
     vecSum(x,e,size_of_x);
     vecSumErrBranch(e, length,m+1, temp);
@@ -128,9 +126,7 @@ void renormalizationalgorithm(double x[],int size_of_x , double f[], int m){
     }
      f[m-1]= temp[m-1];
 
-    delete[] e;
-    delete[] temp;
-    delete[] g;
+
 }
 
 // camapry merge only for testing
@@ -147,7 +143,7 @@ static inline void merge(double const *x, double const *y, double *z,int K,int L
  * Output r of length k
 */
 void addition(double *a, double *b, double *s, int length_a,int length_b, int length_result){
-     double*  tmp = new double[length_a+length_b];
+     double  tmp[length_a+length_b];
      merge(a,b,tmp,length_a,length_b);
      renormalizationalgorithm(tmp,length_a+length_b,s,length_result);
 }
@@ -163,13 +159,13 @@ void multiplication(double *a, double *b, double *r,int sizea, int sizeb, int si
     double* r_ext = (double *)malloc(sizea*sizeof(double));
     twoMultFMA(a[0],b[0],&(r_ext[0]), &(err[0]));
     for(int n=1; n<sizea; n++){
-        double*  e_tmp = new double[n];
-        double*  p = new double[n];
+        double  e_tmp[n];
+        double p[n];
         for(int i = 0; i<=n; i++){
             twoMultFMA(a[i],b[n-i],&(p[i]), &(e_tmp[i]));
         }
-        double*  tmp = new double[n*n+n];
-        double*  tmp2 = new double[n*n+n+1];
+        double  tmp[n*n+n];
+        double  tmp2[n*n+n+1];
         for(int b =0; b<=n; b++){
             tmp2[b]=p[b];
         }
@@ -202,9 +198,6 @@ void multiplication(double *a, double *b, double *r,int sizea, int sizeb, int si
             r_ext[k] = r_ext[k] + err[i];
         }
 
-
-        
-        delete[] e_tmp;delete[] p; delete[] tmp;delete[] tmp2;
     }
 
     for(int i = 1; i<=sizea*sizea-1; i++){
@@ -291,7 +284,7 @@ Constraint: n >=m
 
 void mult2(double* x, double* y, double*pi, int n, int m, int r){
     
-	double *B = new double[r*dbl_prec/binSize+2];
+	double B[r*dbl_prec/binSize+2];
 	// get sum of first exponents
 	int e = exponent(x[0]) + exponent(y[0]);
 	
