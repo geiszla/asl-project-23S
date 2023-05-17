@@ -75,7 +75,7 @@ void evaluate_implementation(
 
     if (naive_runtime != 0)
     {
-        cout << "; " << runtime / naive_runtime << "x speedup";
+        cout << "; " <<  naive_runtime / runtime << "x speedup" <<endl;
     }
     else
     {
