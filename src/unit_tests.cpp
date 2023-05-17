@@ -199,6 +199,27 @@ TEST(Multiplication, Mult2_2 ) {
 
 	EXPECT_LT(rel_error, err_tolerance);
 }
+TEST(Multiplication, Mult2_3 ) {
+	int K = 4;
+	int L = 4;
+	int R = 4;
+	double *x = create_ulp_non_overlaping_array(K);
+	double *y = create_ulp_non_overlaping_array(L);
+	double *r = (double*) malloc(sizeof(double) * R);
+	for (int i = 0; i < R; i++){
+		r[i] = 0.0;
+	}	
+	big_float sum_x = get_sum(x, K);
+	big_float sum_y = get_sum(y, L);
+	mult2_3(x, y, r, K, L, R);
+	
+
+	big_float err_tolerance =  get_error_tolerance_truncatedMul(get_sum(r, R),K,L,R);
+	big_float abs_error = fabs((sum_x * sum_y)-get_sum(r, R));
+	big_float rel_error = abs_error/get_sum(r, R);
+
+	EXPECT_LT(rel_error, err_tolerance);
+}
 TEST(ReferenceSolution, CertifiedMult) {
 	const int K = 4;
 	const int L = 4;
