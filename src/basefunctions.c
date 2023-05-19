@@ -112,23 +112,27 @@ void vecSumErr(double* f, int n, double* g){
  **/
 
 void renormalizationalgorithm(double x[],int size_of_x , double f[], int m){
-    int length = size_of_x;
-    double* e = (double *)alloca(length*sizeof(double));
-    double* temp = (double *)alloca(length*sizeof(double));
-    double* g = (double *)alloca(m*sizeof(double));
-    
-    vecSum(x,e,size_of_x);
-    vecSumErrBranch(e, length,m+1, temp);
-    for (int i =0; i<=m-2; i++){
-        vecSumErr(&temp[i],m, g);
-        for (int b=0; b<m; b++){
-             double tmp=g[b];
-             temp[b+i] = tmp;
-            }
-       double t= temp[i];
-       f[i] =t;
+    double* err = (double *)alloca((size_of_x)*sizeof(double));
+    double* f_tmp = (double *)alloca((m+1)*sizeof(double));
+    vecSum(x,err,size_of_x);
+    if (m>1){
+        double a = err[1];
     }
-     f[m-1]= temp[m-1];
+    vecSumErrBranch(err,size_of_x,m+1,f_tmp);
+     if (m>1){
+        double a = f_tmp[1];
+        double b = f_tmp[2];
+    }
+    for (int i = 0; i<=(m-2); i++){
+        
+        vecSumErrBranch(&(f_tmp[i]),m+1-i,m+1-i,&(f_tmp[i]));
+        if (m>1){
+        double a = f_tmp[1];
+        double b = f_tmp[2];
+         }
+       f[i] = f_tmp[i];
+    }
+    f[m-1] = f_tmp[m-1];
 
 
 }
