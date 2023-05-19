@@ -2,7 +2,6 @@
 #include <windows.h> // Include if under windows
 #endif
 
-#include <list>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -29,7 +28,7 @@ using namespace std;
 #ifdef __x86_64__
 
 template <typename T_Function, class... T_compute_arguments>
-double rdtsc(T_Function f, T_compute_arguments... arguments)
+vector<double> rdtsc(T_Function f, T_compute_arguments... arguments)
 {
     double cycles = 0.;
     long num_runs = 100;
@@ -60,7 +59,7 @@ double rdtsc(T_Function f, T_compute_arguments... arguments)
     } while (multiplier > 2);
 #endif
 
-    list<double> cyclesList;
+    vector<double> cycles_list;
 
     // Actual performance measurements repeated MEASUREMENT_COUNT times.
     // We simply store all results and compute medians during post-processing.
@@ -76,21 +75,18 @@ double rdtsc(T_Function f, T_compute_arguments... arguments)
         end = stop_tsc(start);
 
         cycles = ((double)end) / num_runs;
-        total_cycles += cycles;
 
-        cyclesList.push_back(cycles);
+        cycles_list.push_back(cycles);
     }
-    total_cycles /= MEASUREMENT_COUNT;
 
-    cycles = total_cycles;
-    return cycles;
+    return cycles_list;
 }
 #elif defined __MACH__
 
 #define ctime_t std::chrono::high_resolution_clock::time_point
 
 template <typename T_Function, class... T_compute_arguments>
-double high_resolution_clock(T_Function f, T_compute_arguments... arguments)
+vector<double> high_resolution_clock(T_Function f, T_compute_arguments... arguments)
 {
     uint64_t frequency = 3.5e9;
 
@@ -118,7 +114,7 @@ double high_resolution_clock(T_Function f, T_compute_arguments... arguments)
     } while (multiplier > 2);
 #endif
 
-    list<double> cyclesList;
+    vector<double> cycles_list;
 
     // Actual performance measurements repeated MEASUREMENT_COUNT times.
     // We simply store all results and compute medians during post-processing.
@@ -135,20 +131,16 @@ double high_resolution_clock(T_Function f, T_compute_arguments... arguments)
         std::chrono::duration<double> elapsed = end - start;
         cycles = elapsed.count() * frequency;
 
-        total_cycles += cycles;
-
-        cyclesList.push_back(cycles);
+        cycles_list.push_back(cycles);
     }
-    total_cycles /= MEASUREMENT_COUNT * num_runs;
 
-    cycles = total_cycles;
-    return cycles;
+    return cycles_list;
 }
 
 #else
 
 template <typename T_Function, class... T_compute_arguments>
-double query_performance_counter(T_Function f, T_compute_arguments... arguments)
+vector<double> query_performance_counter(T_Function f, T_compute_arguments... arguments)
 {
     LARGE_INTEGER frequency;
     QueryPerformanceFrequency(&frequency);
@@ -176,11 +168,10 @@ double query_performance_counter(T_Function f, T_compute_arguments... arguments)
     } while (multiplier > 2);
 #endif
 
-    list<double> cyclesList;
+    vector<double> cycles_list;
 
     // Actual performance measurements repeated MEASUREMENT_COUNT times.
     // We simply store all results and compute medians during post-processing.
-    double total_cycles = 0;
     for (size_t j = 0; j < MEASUREMENT_COUNT; j++)
     {
         QueryPerformanceCounter(&start);
@@ -193,14 +184,10 @@ double query_performance_counter(T_Function f, T_compute_arguments... arguments)
         cycles = (double)(end.QuadPart - start.QuadPart) / num_runs;
         cycles *= (FREQUENCY / frequency.QuadPart);
 
-        total_cycles += cycles;
-
-        cyclesList.push_back(cycles);
+        cycles_list.push_back(cycles);
     }
-    total_cycles /= MEASUREMENT_COUNT;
 
-    cycles = total_cycles;
-    return cycles;
+    return cycles_list;
 }
 
 #endif
@@ -209,11 +196,24 @@ template <typename T_compute_return, class... T_compute_arguments>
 double measure_runtime(T_compute_return (*f)(T_compute_arguments...),
                        T_compute_arguments... arguments)
 {
+    vector<double> cycles_list;
+
 #ifdef __x86_64__
-    return rdtsc(f, arguments...);
+    cycles_list = rdtsc(f, arguments...);
 #elif defined __MACH__
-    return high_resolution_clock(f, arguments...);
+    cycles_list = high_resolution_clock(f, arguments...);
 #else
-    return query_performance_counter(f, arguments...);
+    cycles_list = query_performance_counter(f, arguments...);
 #endif
+
+    // Calculate median
+    const vector<double>::iterator middle_iterator = cycles_list.begin() + cycles_list.size() / 2;
+    nth_element(cycles_list.begin(), middle_iterator, cycles_list.end());
+
+    if (cycles_list.size() % 2 == 0)
+    {
+        return (*max_element(cycles_list.begin(), middle_iterator) + *middle_iterator) / 2;
+    }
+
+    return *middle_iterator;
 }
