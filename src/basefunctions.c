@@ -1,13 +1,9 @@
-#include <assert.h>
-#include <malloc.h>
 #include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
 
 #ifdef _WIN32
 #define alloca _alloca
 #endif
+
 
 #define dbl_prec 53
 #define binSize 45

@@ -94,7 +94,7 @@ void benchmark_vec_sum(ofstream &output_file)
     cout << endl
          << "VecSum: " << endl;
 
-    for (int term_count = 3; term_count < 999; (int)(term_count *= 1.4))
+    for (int term_count = 3; term_count < 999; term_count *= 1.4)
     {
         double runtime = measure_vec_sum(vecSum, term_count);
         double performance = get_vec_sum_flops(term_count) / runtime;
@@ -108,7 +108,7 @@ void benchmark_vec_sum_err_branch(ofstream &output_file)
     cout << endl
          << "VecSumErrBranch: " << endl;
 
-    for (int term_count = 3; term_count < 999; (int)(term_count *= 1.4))
+    for (int term_count = 3; term_count < 999; term_count *= 1.4)
     {
         double runtime = measure_vec_sum_err_branch(vecSumErrBranch, term_count);
         double performance = get_vec_sum_err_branch_flops(term_count) / runtime;
@@ -122,7 +122,7 @@ void benchmark_vec_sum_err(ofstream &output_file)
     cout << endl
          << "VecSumErr: " << endl;
 
-    for (int term_count = 3; term_count < 999; (int)(term_count *= 1.4))
+    for (int term_count = 3; term_count < 999; term_count *= 1.4)
     {
         double runtime = measure_vec_sum_err(vecSumErr, term_count);
         double performance = get_vec_sum_err_flops(term_count) / runtime;
@@ -136,7 +136,7 @@ void benchmark_renormalization(ofstream &output_file)
     cout << endl
          << "Renormalization: " << endl;
 
-    for (int term_count = 3; term_count < 999; (int)(term_count *= 1.4))
+    for (int term_count = 3; term_count < 999; term_count *= 1.4)
     {
         double runtime = measure_renormalization(renormalizationalgorithm, term_count);
         double performance = get_renormalization_flops(term_count, term_count) / runtime;
@@ -150,7 +150,7 @@ void benchmark_addition(ofstream &output_file)
     cout << endl
          << "Addition: " << endl;
 
-    for (int term_count = 3; term_count < 999; (int)(term_count *= 1.4))
+    for (int term_count = 3; term_count < 999; term_count *= 1.4)
     {
         double runtime = measure_addition(addition, term_count);
         double performance = get_addition_flops(term_count, term_count, term_count) / runtime;
@@ -164,7 +164,7 @@ void benchmark_multiplication(ofstream &output_file)
     cout << endl
          << "Multiplication: " << endl;
 
-    for (int term_count = 3; term_count < 999; (int)(term_count *= 1.4))
+    for (int term_count = 3; term_count < 999; term_count *= 1.4)
     {
         double runtime = measure_multiplication(multiplication, term_count);
         double performance = get_multiplication_flops(term_count) / runtime;
@@ -233,7 +233,10 @@ int main()
     output_file.open(string(OUTPUT_PATH) + "/benchmark.csv");
     if (!output_file.is_open())
     {
-        cerr << "Error: cannot open output file: " << strerror(errno) << endl;
+        char error_message[80];
+        strerror_s(error_message, 80, errno);
+
+        cerr << "Error: cannot open output file: " << error_message << endl;
         return 1;
     }
 
@@ -253,7 +256,7 @@ int main()
     benchmark_addition(output_file);
     benchmark_multiplication(output_file);
 
-    // benchmark_multiplication2(output_file);
+    benchmark_multiplication2(output_file);
     // benchmark_multiplication2_0(output_file);
     // benchmark_multiplication2_1(output_file);
 

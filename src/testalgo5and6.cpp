@@ -1,10 +1,10 @@
-#include <assert.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cassert>
+#include <cmath>
 
-#include "basefunctions.h"
-#include "time.h"
+extern "C"
+{
+  #include "basefunctions.h"
+}
 
 const double onedifference = pow(10,-16);
 const double allonesindouble = 4.503599627370496 ;
@@ -200,7 +200,7 @@ void testrenormalization(void (*implementation)(double *, int, double *, int) = 
       double rt = renorm[n]; double st = solution[n];
       double a = 0;
       
-      // test for reduction onto size 2 thus if failed thats the problem 
+      // test for reduction onto size 2 thus if failed thats the problem
       assert(abs(rt-st)<0.00001);
     }
     double a=0;

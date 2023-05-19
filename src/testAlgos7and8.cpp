@@ -1,8 +1,8 @@
-#include <assert.h>
-#include <stdio.h>
-#include <math.h>
-#include "time.h"
-#include <stdlib.h>
+#include <cassert>
+#include <cmath>
+#include <cstdio>
+#include <ctime>
+
 #define dbl_prec 53
 ////////////////////////////////////////copied from basefunctions.c//////////////////////////
 void twoSum(double a, double b, double *s_res, double *e_res){
@@ -25,7 +25,7 @@ void twoMultFMA(double a, double b,double *pi_res, double *e_res){
 void vecSum(double *x, double *e_res){
     int length = sizeof(x)/sizeof(x[0]);
     assert(length == (sizeof(e_res)/sizeof(e_res[0])));
-    double s[length]; 
+    double *s = new double[length]; 
     s[length-1] = x[length-1];
     for(int i = length-2; i>=0; i--){
         double s_tmp,e_tmp; 

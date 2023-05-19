@@ -3,9 +3,12 @@
 #include <limits>
 #include <random>
 
-#include "basefunctions.c"
+extern "C"
+{
+  #include "basefunctions.h"
+  #include "mult2_optimizations.c"
+}
 
-#include "mult2_optimizations.c"
 #include "timing.cpp"
 
 #define DEFAULT_TERM_COUNT 128
