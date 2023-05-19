@@ -207,7 +207,7 @@ double measure_runtime(T_compute_return (*f)(T_compute_arguments...),
 #endif
 
     // Calculate median
-    const vector<double>::iterator middle_iterator = cycles_list.begin() + cycles_list.size() / 2;
+    vector<double>::iterator middle_iterator = cycles_list.begin() + cycles_list.size() / 2;
     nth_element(cycles_list.begin(), middle_iterator, cycles_list.end());
 
     if (cycles_list.size() % 2 == 0)

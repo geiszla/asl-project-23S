@@ -8,7 +8,7 @@
 #include "mult2_optimizations.c"
 #include "timing.cpp"
 
-#define DEFAULT_TERM_COUNT 256
+#define DEFAULT_TERM_COUNT 128
 
 double generate_random_double()
 {
@@ -41,7 +41,7 @@ double generate_random_mantissa(int ending_zeros_count)
 }
 
 /**
- * Generates an expansion that is at most d-overlapping and also S-nonoverlapping
+ * Generates an expansion that is at most d-overlapping (with d = 2)
  * @param term_count The number of terms to generate. Needs to be at most 998
  */
 double *generate_d_nonoverlapping_expansion(int term_count)
@@ -50,15 +50,38 @@ double *generate_d_nonoverlapping_expansion(int term_count)
 
     double *terms = new double[term_count];
 
-    // For this to be S-nonoverlapping, there needs to be at least 2 zeros at the
-    // end of the first term
-    terms[0] = ldexp(generate_random_mantissa(2), exponent);
+    terms[0] = ldexp(generate_random_double(), exponent);
 
     for (int i = 1; i < term_count; i++)
     {
         // For this to be at most d-overlapping, exponent needs to decrease by at least 2
         // term-by-term and there needs to be at least 49 zeros at the end of each term
         terms[i] = ldexp(generate_random_mantissa(49), exponent - 51 - 2 * (i - 1));
+    }
+
+    return terms;
+}
+
+/**
+ * Generates an expansion that is S-nonoverlapping
+ * @param term_count The number of terms to generate. Needs to be at most 2044
+ */
+double *generate_s_nonoverlapping_expansion(int term_count)
+{
+    // Generate `term_count` number of terms wit the minimum number of ending zeros possible
+    int exponent_difference = 2044 / (term_count - 1);
+    int ending_zeros_count = max(0, 53 - exponent_difference);
+
+    int exponent = 1023;
+
+    double *terms = new double[term_count];
+
+    for (int i = 0; i < term_count; i++)
+    {
+        // For this to be at most d-overlapping, exponent needs to decrease by at least 2
+        // term-by-term and there needs to be at least 49 zeros at the end of each term
+        terms[i] = ldexp(generate_random_mantissa(ending_zeros_count),
+                         exponent - exponent_difference * i);
     }
 
     return terms;
@@ -148,7 +171,7 @@ double measure_vec_sum_err_branch(
     void (*implementation)(double *, int, int, double *) = vecSumErrBranch,
     int term_count = DEFAULT_TERM_COUNT)
 {
-    double *expansion = generate_d_nonoverlapping_expansion(term_count);
+    double *expansion = generate_s_nonoverlapping_expansion(term_count);
     double *result = new double[term_count];
 
     double runtime = measure_runtime(implementation, expansion, term_count, term_count,

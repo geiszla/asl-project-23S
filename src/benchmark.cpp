@@ -5,7 +5,7 @@
 #include "measure.cpp"
 
 // Compile with `g++ -std=c++17 ./benchmark.cpp` (plus additional optimization flags)
-// TODO: calculate median of measurements, generalize benchmark logic
+// TODO: generalize benchmark logic
 
 #define OUTPUT_PATH "../results"
 
@@ -94,7 +94,7 @@ void benchmark_vec_sum(ofstream &output_file)
     cout << endl
          << "VecSum: " << endl;
 
-    for (int term_count = 3; term_count < 999; (int)(term_count *= 1.5))
+    for (int term_count = 3; term_count < 999; (int)(term_count *= 1.4))
     {
         double runtime = measure_vec_sum(vecSum, term_count);
         double performance = get_vec_sum_flops(term_count) / runtime;
@@ -249,9 +249,9 @@ int main()
     benchmark_vec_sum_err_branch(output_file);
     benchmark_vec_sum_err(output_file);
 
-    // benchmark_renormalization(output_file);
-    // benchmark_addition(output_file);
-    // benchmark_multiplication(output_file);
+    benchmark_renormalization(output_file);
+    benchmark_addition(output_file);
+    benchmark_multiplication(output_file);
 
     // benchmark_multiplication2(output_file);
     // benchmark_multiplication2_0(output_file);

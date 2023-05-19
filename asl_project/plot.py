@@ -3,6 +3,7 @@ import os
 
 import pandas
 from matplotlib import pyplot
+from matplotlib.ticker import ScalarFormatter
 
 RESULT_DIRECTORY_NAME = "results"
 
@@ -21,18 +22,19 @@ def main():
         input_size = optimization_data["Input size"]
         performance = optimization_data["Performance"]
 
-        pyplot.xscale('log')
+        pyplot.xscale('log', base=2)
+        pyplot.gca().get_xaxis().set_major_formatter(ScalarFormatter())
+
         pyplot.plot(
             input_size,
             performance,
             label=algorithm,
         )
 
-        pyplot.legend()
         finalize_plot(
             x_label="Input size (n)",
             y_label="Performance (flops/cycle)",
-            title="Performance vs Input size",
+            title=algorithm,
             file_name=f"performance_vs_input_size_{algorithm}.png",
         )
 
