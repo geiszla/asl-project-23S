@@ -14,6 +14,67 @@ const double trennung = 0.000000000000000001;// 10^-18
 /*
 */
 
+
+///////////////////////////////// copied from CAMPARY package/////////////////////////////
+double FPadd_rn(const double x, const double y){
+  return x + y;
+}
+static inline double FPmul_rn(const double x, const double y){
+  return x * y;
+}
+static inline double fma_d_rn_cpu(const double x, const double y, double xy) {
+  double C,px,qx,hx,py,qy,hy,lx,ly,fma;
+  /*@ assert C == 0x1p27+1; */
+	C = 0x1p27+1;
+
+  px = x*C;
+  qx = x-px;
+  hx = px+qx;
+  lx = x-hx;
+
+  py = y*C;
+  qy = y-py;
+  hy = py+qy;
+  ly = y-hy;
+
+  fma = -x*y+hx*hy;
+  fma += hx*ly;
+  fma += hy*lx;
+  fma += lx*ly;
+  return fma;
+}
+
+static inline double FPfma_rn(const double x, const double y, const double z){
+	#ifdef FP_FAST_FMA
+  //#warning cpu has fma
+	  return fma(x, y, z);
+	#else
+   	return fma_d_rn_cpu(x, y, z);
+	#endif
+}
+/* Computes fl(a*b) and err(a*b). */
+static inline double two_prod(const double a, const double b, double &err){
+	const double p = FPmul_rn(a, b);
+ 	err = FPfma_rn(a, b, -p);
+ 	return p;
+}
+static inline double two_sum(const double a, const double b, double &err){
+  double s = FPadd_rn(a, b);
+  double aa = FPadd_rn(s, -b);
+  double bb = FPadd_rn(s, -aa);
+  double da = FPadd_rn(a, -aa);
+  double db = FPadd_rn(b, -bb);
+  err = FPadd_rn(da, db);
+  return s;
+}
+/* Computes fl(a+b) and err(a+b). Assumes |a| >= |b| */
+static inline double fast_two_sum(const double a, const double b, double &err){
+  double s = FPadd_rn(a, b);
+  double z = FPadd_rn(s, -a);
+  err = FPadd_rn(b, -z);
+  return s;
+}
+
 // Sorry a function can't start with a 2 therefore I took the nearest solution of it
 void twoSum(const double a,const  double b, double *s_res, double *e_res){
     double s = a+b;
@@ -111,21 +172,13 @@ void renormalizationalgorithm(double x[],int size_of_x , double f[], int m){
     double* err = (double *)alloca((size_of_x)*sizeof(double));
     double* f_tmp = (double *)alloca((m+1)*sizeof(double));
     vecSum(x,err,size_of_x);
-    if (m>1){
-        double a = err[1];
-    }
+
     vecSumErrBranch(err,size_of_x,m+1,f_tmp);
-     if (m>1){
-        double a = f_tmp[1];
-        double b = f_tmp[2];
-    }
+   
     for (int i = 0; i<=(m-2); i++){
         
         vecSumErrBranch(&(f_tmp[i]),m+1-i,m+1-i,&(f_tmp[i]));
-        if (m>1){
-        double a = f_tmp[1];
-        double b = f_tmp[2];
-         }
+      
        f[i] = f_tmp[i];
     }
     f[m-1] = f_tmp[m-1];
@@ -142,6 +195,29 @@ static inline void merge(double const *x, double const *y, double *z,int K,int L
   }
 }
 
+
+static inline void renorm_rand2L(int sX, int sR, double x[]){
+	double pr;
+	int i, j, ptr = 0;
+
+  x[0] = two_sum(x[0], x[1], x[1]);
+  for(i=2; i<sX; i++){
+		pr = two_sum(x[i-1], x[i], x[i]);
+    for(j=i-2; j>0; j--) pr = two_sum(x[j], pr, x[j+1]);
+		x[0] = fast_two_sum(x[0], pr, x[1]);
+	}
+
+	i = 2;
+  if(x[1] == 0.) pr = x[0];
+  else { pr = x[1]; ptr++;}
+  while(ptr<sR && i<sX){
+    x[ptr] = fast_two_sum(pr, x[i], pr); i++;
+    if(pr == 0.) pr = x[ptr]; else ptr++;
+  }
+  if(ptr<sR && pr!=0.){ x[ptr] = pr; ptr++; }
+  for(i=ptr; i<sX; i++) x[i] = 0.;
+}
+
 /**Implementation of FP exansionaddition with k terms 
  * Input a and b of length k 
  * Output r of length k
@@ -150,7 +226,11 @@ void addition(double *a, double *b, double *s, int length_a,int length_b, int le
      double*  tmp = (double *)alloca((length_a+length_b)*sizeof(double));
      merge(a,b,tmp,length_a,length_b);
      renormalizationalgorithm(tmp,length_a+length_b,s,length_result);
+    
+    return;
 }
+
+
 
 /**Implementation of FP exansion multiplication with k terms 
  * Input a and b of length k 
@@ -159,7 +239,7 @@ void addition(double *a, double *b, double *s, int length_a,int length_b, int le
 void multiplication(double *a, double *b, double *r,int sizea, int sizeb, int sizer){
     int k = sizea;
     double* err = (double *)alloca((sizea*sizea -1)*sizeof(double));
-    double* pi_res = (double *)alloca(sizea*sizeof(double));
+  
     double* r_ext = (double *)alloca(sizea*sizeof(double));
     twoMultFMA(a[0],b[0],&(r_ext[0]), &(err[0]));
     for(int n=1; n<sizea; n++){
@@ -187,7 +267,7 @@ void multiplication(double *a, double *b, double *r,int sizea, int sizeb, int si
 
         // now compute e[0:(n+1)^2 -1] <- e[0:n^2 + n -1],e[0:n]
         int count = 0;
-        for(int b =0; b<=n^2 +n-1; b++){
+        for(int b =0; b<=((n^2) +n-1); b++){
             err[count] = err[b]; count++;
         }
         for(int b =0; b<=n; b++){
