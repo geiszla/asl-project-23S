@@ -171,13 +171,16 @@ void vecSumErr(double* f, int n, double* g){
 void renormalizationalgorithm(double x[],int size_of_x , double f[], int m){
     double* err = (double *)alloca((size_of_x)*sizeof(double));
     double* f_tmp = (double *)alloca((m+1)*sizeof(double));
+    for (int i = 0; i<=m; i++){
+        f_tmp[i] = 0;
+    }
     vecSum(x,err,size_of_x);
 
     vecSumErrBranch(err,size_of_x,m+1,f_tmp);
    
     for (int i = 0; i<=(m-2); i++){
         
-        vecSumErrBranch(&(f_tmp[i]),m+1-i,m+1-i,&(f_tmp[i]));
+        vecSumErr(&(f_tmp[i]), m-i+1, &(f_tmp[i]));
       
        f[i] = f_tmp[i];
     }
