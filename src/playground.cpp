@@ -2,16 +2,24 @@
 
 extern "C"
 {
-  #include "vec_sum_optimizations.c"
+  // #include "vec_sum_optimizations.c"
+  #include "vec_sum_err_optimizations.c"
 }
 
 // Compile with `g++ -std=c++17 ./benchmark.cpp` (plus additional optimization flags)
 
 int main()
 {
+  /* vecSum */
   // Pass the naive implementation's runtime to `evaluate_implementation` to calculate speedup
-  double naive_runtime = measure_vec_sum();
+  // double naive_runtime = measure_vec_sum();
 
-  evaluate_implementation(renormalizationalgorithm2, "renormalization2", renormalization_algorithm);
-  evaluate_implementation(vecSum3, "vecSum3", vec_sum_algorithm, naive_runtime);
+  // evaluate_implementation(renormalizationalgorithm2, "renormalization2", renormalization_algorithm);
+  // evaluate_implementation(vecSum3, "vecSum3", vec_sum_algorithm, naive_runtime);
+
+  /* vecSumErr */
+  double naive_runtime = measure_vec_sum_err();
+
+  evaluate_implementation(renormalizationalgorithm3, "renormalization3", renormalization_algorithm);
+  evaluate_implementation(vecSumErr2, "vecSumErr2", vec_sum_err_algorithm, naive_runtime);
 }

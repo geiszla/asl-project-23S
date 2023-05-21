@@ -1,4 +1,4 @@
-void vecSum2(double *x, double *e_res, int in_out_size)
+inline void vecSum2(double *x, double *e_res, int in_out_size)
 {
   double *s = (double *)alloca(in_out_size * sizeof(double));
 
@@ -23,7 +23,7 @@ void vecSum2(double *x, double *e_res, int in_out_size)
   return;
 }
 
-void vecSum3(double *x, double *e_res, int in_out_size)
+inline void vecSum3(double *x, double *e_res, int in_out_size)
 {
   double s = x[in_out_size - 1];
 
