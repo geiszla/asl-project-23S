@@ -3,72 +3,13 @@
 #include <cstdio>
 #include <ctime>
 
+extern "C"
+{
+  #include "reference.h"
+  #include "basefunctions.h"
+}
+
 #define dbl_prec 53
-////////////////////////////////////////copied from basefunctions.c//////////////////////////
-void twoSum(double a, double b, double *s_res, double *e_res){
-    double s = a+b;
-    double t = s-b; 
-    double e = (a-t) + (b-(s-t));
-    // write ouput
-    *s_res = s; *e_res = e;
-    return;
-}
-
-void twoMultFMA(double a, double b,double *pi_res, double *e_res){
-    double pi = a*b;
-    double e = fma(a,b,-pi);
-    *pi_res = pi; *e_res = e;
-    return;
-
-}
-
-void vecSum(double *x, double *e_res){
-    int length = sizeof(x)/sizeof(x[0]);
-    assert(length == (sizeof(e_res)/sizeof(e_res[0])));
-    double *s = new double[length]; 
-    s[length-1] = x[length-1];
-    for(int i = length-2; i>=0; i--){
-        double s_tmp,e_tmp; 
-        twoSum(x[i],s[i+1],&s_tmp, &e_tmp);
-        s[i] = s_tmp; e_res[i] = e_tmp;
-    }
-    e_res[0]=s[0];
-    return;
-
-}
-
-
-///////////////////////////////// copied from CAMPARY package/////////////////////////////
-double FPadd_rn(const double x, const double y){
-  return x + y;
-}
-
-double fast_two_sum(const double a, const double b, double* err){
-  double s = FPadd_rn(a, b);
-  double z = FPadd_rn(s, -a);
-  *err = FPadd_rn(b, -z);
-  return s;
-}
-
-void fast_VecSumErrBranch(double *x, int sX, int sR){
-	int ptr = 0, i = 1;
-	double e = x[0];
-
-  	while(i<sX && ptr<sR){
-		x[ptr] = fast_two_sum(e, x[i], &e); i++;
-		if(e == 0.) e = x[ptr]; else ptr++;
-  	}
-  	if(ptr<sR && e!=0.){ x[ptr] = e; ptr++; }
-		for(i=ptr; i<sR; i++) x[i] = 0.;
-}
-
-void fast_VecSumErr(double *x, int sX){
-	double e;
-	x[0] = fast_two_sum(x[0], x[1], &e);
-	for(int i=2; i<sX-1; i++) x[i-1] = fast_two_sum(e, x[i], &e);
-	x[sX-2] = fast_two_sum(e, x[sX-1], &x[sX-1]);
-}
-
 
 /**
 Implementation of VecSumErrBranch algorithm (Algorithm 7)

@@ -3,7 +3,8 @@
 
 extern "C"
 {
-  #include "basefunctions.c"
+  #include "reference.h"
+  #include "basefunctions.h"
 }
 
 const double onedifference = pow(10,-16);
@@ -48,7 +49,7 @@ void testtwosum(void (*implementation)(double, double, double *, double *) = two
 		double err_ours,err_ref; double res;
 		
 		implementation(a,c,&res,&err_ours);
-		two_sum(a,c,err_ref);
+		two_sum(a,c,&err_ref);
 		assert(err_ref==err_ours|| c ==0);
 			
 	}
@@ -62,7 +63,7 @@ void testfastfma(void (*implementation)(double, double, double *, double *) = tw
 		double b =  randfrom(-onedifference,+onedifference);
 		double res, err,error_ref;
 		implementation(a,b,&res,&err);
-		two_prod(a,b,error_ref);
+		two_prod(a,b,&error_ref);
 		assert(error_ref==err||  b ==0);
 	}
 }
