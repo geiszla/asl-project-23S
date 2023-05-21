@@ -25,23 +25,22 @@ void vecSum2(double *x, double *e_res, int in_out_size)
 
 void vecSum3(double *x, double *e_res, int in_out_size)
 {
-  double s_last = x[in_out_size - 1];
+  double s = x[in_out_size - 1];
 
   for (int i = in_out_size - 2; i >= 0; i--)
   {
     double a = x[i];
-    double b = s_last;
+    double b = s;
 
-    double s2 = a + b;
-    double t = s2 - b;
+    s = a + b;
+    double t = s - b;
 
-    double e = (a - t) + (b - (s2 - t));
+    double e = (a - t) + (b - (s - t));
 
-    s_last = s2;
     e_res[i] = e;
   }
 
-  e_res[0] = s_last;
+  e_res[0] = s;
 
   return;
 }
@@ -54,7 +53,7 @@ void renormalizationalgorithm2(double x[], int size_of_x, double f[], int m)
   double *temp = (double *)alloca(length * sizeof(double));
   double *g = (double *)alloca(m * sizeof(double));
 
-  vecSum(x, e, size_of_x);
+  vecSum3(x, e, size_of_x);
   vecSumErrBranch(e, length, m + 1, temp);
 
   for (int i = 0; i <= m - 2; i++)
