@@ -19,8 +19,6 @@ inline void vecSum2(double *x, double *e_res, int in_out_size)
   }
 
   e_res[0] = s[0];
-
-  return;
 }
 
 inline void vecSum3(double *x, double *e_res, int in_out_size)
@@ -41,8 +39,6 @@ inline void vecSum3(double *x, double *e_res, int in_out_size)
   }
 
   e_res[0] = s;
-
-  return;
 }
 
 void renormalizationalgorithm2(double x[], int size_of_x, double f[], int m)

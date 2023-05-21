@@ -1,4 +1,4 @@
-void vecSumErrBranch2(double *e, int n, int m, double *f)
+inline void vecSumErrBranch2(double *e, int n, int m, double *f)
 {
   double err = e[0];
 

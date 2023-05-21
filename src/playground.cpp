@@ -2,9 +2,10 @@
 
 extern "C"
 {
-// #include "vec_sum_optimizations.c"
-// #include "vec_sum_err_optimizations.c"
+  #include "vec_sum_optimizations.c"
+  #include "vec_sum_err_optimizations.c"
   #include "vec_sum_err_branch_optimizations.c"
+  #include "renormalization_optimizations.c"
 }
 
 // Compile with `g++ -std=c++17 ./benchmark.cpp` (plus additional optimization flags)
@@ -24,10 +25,27 @@ int main()
   // evaluate_implementation(renormalizationalgorithm3, "renormalization3", renormalization_algorithm);
   // evaluate_implementation(vecSumErr2, "vecSumErr2", vec_sum_err_algorithm, naive_runtime);
 
-  /* vecSumErrBranch */
-  double naive_runtime = measure_vec_sum_err_branch();
+  // /* vecSumErrBranch */
+  // double naive_runtime = measure_vec_sum_err_branch();
 
-  evaluate_implementation(renormalizationalgorithm4, "renormalization4", renormalization_algorithm);
-  evaluate_implementation(vecSumErrBranch2, "vecSumErrBranch2", vec_sum_err_branch_algorithm,
+  // evaluate_implementation(renormalizationalgorithm4, "renormalization4", renormalization_algorithm);
+  // evaluate_implementation(vecSumErrBranch2, "vecSumErrBranch2", vec_sum_err_branch_algorithm,
+  //                         naive_runtime);
+
+  /* vecSumErrBranch */
+  // double naive_runtime = measure_vec_sum_err_branch();
+
+  // evaluate_implementation(renormalizationalgorithm4, "renormalization4", renormalization_algorithm);
+  // evaluate_implementation(vecSumErrBranch2, "vecSumErrBranch2", vec_sum_err_branch_algorithm,
+  //                         naive_runtime);
+
+  /* renormalization */
+  double naive_runtime = measure_renormalization();
+
+  // evaluate_implementation(renormalization2, "renormalization2", renormalization_algorithm,
+  //                         naive_runtime);
+  evaluate_implementation(renormalization3, "renormalization3", renormalization_algorithm,
+                          naive_runtime);
+  evaluate_implementation(renormalization4, "renormalization4", renormalization_algorithm,
                           naive_runtime);
 }

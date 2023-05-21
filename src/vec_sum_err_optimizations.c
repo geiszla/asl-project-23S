@@ -4,7 +4,7 @@ inline void vecSumErr2(double *f, int n, double *g)
 
   double e = f[0];
 
-  for (int i = 0; i <= m - 1; i++)
+  for (int i = 0; i < m; i++)
   {
     double b = f[i + 1];
 
