@@ -3,6 +3,7 @@
 
 #include "measure.cpp"
 #include "testalgo5and6.cpp"
+#include "testAlgos7and8.cpp"
 
 enum Algorithm
 {
@@ -20,6 +21,8 @@ enum Algorithm
 template <typename T_test_function>
 map<Algorithm, T_test_function> tests{
     {two_sum_algorithm, (T_test_function)testtwosum},
+    {vec_sum_err_algorithm, (T_test_function)testvecsumerr},
+    {vec_sum_err_branch_algorithm, (T_test_function)testvecsumerrbranch},
     {two_mult_FMA_algorithm, (T_test_function)testfastfma},
     {renormalization_algorithm, (T_test_function)testrenormalization},
     {addition_algorithm, (T_test_function)testaddition}};

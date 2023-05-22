@@ -1,14 +1,17 @@
 #include <cstdio>
 
 #include "testalgo5and6.cpp"
+#include "testAlgos7and8.cpp"
 
 int main()
 {
 	// testing framework
 	testtwosum();
 	testfastfma();
+	testvecsumerr();
+	testvecsumerrbranch();
 	testrenormalization();
 	testaddition();
 
-	printf("successfully runned all test cases");
+	printf("successfully ran all test cases");
 }

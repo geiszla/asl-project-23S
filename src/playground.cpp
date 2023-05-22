@@ -22,20 +22,11 @@ int main()
   /* vecSumErr */
   // double naive_runtime = measure_vec_sum_err();
 
-  // evaluate_implementation(renormalizationalgorithm3, "renormalization3", renormalization_algorithm);
   // evaluate_implementation(vecSumErr2, "vecSumErr2", vec_sum_err_algorithm, naive_runtime);
-
-  // /* vecSumErrBranch */
-  // double naive_runtime = measure_vec_sum_err_branch();
-
-  // evaluate_implementation(renormalizationalgorithm4, "renormalization4", renormalization_algorithm);
-  // evaluate_implementation(vecSumErrBranch2, "vecSumErrBranch2", vec_sum_err_branch_algorithm,
-  //                         naive_runtime);
 
   /* vecSumErrBranch */
   // double naive_runtime = measure_vec_sum_err_branch();
 
-  // evaluate_implementation(renormalizationalgorithm4, "renormalization4", renormalization_algorithm);
   // evaluate_implementation(vecSumErrBranch2, "vecSumErrBranch2", vec_sum_err_branch_algorithm,
   //                         naive_runtime);
 
