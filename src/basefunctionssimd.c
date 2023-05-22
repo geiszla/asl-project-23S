@@ -36,7 +36,7 @@ void twoMultFMA(const double a,const double b,double *pi_res, double *e_res){
 
 
 // call it with the array x and a array of the same size 
-void vecSum(double *x, double *e_res, int in_out_size){
+void inline vecSum(double *x, double *e_res, int in_out_size){
     int length = in_out_size;
     double* s = (double *)alloca(length*sizeof(double));
     s[length-1] = x[length-1];
@@ -79,7 +79,7 @@ Input: e vector size n (S-nonoverlapping), output vector size m
 Output: f vector size m
 
 **/
-void vecSumErrBranch(double* e, int n, int m, double *f){
+void inline vecSumErrBranch(double* e, int n, int m, double *f){
    double* err = (double *)alloca(n*sizeof(double));
 
    int j = 0;
@@ -118,15 +118,44 @@ Only correct if n>2!!
 
 Info: Probably faster to do it inplace in f then creating new g, but I tried to do it as similar as the algorithm.
 **/
-void vecSumErr(double* f, int n, double* g){
+void inline vecSumErr(double* f, int n, double* g){
 	int m = n-1;
 	double* err = (double *)alloca(n*sizeof(double));
 
 	err[0] = f[0];
 	
-	for (int i=0; i<= m-1; i++){
-		twoSum(err[i],f[i+1],&g[i],&err[i+1]);
+    // perfect for vectorization
+    int i = 0;
+    for( int b = 0; b<4; b++){
+        int l = b+i;
+        
+    }
+	for (i=0; i<= m-1; i+=4){
+       // makes no sense to use SIMD as the dependencies are too large here especially for the error
+        for( int b = 0; b<4; b++){
+            int l = b+i;
+            double s = err[l]+f[l+1];
+            double t = s-f[l+1]; 
+            double e = (err[l]-t) + (f[l+1]-(s-t));
+            
+            g[l] = s; err[l+1] = e;
+           
+            double a = 0;
+        }
+        
+        
 	}
+
+    for (i=i; i<= m-1; i++){
+		
+        double s = err[i]+f[i+1];
+        double t = s-f[i+1]; 
+        double e = (err[i]-t) + (f[i+1]-(s-t));
+        g[i] = s; err[i+1] = e;
+        
+	}
+
+
 	g[m] = err[m];
 
 }
