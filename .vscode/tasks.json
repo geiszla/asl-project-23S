@@ -33,7 +33,10 @@
                 "-g",
                 "/workspaces/codespaces-blank/src/tests.cpp",
                 "-march=native",
-                "-O3",
+                "-fno-tree-vectorize",
+                "-ffp-contract=off",
+                "-O2",
+
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}"
             ],
