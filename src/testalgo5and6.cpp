@@ -3,9 +3,14 @@
 
 extern "C"
 {
-  //#include "reference.h"
+  #ifdef __MINGW32__
+  #include "reference.h"
+  #include "basefunctions.h"
+  #endif
+  #ifdef __GNUC__
   #include "basefunctions.h"
   #include "basefunctionssimd.c"
+  #endif
 }
 
 const double onedifference = pow(10,-16);
