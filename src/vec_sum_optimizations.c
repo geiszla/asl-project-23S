@@ -15,7 +15,7 @@ inline void vecSum2(double *x, double *e_res, int in_out_size)
     double e = (a - t) + (b - (s2 - t));
 
     s[i] = s2;
-    e_res[i] = e;
+    e_res[i + 1] = e;
   }
 
   e_res[0] = s[0];
@@ -35,7 +35,7 @@ inline void vecSum3(double *x, double *e_res, int in_out_size)
 
     double e = (a - t) + (b - (s - t));
 
-    e_res[i] = e;
+    e_res[i + 1] = e;
   }
 
   e_res[0] = s;

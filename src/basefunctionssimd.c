@@ -44,6 +44,8 @@ void inline vecSum(double *x, double *e_res, int in_out_size){
     for(i = length-2; i>=5; i-=4){
        // note term e = (x[i]-t) + (s[i+1]-(s1-t)); could be  heavily simpilfied but not done as then the error is computed differently
       // large dependencies for s
+      // Note: calculating all s[c] first might make more ilp for vector instructions possible
+      // Note: unrolling might also be possible
       for (int b = 0; b<4; b++){
         // makes no sense to vectorize due to sequential dependencies
          int c = i-b;
@@ -59,6 +61,7 @@ void inline vecSum(double *x, double *e_res, int in_out_size){
         _mm256_storeu_pd(&e_res[lc],e);
       
     }
+    // Note: no need for `s` to be an array here anymore, we can just use a variable
     for(i =i; i>=0; i-=1){
        // note term e = (x[i]-t) + (s[i+1]-(s1-t)); could be  heavily simpilfied but not done as then the error is computed differently
         double s1 = x[i]+s[i+1];
@@ -84,6 +87,7 @@ void inline vecSumErrBranch(double* e, int n, int m, double *f){
 
    int j = 0;
    err[0] = e[0];
+   // Note: Similarly to vecSumErr, I don't think vectorization really makes sense here
    for (int i = 0; i <= n-2; i++) {
        
         double s = err[i]+e[i+1];
@@ -125,6 +129,7 @@ void inline vecSumErr(double* f, int n, double* g){
 	err[0] = f[0];
 	
     // perfect for vectorization
+    // Note: would vectorization really help here (since these are just integer operations)?
     int i = 0;
     for( int b = 0; b<4; b++){
         int l = b+i;

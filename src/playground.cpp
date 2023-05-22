@@ -42,8 +42,8 @@ int main()
   /* renormalization */
   double naive_runtime = measure_renormalization();
 
-  // evaluate_implementation(renormalization2, "renormalization2", renormalization_algorithm,
-  //                         naive_runtime);
+  evaluate_implementation(renormalizationalgorithm, "renormalization2", renormalization_algorithm,
+                          naive_runtime);
   evaluate_implementation(renormalization3, "renormalization3", renormalization_algorithm,
                           naive_runtime);
   evaluate_implementation(renormalization4, "renormalization4", renormalization_algorithm,

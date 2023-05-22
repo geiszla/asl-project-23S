@@ -3,13 +3,12 @@
 
 extern "C"
 {
-  #ifdef __MINGW32__
-  #include "reference.h"
-  #include "basefunctions.h"
-  #endif
   #ifdef __GNUC__
   #include "basefunctions.h"
   #include "basefunctionssimd.c"
+  #else
+  #include "reference.h"
+  #include "basefunctions.h"
   #endif
 }
 
@@ -161,6 +160,9 @@ void testaddition(void (*implementation)(double *, double *, double *, int, int,
    
     for(int i =0; i<c; i++){
       double ref = sol_ref[i]; double sol_our = sol[i];
+
+      printf("%g", sol_our);
+      printf("%g", ref);
       
       assert(abs(sol_our-ref) <0.001);
     }

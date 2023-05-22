@@ -44,7 +44,7 @@ inline void renormalization3(double x[], int size_of_x, double f[], int m)
 
     double e = (a - t) + (b - (s - t));
 
-    err[i] = e;
+    err[i + 1] = e;
   }
 
   // vecSumErrBranch
@@ -120,6 +120,8 @@ inline void renormalization4(double x[], int size_of_x, double f[], int m)
   // vecSum
   double s = x[size_of_x - 1];
 
+  // Note: could we parallelize the error calculations? (probably not)
+  // Or do it recursively?
   for (int i = size_of_x - 2; i >= 0; i--)
   {
     double a = x[i];
@@ -130,7 +132,7 @@ inline void renormalization4(double x[], int size_of_x, double f[], int m)
 
     double e = (a - t) + (b - (s - t));
 
-    err[i] = e;
+    err[i + 1] = e;
   }
 
   // vecSumErrBranch
@@ -185,7 +187,7 @@ inline void renormalization4(double x[], int size_of_x, double f[], int m)
       f_tmp[i + j] = s;
     }
 
-    f_tmp[m] = e;
+    f_tmp[m - i] = e;
 
     f[i] = f_tmp[i];
   }

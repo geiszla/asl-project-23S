@@ -43,7 +43,7 @@ void vecSum(double *x, double *e_res, int in_out_size){
     for(int i = length-2; i>=0; i--){
         double s_tmp,e_tmp; 
         twoSum(x[i],s[i+1],&s_tmp, &e_tmp);
-        s[i] = s_tmp; e_res[i] = e_tmp;
+        s[i] = s_tmp; e_res[i+1] = e_tmp;
     }
     e_res[0]=s[0];
 
