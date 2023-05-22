@@ -92,6 +92,8 @@ void testrenormalization(void (*implementation)(double *, int, double *, int) = 
       assert(abs(rt-st)<0.00001);
     }
   
+    delete[] renorm;
+    delete[] solution;
 	}
 
   for(int c = 2; c<20; c+=1){
@@ -111,6 +113,8 @@ void testrenormalization(void (*implementation)(double *, int, double *, int) = 
       assert(abs(rt-st)<0.00001);
     }
    
+    delete[] renorm;
+    delete[] solution;
 	}
 
   for(int c = 2; c<200; c+=1){
@@ -131,6 +135,8 @@ void testrenormalization(void (*implementation)(double *, int, double *, int) = 
       assert(abs(rt-st)<0.00001);
     }
    
+    delete[] renorm;
+    delete[] solution;
 	}
 }
 
@@ -141,8 +147,8 @@ void testaddition(void (*implementation)(double *, double *, double *, int, int,
   for(int c = 2; c<20; c+=1){
 		double* a =  new double[c];
     double* b =  new double[c];
-    double*   sol =  new double[c];
-    double*   sol_ref =  new double[c];
+    double*   sol =  new double[c]();
+    double*   sol_ref =  new double[c]();
 		for(int i = 0; i<c; i++){
 			a[i] = (allonesindouble*1024)/(pow(8,2*i));
       b[i] = (allonesindouble*1024)/(pow(8,2*i+1));
@@ -157,15 +163,17 @@ void testaddition(void (*implementation)(double *, double *, double *, int, int,
       }
     }
 		implementation(a,b,sol,c,c,c);
-   
+
     for(int i =0; i<c; i++){
       double ref = sol_ref[i]; double sol_our = sol[i];
-
-      printf("%g", sol_our);
-      printf("%g", ref);
       
       assert(abs(sol_our-ref) <0.001);
     }
+
+    delete[] a;
+    delete[] b;
+    delete[] sol;
+    delete[] sol_ref;
 	}
 
 

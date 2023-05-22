@@ -5,6 +5,7 @@
 
 extern "C"
 {
+  // #include "reference.h"
   #include "basefunctions.h"
 }
 
@@ -54,7 +55,7 @@ void testvecsumerr(void (*implementation)(double *, int, double *) = vecSumErr) 
 	// 	printf("%f\n", f[i]);
 	// }
 
-	double* g = (double *)malloc(n*sizeof(double));
+	double* g = (double *)calloc(n, sizeof(double));
 
 	implementation(f,n, g); // apply function
 	fast_VecSumErr(f,n); // compute correct results (inplace)
@@ -76,7 +77,7 @@ void testvecsumerrbranch(void (*implementation)(double *, int, int, double *) = 
 	double* e = (double *)malloc(n*sizeof(double));
 	fill_matrix(e, n);
 
-	double* h = (double *)malloc(n*sizeof(double));
+	double* h = (double *)calloc(n, sizeof(double));
 	
 	implementation(e, n, n, h); // apply function
 	fast_VecSumErrBranch(e, n, n); // compute correct results (inplace)
