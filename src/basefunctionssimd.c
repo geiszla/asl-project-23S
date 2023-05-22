@@ -5,7 +5,7 @@
 #ifdef _WIN32
 #define alloca _alloca
 #endif
-
+#include <immintrin.h>
 
 #define dbl_prec 53
 #define binSize 45
@@ -40,10 +40,23 @@ void vecSum(double *x, double *e_res, int in_out_size){
     int length = in_out_size;
     double* s = (double *)alloca(length*sizeof(double));
     s[length-1] = x[length-1];
-    for(int i = length-2; i>=0; i--){
-        double s_tmp,e_tmp; 
-        twoSum(x[i],s[i+1],&s_tmp, &e_tmp);
-        s[i] = s_tmp; e_res[i] = e_tmp;
+    int i = 0;
+    for(i = length-2; i>=5; i-=4){
+       // note term e = (x[i]-t) + (s[i+1]-(s1-t)); could be  heavily simpilfied but not done as then the error is computed differently
+       for (int b = 0; b<4; b++){
+            int c = i-b;
+            double s1 = x[c]+s[c+1];
+            double t = s1-s[c+1]; 
+            double e = (x[c]-t) + (s[c+1]-(s1-t));
+            s[c] = s1; e_res[c] = e;
+       }
+    }
+    for(i =i; i>=0; i-=1){
+       // note term e = (x[i]-t) + (s[i+1]-(s1-t)); could be  heavily simpilfied but not done as then the error is computed differently
+        double s1 = x[i]+s[i+1];
+        double t = s1-s[i+1]; 
+        double e = (x[i]-t) + (s[i+1]-(s1-t));
+        s[i] = s1; e_res[i] = e;
     }
     e_res[0]=s[0];
 

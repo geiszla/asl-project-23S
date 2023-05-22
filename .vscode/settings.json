@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "basefunctionssimd.c": "cpp",
+        "random": "cpp"
+    }
+}
