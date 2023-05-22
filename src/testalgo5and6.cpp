@@ -3,8 +3,9 @@
 
 extern "C"
 {
-  #include "reference.h"
+  //#include "reference.h"
   #include "basefunctions.h"
+  #include "basefunctions.c"
 }
 
 const double onedifference = pow(10,-16);
