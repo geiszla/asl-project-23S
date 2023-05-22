@@ -85,7 +85,13 @@ void vecSumErrBranch(double* e, int n, int m, double *f){
    int j = 0;
    err[0] = e[0];
    for (int i = 0; i <= n-2; i++) {
-      twoSum(err[i], e[i+1], &f[j], &err[i+1]);
+       
+        double s = err[i]+e[i+1];
+        double t = s-e[i+1]; 
+        double etmp = (err[i]-t) + (e[i+1]-(s-t));
+    
+        f[j] = s; err[i+1] = etmp;
+  
       if (err[i+1] != 0) {
          if (j >= m - 1){ // enough output terms
             return;
