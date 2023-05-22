@@ -7,7 +7,8 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
-                "${file}",
+                "/workspaces/codespaces-blank/src/tests.cpp",
+                "-march=native",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}"
             ],

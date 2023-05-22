@@ -43,13 +43,21 @@ void vecSum(double *x, double *e_res, int in_out_size){
     int i = 0;
     for(i = length-2; i>=5; i-=4){
        // note term e = (x[i]-t) + (s[i+1]-(s1-t)); could be  heavily simpilfied but not done as then the error is computed differently
-       for (int b = 0; b<4; b++){
-            int c = i-b;
-            double s1 = x[c]+s[c+1];
-            double t = s1-s[c+1]; 
-            double e = (x[c]-t) + (s[c+1]-(s1-t));
-            s[c] = s1; e_res[c] = e;
-       }
+      // large dependencies for s
+      for (int b = 0; b<4; b++){
+        // makes no sense to vectorize due to sequential dependencies
+         int c = i-b;
+         double ref =  x[c]+s[c+1];
+         s[c] = ref;
+        }
+        int lc = i-3;
+        __m256d splus1 = _mm256_loadu_pd(&s[lc+1]);
+        __m256d s1 = _mm256_loadu_pd(&s[lc]);
+        __m256d x1 = _mm256_loadu_pd(&x[lc]);
+        __m256d t = _mm256_sub_pd(s1,splus1);
+        __m256d e = _mm256_add_pd(_mm256_sub_pd(x1,t),_mm256_sub_pd(splus1,_mm256_sub_pd(s1,t)));
+        _mm256_storeu_pd(&e_res[lc],e);
+      
     }
     for(i =i; i>=0; i-=1){
        // note term e = (x[i]-t) + (s[i+1]-(s1-t)); could be  heavily simpilfied but not done as then the error is computed differently
