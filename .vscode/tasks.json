@@ -33,6 +33,7 @@
                 "-g",
                 "/workspaces/codespaces-blank/src/tests.cpp",
                 "-march=native",
+                "-O3",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}"
             ],
