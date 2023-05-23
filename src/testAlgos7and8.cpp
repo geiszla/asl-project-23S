@@ -21,7 +21,7 @@ double ulp(double x){
    return ldexp(1.0,exponent); // 1.0*2^exponent = ulp
 }
 
-int exponent(double d)
+int exponent1(double d)
 {
   int result;
   frexp(d,&result);
