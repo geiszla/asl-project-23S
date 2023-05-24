@@ -186,5 +186,72 @@ void testaddition(void (*implementation)(double *, double *, double *, int, int,
 
 void testmultiplication(void (*implementation)(double *, double *, double *, int, int, int) = multiplication){
 
+  // reference implementation certifiedMul
+  // our implementation implementation
+  // test case 1
+  for(int c = 2; c<20; c+=1){
+    double* a =  new double[c];
+    double* b =  new double[c];
+    double*   sol =  new double[c]();
+    double*   sol_ref =  new double[c]();
+    for(int i = 0; i<c; i++){
+      a[i] = (allonesindouble*1024)/(pow(8,2*i));
+      b[i] = (allonesindouble*1024)/(pow(8,2*i+1));
+    }
+    implementation(a,b,sol,c,c,1);
+    certifiedMul(c,c,1,a,b,sol_ref);
+    for(int i =0; i<1; i++){
+      double ref = sol_ref[i]; double sol_our = sol[i];
+      assert(abs(sol_our-ref) <0.00000001);
+    } 
+    delete[] a;
+    delete[] b;
+    delete[] sol;
+    delete[] sol_ref;
+  }
+
+  // test case 2
+  for(int c = 2; c<20; c+=1){
+    double* a =  new double[c];
+    double* b =  new double[c];
+    double*   sol =  new double[c]();
+    double*   sol_ref =  new double[c]();
+    for(int i = 0; i<c; i++){
+      a[i] = (allonesindouble*1024)/(pow(8,2*i));
+      b[i] = (allonesindouble*1024)/(pow(8,2*i+1));
+    }
+    implementation(a,b,sol,c,c,2);
+    certifiedMul(c,c,2,a,b,sol_ref);
+    for(int i =0; i<2; i++){
+      double ref = sol_ref[i]; double sol_our = sol[i];
+      assert(abs(sol_our-ref) <0.00000001);
+    } 
+    delete[] a;
+    delete[] b;
+    delete[] sol;
+    delete[] sol_ref;
+  }
+  // test case 3
+  for(int c = 2; c<20; c+=1){
+    double* a =  new double[c];
+    double* b =  new double[c];
+    double*   sol =  new double[c]();
+    double*   sol_ref =  new double[c]();
+    for(int i = 0; i<c; i++){
+      a[i] = (allonesindouble*1024)/(pow(8,2*i));
+      b[i] = (allonesindouble*1024)/(pow(8,2*i+1));
+    }
+    implementation(a,b,sol,c,c,3);
+    certifiedMul(c,c,3,a,b,sol_ref);
+    for(int i =0; i<3; i++){
+      double ref = sol_ref[i]; double sol_our = sol[i];
+      assert(abs(sol_our-ref) <0.00000001);
+    } 
+    delete[] a;
+    delete[] b;
+    delete[] sol;
+    delete[] sol_ref;
+  }
+
 
 }

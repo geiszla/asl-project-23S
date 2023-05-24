@@ -8,7 +8,7 @@
                 "/Zi",
                 "/std:c++17",
                 "/EHsc",
-                "/O2",
+                "/O0",
                 "/GL",
                 "/nologo",
                 "/Fe${fileDirname}\\${fileBasenameNoExtension}.exe",
@@ -35,7 +35,7 @@
                 "-march=native",
                 "-fno-tree-vectorize",
                 "-ffp-contract=off",
-                "-O2",
+                "-O0",
 
                 "-o",
                 "${fileDirname}/a"
