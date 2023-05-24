@@ -214,6 +214,35 @@ void benchmark_multiplication2_1(ofstream &output_file)
         write_results("Multiplication2_1", runtime, performance, term_count, output_file);
     }
 }
+
+void benchmark_multiplication2_2(ofstream &output_file)
+{
+    cout << endl
+         << "Multiplication2_2: " << endl;
+
+    for (int term_count = 1; term_count < 129; term_count *= 2)
+    {
+        double runtime = measure_multiplication2(mult2_1, term_count);
+        double performance = get_multiplication2_flops(term_count) / runtime;
+
+        write_results("Multiplication2_2", runtime, performance, term_count, output_file);
+    }
+}
+
+void benchmark_multiplication2_3(ofstream &output_file)
+{
+    cout << endl
+         << "Multiplication2_3: " << endl;
+
+    for (int term_count = 1; term_count < 129; term_count *= 2)
+    {
+        double runtime = measure_multiplication2(mult2_1, term_count);
+        double performance = get_multiplication2_flops(term_count) / runtime;
+
+        write_results("Multiplication2_3", runtime, performance, term_count, output_file);
+    }
+}
+
 // Main
 
 int main()
@@ -257,8 +286,10 @@ int main()
     benchmark_multiplication(output_file);
 
     benchmark_multiplication2(output_file);
-    // benchmark_multiplication2_0(output_file);
-    // benchmark_multiplication2_1(output_file);
+    benchmark_multiplication2_0(output_file);
+    benchmark_multiplication2_1(output_file);
+    benchmark_multiplication2_2(output_file);
+    benchmark_multiplication2_3(output_file);
 
     output_file.close();
 }
