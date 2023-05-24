@@ -230,3 +230,4 @@ pyrightconfig.json
 # Custom rules
 results/
 *.pdb
+*.ilk

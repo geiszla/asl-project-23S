@@ -1,3 +1,12 @@
+#include <malloc.h>
+
+#ifdef _WIN32
+#define alloca _alloca
+#endif
+
+#define dbl_prec 53
+#define binSize 45
+
 ///////////////////////////////// copied from CAMPARY package/////////////////////////////
 inline double FPadd_rn(const double x, const double y){
   return x + y;
@@ -117,4 +126,89 @@ inline void renorm_rand2L(int sX, int sR, double x[]){
   }
   if(ptr<sR && pr!=0.){ x[ptr] = pr; ptr++; }
   for(i=ptr; i<sX; i++) x[i] = 0.;
+}
+
+// Camapary mul
+/** Multiplies x and y and returns the result in r, as an ulp-nonoverlapping expansion.
+    K - size of x, L - size of y, R - size of r.
+    Computes all partial products based on scalar products and then accumulates
+    them in a special designed structure that has a fixed-point flavour.
+    double-precision = 53, bin size = 45; **/
+// Multiplication_accurate with relative error <= 2^{-(p-1)R}( 1 + (r+1)2^{-p} )
+// template <int K, int L, int R>
+inline void certifiedMul(int K, int L, int R, const double *x, const double *y, double *r)
+{
+    int const LBN = R * dbl_prec / binSize + 2;
+    double *B = (double *)alloca((LBN + 2) * sizeof(double));
+    double *lim = (double *)alloca((LBN + 2) * sizeof(double));
+    int i;
+
+    int *exp_x = (int *)alloca((K) * sizeof(int));
+    int *exp_y = (int *)alloca((L) * sizeof(int));
+    for (i = 0; i < K; i++)
+        frexp(x[i], &exp_x[i]);
+    for (i = 0; i < L; i++)
+        frexp(y[i], &exp_y[i]);
+
+    double factor = ldexp(1.0, -binSize); /* 2^(-45) */
+    int exp_start = exp_x[0] + exp_y[0];
+    lim[0] = ldexp(1.5, exp_start - binSize + dbl_prec - 1);
+    B[0] = lim[0];
+    for (i = 1; i < LBN + 2; i++)
+    {
+        lim[i] = FPmul_rn(lim[i - 1], factor);
+        B[i] = lim[i];
+    }
+
+#ifdef UNROLL_MUL_MAIN
+    unrollPartialProds<L, R, 0, K, 1>::unrollX_all(exp_start, LBN, x, exp_x, y, exp_y, B);
+#else
+    double p, e;
+    int j, sh, l;
+    for (i = 0; i < K; i++)
+    {
+        for (j = 0; j < L; j++)
+        {
+            l = exp_start - (exp_x[i] + exp_y[j]);
+            sh = (int)(l / binSize);
+            l = l - sh * binSize;
+            if (sh < LBN - 1)
+            {
+                p = two_prod(x[i], y[j], &e);
+                if (l < 30)
+                { // binSize - 2*(dbl_prec-binSize-1) - 1){
+                    B[sh] = fast_two_sum(B[sh], p, &p);
+                    B[sh + 1] = FPadd_rn(B[sh + 1], p);
+
+                    B[sh + 1] = fast_two_sum(B[sh + 1], e, &e);
+                    B[sh + 2] = FPadd_rn(B[sh + 2], e);
+                }
+                else if (l < 37)
+                { // binSize - (dbl_prec-binSize-1) - 1){
+                    B[sh] = fast_two_sum(B[sh], p, &p);
+                    B[sh + 1] = FPadd_rn(B[sh + 1], p);
+
+                    B[sh + 1] = fast_two_sum(B[sh + 1], e, &e);
+                    B[sh + 2] = fast_two_sum(B[sh + 2], e, &e);
+                    B[sh + 3] = FPadd_rn(B[sh + 3], e);
+                }
+                else
+                {
+                    B[sh] = fast_two_sum(B[sh], p, &p);
+                    B[sh + 1] = fast_two_sum(B[sh + 1], p, &p);
+                    B[sh + 2] = FPadd_rn(B[sh + 2], p);
+
+                    B[sh + 2] = fast_two_sum(B[sh + 2], e, &e);
+                    B[sh + 3] = FPadd_rn(B[sh + 3], e);
+                }
+            }
+        }
+    }
+#endif
+
+    /* unbias the B's */
+    for (i = 0; i < LBN; i++)
+        B[i] = FPadd_rn(B[i], -lim[i]);
+    // recheck if right implementation used if result is not correct
+    fast_VecSumErrBranchmul(B, r, LBN, R);
 }
