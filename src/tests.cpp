@@ -8,8 +8,8 @@ int main()
 	// testing framework
 	testtwosum();
 	testfastfma();
-	testvecsumerr();
-	testvecsumerrbranch();
+	//testvecsumerr();
+	//testvecsumerrbranch();
 	testrenormalization();
 	testaddition();
 

@@ -58,6 +58,18 @@ inline double fast_two_sum(const double a, const double b, double *err){
   return s;
 }
 
+inline void fast_VecSumErrBranchmul(const double *x, double *r,int sX, int sR){
+  int ptr = 0, i = 1;
+  double e = x[0];
+
+  while(i<sX && ptr<sR){
+    r[ptr] = fast_two_sum(e, x[i], &e); i++;
+    if(e == 0.) e = r[ptr]; else ptr++;
+  }
+  if(ptr<sR && e!=0.){ r[ptr] = e; ptr++; }
+  for(i=ptr; i<sR; i++) r[i] = 0.;
+}
+
 inline void fast_VecSumErrBranch(double *x, int sX, int sR){
 	int ptr = 0, i = 1;
 	double e = x[0];

@@ -4,8 +4,9 @@
 extern "C"
 {
   #ifdef __GNUC__
-  #include "basefunctions.h"
-  #include "basefunctionssimd.c"
+  #include "reference.h"
+  #include "./basefunctions.c"
+
   #else
   #include "reference.h"
   #include "basefunctions.h"
@@ -178,5 +179,12 @@ void testaddition(void (*implementation)(double *, double *, double *, int, int,
 
 
    
+
+}
+
+
+
+void testmultiplication(void (*implementation)(double *, double *, double *, int, int, int) = multiplication){
+
 
 }

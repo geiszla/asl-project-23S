@@ -35,7 +35,7 @@
                 "-march=native",
                 "-fno-tree-vectorize",
                 "-ffp-contract=off",
-                "-O1",
+                "-O2",
 
                 "-o",
                 "${fileDirname}/a"
