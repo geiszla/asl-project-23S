@@ -160,16 +160,15 @@ void addition(double *a, double *b, double *s, int length_a, int length_b, int l
  */
 void multiplication(double *a, double *b, double *r, const int sizea, const int sizeb, const int sizer)
 {
-    int sizetmp = sizea;
-    renormalizationalgorithm(a, sizea, a, sizea);
-    renormalizationalgorithm(b, sizeb, b, sizeb);
+    
+   
     int k = sizea;
-    double *err = (double *)alloca((sizea * sizea +3*sizea) * sizeof(double));
-    for(int i = 0; i<= sizea*sizea+3*sizea-1;i++){
+    double *err = (double *)alloca(2*(sizea * sizea +3*sizea) * sizeof(double));
+    for(int i = 0; i< 2*sizea * sizea +3*sizea;i++){
         err[i] = 0;
     }
-    double *r_ext = (double *)alloca((5*sizea) * sizeof(double));
-    for (int i = 0; i <(5*sizea); i++)
+    double *r_ext = (double *)alloca(2*(sizea * sizea  ) * sizeof(double));
+    for (int i = 0; i <2*(sizea * sizea); i++)
     {
         r_ext[i] = 0.0;
     }
@@ -179,9 +178,9 @@ void multiplication(double *a, double *b, double *r, const int sizea, const int 
 
     for (int n = 1; n <= (k - 1); n++)
     {
-        double *e_tmp = (double *)alloca(3*n * sizeof(double));
-        double *p = (double *)alloca(3*n * sizeof(double));
-        for (int i = 0; i <= 3*n - 1; i++)
+        double *e_tmp = (double *)alloca(2*(n+1) * sizeof(double));
+        double *p = (double *)alloca(2*(n+1)  * sizeof(double));
+        for (int i = 0; i < 2*(n+1); i++)
         {
             e_tmp[i] = 0.0;
             p[i] = 0.0;

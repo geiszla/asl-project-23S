@@ -189,7 +189,7 @@ void testmultiplication(void (*implementation)(double *, double *, double *, int
   // reference implementation certifiedMul
   // our implementation implementation
   // test case 1
-  for(int c = 2; c<5; c+=1){
+  for(int c = 2; c<10; c+=1){
     double* a =  new double[c];
     double* b =  new double[c];
     double*   sol =  new double[c]();
@@ -198,6 +198,8 @@ void testmultiplication(void (*implementation)(double *, double *, double *, int
       a[i] = (allonesindouble*1024)/(pow(8,2*i));
       b[i] = (allonesindouble*1024)/(pow(8,2*i+1));
     }
+    renormalizationalgorithm(a, c, a, c);
+    renormalizationalgorithm(b, c, b, c);
     implementation(a,b,sol,c,c,1);
     certifiedMul(c,c,1,a,b,sol_ref);
     for(int i =0; i<1; i++){
@@ -211,7 +213,7 @@ void testmultiplication(void (*implementation)(double *, double *, double *, int
   }
 
   // test case 2
-  for(int c = 2; c<5; c+=1){
+  for(int c = 2; c<10; c+=1){
     double* a =  new double[c];
     double* b =  new double[c];
     double*   sol =  new double[c]();
@@ -220,6 +222,8 @@ void testmultiplication(void (*implementation)(double *, double *, double *, int
       a[i] = (allonesindouble*1024)/(pow(8,2*i));
       b[i] = (allonesindouble*1024)/(pow(8,2*i+1));
     }
+    renormalizationalgorithm(a, c, a, c);
+    renormalizationalgorithm(b, c, b, c);
     implementation(a,b,sol,c,c,2);
     certifiedMul(c,c,2,a,b,sol_ref);
     for(int i =0; i<2; i++){
@@ -232,7 +236,7 @@ void testmultiplication(void (*implementation)(double *, double *, double *, int
     delete[] sol_ref;
   }
   // test case 3
-  for(int c = 2; c<5; c+=1){
+  for(int c = 2; c<10; c+=1){
     double* a =  new double[c];
     double* b =  new double[c];
     double*   sol =  new double[c]();
@@ -241,6 +245,8 @@ void testmultiplication(void (*implementation)(double *, double *, double *, int
       a[i] = (allonesindouble*1024)/(pow(8,2*i));
       b[i] = (allonesindouble*1024)/(pow(8,2*i+1));
     }
+    renormalizationalgorithm(a, c, a, c);
+    renormalizationalgorithm(b, c, b, c);
     implementation(a,b,sol,c,c,3);
     certifiedMul(c,c,3,a,b,sol_ref);
     for(int i =0; i<3; i++){
