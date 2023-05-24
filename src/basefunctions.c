@@ -53,7 +53,7 @@ void vecSum(double *x, double *e_res, int in_out_size)
         e_res[i + 1] = e_tmp;
     }
     e_res[0] = s[0];
-
+   
     return;
 }
 
@@ -158,74 +158,90 @@ void addition(double *a, double *b, double *s, int length_a, int length_b, int l
  * Input a and b of length k
  * Output r of length k
  */
-void multiplication(double *a, double *b, double *r, int sizea, int sizeb, int sizer)
+void multiplication(double *a, double *b, double *r, const int sizea, const int sizeb, const int sizer)
 {
+    int sizetmp = sizea;
+    renormalizationalgorithm(a, sizea, a, sizea);
+    renormalizationalgorithm(b, sizeb, b, sizeb);
     int k = sizea;
-    double *err = (double *)alloca((sizea * sizea - 1) * sizeof(double));
-
-    double *r_ext = (double *)alloca(sizea * sizeof(double));
-    r_ext[sizea] = 0.0;
+    double *err = (double *)alloca((sizea * sizea +3*sizea) * sizeof(double));
+    for(int i = 0; i<= sizea*sizea+3*sizea-1;i++){
+        err[i] = 0;
+    }
+    double *r_ext = (double *)alloca((5*sizea) * sizeof(double));
+    for (int i = 0; i <(5*sizea); i++)
+    {
+        r_ext[i] = 0.0;
+    }
+    
 
     twoMultFMA(a[0], b[0], &(r_ext[0]), &(err[0]));
 
     for (int n = 1; n <= (k - 1); n++)
     {
-        double *e_tmp = (double *)alloca(n * sizeof(double));
-        double *p = (double *)alloca(n * sizeof(double));
+        double *e_tmp = (double *)alloca(3*n * sizeof(double));
+        double *p = (double *)alloca(3*n * sizeof(double));
+        for (int i = 0; i <= 3*n - 1; i++)
+        {
+            e_tmp[i] = 0.0;
+            p[i] = 0.0;
+        }
         for (int i = 0; i <= n; i++)
         {
             twoMultFMA(a[i], b[n - i], &(p[i]), &(e_tmp[i]));
         }
-        double *tmp = (double *)alloca((n * n + n) * sizeof(double));
-        double *tmp2 = (double *)alloca((n * n + n + 1) * sizeof(double));
-        for (int b = 0; b <= n; b++)
+        double *tmp = (double *)alloca((n * n + 3*n) * sizeof(double));
+        double *tmp1 = (double *)alloca(3*n * sizeof(double));
+        for (int i = 0; i <= 3*n; i++)
         {
-            tmp2[b] = p[b];
+            tmp1[i] = 0.0;
         }
-        for (int b = n + 1; b < n * n + n; b++)
+        for (int i = 0; i <= n * n + 3*n ; i++)
         {
-            tmp2[b] = err[b - n];
+            tmp[i] = 0.0;
         }
-        // write result into tmp
-        vecSum(tmp2, tmp, 1);
-        // r_N = tmp[0]
-        r_ext[n] = tmp[0];
-        // now write e 0:n^2 -1
-        for (int b = 0; b < n * n + n - 1; b++)
+        // generate p[0:n], e[0:n^2-1] into tmp
+        for (int i = 0; i <= n; i++)
         {
-            err[b] = tmp[b + 1];
+            tmp[i] = p[i];
         }
+        for (int i = 0; i <= n * n - 1; i++)
+        {
+            tmp[n + i] = err[i];
+        }
+        vecSum(tmp, tmp1, (n * n + n));
+        /* write  tmp1 into r_ext[n], e[0:n^2 +n-1]*/
+        r_ext[n] = tmp1[0];
+        for (int i = 0; i <= n * n + n - 1; i++)
+        {
+            err[i] = tmp1[i + 1];
+        }
+        // writes err[0:n^2 +n-1],e_tmp[0:n] into err[0:n^2 +2n-1]
+        for (int i = 0; i <= n * n - 1; i++)
+        {
+            err[n * n + n + i] = err[i];
+        }
+        for (int i = 0; i <= n; i++)
+        {
+            err[i] = e_tmp[i];
+        }
+    }
+   
+    for (int i = 1; i <= (k - 1); i++)
+    {
+     
+        r_ext[k] += a[i] * b[k - i];
+    }
+   
+    for (int i = 0; i <= (k * k - 1); i++)
+    {
+      
+        r_ext[i] += a[i] * b[k - i];
+    }
 
-        // now compute e[0:(n+1)^2 -1] <- e[0:n^2 + n -1],e[0:n]
-        int count = 0;
-        for (int b = 0; b <= ((n ^ 2) + n - 1); b++)
-        {
-            err[count] = err[b];
-            count++;
-        }
-        for (int b = 0; b <= n; b++)
-        {
-            err[count] = err[b];
-            count++;
-        }
-    }
-    // here compute line 9-11
-    for (int i = 1; i < k; i++)
-    {
-        r_ext[k] = r_ext[k] + a[i] * b[k - i];
-    }
-    // compute line 12 -14
-    for (int i = 0; i < k * k; i++)
-    {
-        r_ext[k] = r_ext[k] + err[i];
-    }
-
-    for (int i = 1; i <= sizea * sizea - 1; i++)
-    {
-        r_ext[k] = r_ext[k] + err[i];
-    }
     renormalizationalgorithm(r_ext, k + 1, r, sizea);
-    return
+   
+    return;
 }
 // helper
 int exponent(double d)

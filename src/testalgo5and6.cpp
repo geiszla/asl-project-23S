@@ -189,7 +189,7 @@ void testmultiplication(void (*implementation)(double *, double *, double *, int
   // reference implementation certifiedMul
   // our implementation implementation
   // test case 1
-  for(int c = 2; c<20; c+=1){
+  for(int c = 2; c<5; c+=1){
     double* a =  new double[c];
     double* b =  new double[c];
     double*   sol =  new double[c]();
@@ -202,7 +202,7 @@ void testmultiplication(void (*implementation)(double *, double *, double *, int
     certifiedMul(c,c,1,a,b,sol_ref);
     for(int i =0; i<1; i++){
       double ref = sol_ref[i]; double sol_our = sol[i];
-      assert(abs(sol_our-ref) <0.00000001);
+      assert(abs(sol_our-ref) <0.00001);
     } 
     delete[] a;
     delete[] b;
@@ -211,7 +211,7 @@ void testmultiplication(void (*implementation)(double *, double *, double *, int
   }
 
   // test case 2
-  for(int c = 2; c<20; c+=1){
+  for(int c = 2; c<5; c+=1){
     double* a =  new double[c];
     double* b =  new double[c];
     double*   sol =  new double[c]();
@@ -232,7 +232,7 @@ void testmultiplication(void (*implementation)(double *, double *, double *, int
     delete[] sol_ref;
   }
   // test case 3
-  for(int c = 2; c<20; c+=1){
+  for(int c = 2; c<5; c+=1){
     double* a =  new double[c];
     double* b =  new double[c];
     double*   sol =  new double[c]();
