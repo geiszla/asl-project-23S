@@ -35,10 +35,10 @@
                 "-march=native",
                 "-fno-tree-vectorize",
                 "-ffp-contract=off",
-                "-O2",
+                "-O1",
 
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}"
+                "${fileDirname}/a"
             ],
             "options": {
                 "cwd": "${fileDirname}"
