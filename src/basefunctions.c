@@ -1,7 +1,8 @@
 #include <math.h>
-
+#ifdef __GNUC__
+#else
 #include "reference.h"
-
+#endif
 const double trennung = 0.000000000000000001; // 10^-18
 // compile with g++ -std=c++11 ./main.cpp
 // error free transforms
