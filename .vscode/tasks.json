@@ -8,7 +8,7 @@
                 "/Zi",
                 "/std:c++17",
                 "/EHsc",
-                "/MTd",
+                "/MDd", 
                 "/O0",
                 "/GL",
                 "/nologo",
