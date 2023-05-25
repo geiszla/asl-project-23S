@@ -1,9 +1,0 @@
-{
-    "files.associations": {
-        "basefunctionssimd.c": "cpp",
-        "random": "cpp",
-        "cmath": "cpp",
-        "basefunctions.h": "c",
-        "reference.h": "c"
-    }
-}
