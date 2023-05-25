@@ -227,6 +227,7 @@ void testmultiplication(void (*implementation)(double *, double *, double *, int
       a[i] = (allonesindouble*1024)/(pow(8,2*i));
       b[i] = (allonesindouble*1024)/(pow(8,2*i+1));
     }
+    
     renormalizationalgorithm(a, c, a, c);
     renormalizationalgorithm(b, c, b, c);
     implementation(a,b,sol,c,c,2);
