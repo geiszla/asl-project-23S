@@ -6,6 +6,7 @@ extern "C"
   #include "vec_sum_err_optimizations.c"
   #include "vec_sum_err_branch_optimizations.c"
   #include "renormalization_optimizations.c"
+  #include "addition_optimizations.c"
 }
 
 // Compile with `g++ -std=c++17 ./benchmark.cpp` (plus additional optimization flags)
@@ -31,12 +32,16 @@ int main()
   //                         naive_runtime);
 
   /* renormalization */
-  double naive_runtime = measure_renormalization();
+  // double naive_runtime = measure_renormalization();
 
-  evaluate_implementation(renormalizationalgorithm, "renormalization2", renormalization_algorithm,
-                          naive_runtime);
-  evaluate_implementation(renormalization3, "renormalization3", renormalization_algorithm,
-                          naive_runtime);
-  evaluate_implementation(renormalization4, "renormalization4", renormalization_algorithm,
-                          naive_runtime);
+  // evaluate_implementation(renormalization3, "renormalization3", renormalization_algorithm,
+  //                         naive_runtime);
+  // evaluate_implementation(renormalization4, "renormalization4", renormalization_algorithm,
+  //                         naive_runtime);
+
+  /* addition */
+  double naive_runtime = measure_addition();
+
+  evaluate_implementation(addition3, "addition3", addition_algorithm, naive_runtime);
+  evaluate_implementation(addition4, "addition4", addition_algorithm, naive_runtime);
 }

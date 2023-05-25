@@ -99,7 +99,7 @@ inline void renormalization3(double x[], int size_of_x, double f[], int m)
       f_tmp[i + j] = s;
     }
 
-    f_tmp[m] = e;
+    f_tmp[m - i] = e;
 
     f[i] = f_tmp[i];
   }
@@ -174,17 +174,19 @@ inline void renormalization4(double x[], int size_of_x, double f[], int m)
   {
     // vecSumErr
     double e = f_tmp[i];
+    int k = i;
 
     for (int j = 0; j < m - i; j++)
     {
-      double b = f_tmp[i + j + 1];
+      double b = f_tmp[k + 1];
 
       double s = e + b;
       double t = s - b;
 
       e = (e - t) + (b - (s - t));
 
-      f_tmp[i + j] = s;
+      f_tmp[k] = s;
+      k++;
     }
 
     f_tmp[m - i] = e;

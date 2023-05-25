@@ -6,14 +6,13 @@
 int main()
 {
 	// testing framework
-	testmultiplication();
 	testtwosum();
 	testfastfma();
-	//testvecsumerr();
-	//testvecsumerrbranch();
+	testvecsumerr();
+	testvecsumerrbranch();
 	testrenormalization();
 	testaddition();
-	
+	testmultiplication();
 
 	printf("successfully ran all test cases");
 }

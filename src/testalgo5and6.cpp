@@ -3,14 +3,14 @@
 
 extern "C"
 {
-  #ifdef __GNUC__
-  #include "reference.h"
-  #include "./basefunctions.c"
+#ifdef __GNUC__
+#include "reference.h"
+#include "./basefunctions.c"
 
-  #else
-  #include "reference.h"
-  #include "basefunctions.h"
-  #endif
+#else
+#include "reference.h"
+#include "basefunctions.h"
+#endif
 }
 
 const double onedifference = pow(10,-16);
@@ -105,7 +105,7 @@ void testrenormalization(void (*implementation)(double *, int, double *, int) = 
 			renorm[i] = (allonesindouble*1024)/(8*i+1);
 
 		}
-		renormalizationalgorithm(renorm,c,solution,2);
+		implementation(renorm,c,solution,2);
     renorm_rand2L(c,2,renorm);
     for(int n = 0; n<2; n++){
       double rt = renorm[n]; double st = solution[n];
@@ -126,10 +126,11 @@ void testrenormalization(void (*implementation)(double *, int, double *, int) = 
 			renorm[i] = (allonesindouble*1024)/(8*i+1);
 
 		}
-		renormalizationalgorithm(renorm,c,solution,3);
+		implementation(renorm,c,solution,3);
     renorm_rand2L(c,3,renorm);
     for(int n = 0; n<3; n++){
-      double rt = renorm[n]; double st = solution[n];
+      double rt = renorm[n];
+      double st = solution[n];
       
       
       // test for reduction onto size 2 thus if failed thats the problem
