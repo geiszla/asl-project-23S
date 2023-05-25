@@ -110,8 +110,9 @@ void vecSumErr(double *f, int n, double *g)
 /** implementation of Algorithm 6 renormalization
  **/
 
-void renormalizationalgorithm(double x[], int size_of_x, double f[], int m)
+void renormalizationalgorithm(double* x, int size_of_x, double* f, int m)
 {
+   
     double *err = (double *)alloca((size_of_x) * sizeof(double));
     double *f_tmp = (double *)alloca((m + 1) * sizeof(double));
     for (int i = 0; i <= m; i++)
@@ -130,6 +131,8 @@ void renormalizationalgorithm(double x[], int size_of_x, double f[], int m)
         f[i] = f_tmp[i];
     }
     f[m - 1] = f_tmp[m - 1];
+   
+    return;
 }
 
 /**Implementation of FP exansionaddition with k terms
@@ -158,7 +161,7 @@ void multiplication(double *a, double *b, double *r, const int sizea, const int 
     for(int i = 0; i< 2*sizea * sizea +3*sizea;i++){
         err[i] = 0;
     }
-    double *r_ext = (double *)alloca(2*(sizea * sizea  ) * sizeof(double));
+    double *r_ext = (double *)alloca(2*(sizea * sizea  + sizea) * sizeof(double));
     for (int i = 0; i <2*(sizea * sizea); i++)
     {
         r_ext[i] = 0.0;
@@ -226,7 +229,7 @@ void multiplication(double *a, double *b, double *r, const int sizea, const int 
     for (int i = 0; i <= (k * k - 1); i++)
     {
       
-        r_ext[i] += a[i] * b[k - i];
+        r_ext[i] +=err[ i];
     }
 
     renormalizationalgorithm(r_ext, k + 1, r, sizea);

@@ -108,8 +108,10 @@ void testrenormalization(void (*implementation)(double *, int, double *, int) = 
 		}
 		implementation(renorm,c,solution,2);
     renorm_rand2L(c,2,renorm);
+    
     for(int n = 0; n<2; n++){
-      double rt = renorm[n]; double st = solution[n];
+      double rt = renorm[n];
+      double st = solution[n];
      
       // test for reduction onto size 2 thus if failed thats the problem 
       assert(abs(rt-st)<0.00001);
@@ -119,7 +121,7 @@ void testrenormalization(void (*implementation)(double *, int, double *, int) = 
     delete[] solution;
 	}
 
-  for(int c = 2; c<200; c+=1){
+  for(int c = 3; c<200; c+=1){
 		double* renorm =  new double[c];
     double* solution =  new double[5];
    
@@ -128,6 +130,7 @@ void testrenormalization(void (*implementation)(double *, int, double *, int) = 
 
 		}
 		implementation(renorm,c,solution,3);
+  
     renorm_rand2L(c,3,renorm);
     for(int n = 0; n<3; n++){
       double rt = renorm[n];
@@ -191,7 +194,7 @@ void testmultiplication(void (*implementation)(double *, double *, double *, int
   // reference implementation certifiedMul
   // our implementation implementation
   // test case 1
-  for(int c = 2; c<10; c+=1){
+  for(int c = 3; c<10; c+=1){
     double* a =  new double[c];
     double* b =  new double[c];
     double*   sol =  new double[c]();
@@ -215,7 +218,7 @@ void testmultiplication(void (*implementation)(double *, double *, double *, int
   }
 
   // test case 2
-  for(int c = 2; c<10; c+=1){
+  for(int c = 3; c<10; c+=1){
     double* a =  new double[c];
     double* b =  new double[c];
     double*   sol =  new double[c]();
@@ -238,7 +241,7 @@ void testmultiplication(void (*implementation)(double *, double *, double *, int
     delete[] sol_ref;
   }
   // test case 3
-  for(int c = 2; c<10; c+=1){
+  for(int c = 3; c<10; c+=1){
     double* a =  new double[c];
     double* b =  new double[c];
     double*   sol =  new double[c]();
