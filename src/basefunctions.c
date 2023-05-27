@@ -157,19 +157,24 @@ void multiplication(double *a, double *b, double *r, const int sizea, const int 
     
    
     int k = sizea;
-    double *err = (double *)alloca(2*(sizea * sizea +1*sizea +1) * sizeof(double));
-    
-    double *r_ext = (double *)alloca((sizea  + 1) * sizeof(double));
-   
+    double *err = (double *)alloca(2*(sizea * sizea +3*sizea) * sizeof(double));
+    for(int i = 0; i< 2*sizea * sizea +3*sizea;i++){
+        err[i] = 0;
+    }
+    double *r_ext = (double *)alloca(2*(sizea * sizea  + sizea) * sizeof(double));
+    for (int i = 0; i <2*(sizea * sizea); i++)
+    {
+        r_ext[i] = 0.0;
+    }
     
 
     twoMultFMA(a[0], b[0], &(r_ext[0]), &(err[0]));
 
     for (int n = 1; n <= (k - 1); n++)
     {
-        double *e_tmp = (double *)alloca((n+1) * sizeof(double));
-        double *p = (double *)alloca((n+1)  * sizeof(double));
-        for (int i = 0; i < (n+1); i++)
+        double *e_tmp = (double *)alloca(2*(n+1) * sizeof(double));
+        double *p = (double *)alloca(2*(n+1)  * sizeof(double));
+        for (int i = 0; i < 2*(n+1); i++)
         {
             e_tmp[i] = 0.0;
             p[i] = 0.0;

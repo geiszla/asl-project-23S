@@ -154,3 +154,5 @@ void fourtimesmultiplicationversion1(double *a0, double *b0, double *a1, double 
     renormalizationalgorithm(r_ext3, k + 1, r3, sizea);
     return;
 }
+
+
