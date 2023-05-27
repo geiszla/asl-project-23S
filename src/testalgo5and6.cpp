@@ -220,7 +220,7 @@ void testmultiplication(void (*implementation)(double *, double *, double *, int
   }
 
   // test case 2
-  for(int c = 3; c<10; c+=1){
+  for(int c = 3; c<100; c+=1){
     double* a =  new double[c];
     double* b =  new double[c];
     double*   sol =  new double[c]();
@@ -244,7 +244,7 @@ void testmultiplication(void (*implementation)(double *, double *, double *, int
     delete[] sol_ref;
   }
   // test case 3
-  for(int c = 3; c<10; c+=1){
+  for(int c = 3; c<100; c+=1){
     double* a =  new double[c];
     double* b =  new double[c];
     double*   sol =  new double[c]();
