@@ -7,10 +7,12 @@ extern "C"
 #ifdef __GNUC__
 #include "reference.h"
 #include "./basefunctions.c"
+#include "./fourmult.c"
 
 #else
 #include "reference.h"
 #include "basefunctions.h"
+#include "./fourmult.c"
 #endif
 }
 
