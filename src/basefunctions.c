@@ -158,14 +158,9 @@ void multiplication(double *a, double *b, double *r, const int sizea, const int 
    
     int k = sizea;
     double *err = (double *)alloca(2*(sizea * sizea +1*sizea +1) * sizeof(double));
-    for(int i = 0; i< 2*(sizea * sizea +1*sizea +1);i++){
-        err[i] = 0;
-    }
+    
     double *r_ext = (double *)alloca((sizea  + 1) * sizeof(double));
-    for (int i = 0; i <(sizea  + 1) ; i++)
-    {
-        r_ext[i] = 0.0;
-    }
+   
     
 
     twoMultFMA(a[0], b[0], &(r_ext[0]), &(err[0]));
