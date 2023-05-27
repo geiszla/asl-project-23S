@@ -1,8 +1,9 @@
 #include <math.h>
-#ifdef __GNUC__
-#else
+
+#if !defined(__GNUC__) || defined(__clang__)
 #include "reference.h"
 #endif
+
 const double trennung = 0.000000000000000001; // 10^-18
 // compile with g++ -std=c++11 ./main.cpp
 // error free transforms
@@ -183,15 +184,11 @@ void multiplication(double *a, double *b, double *r, const int sizea, const int 
         {
             twoMultFMA(a[i], b[n - i], &(p[i]), &(e_tmp[i]));
         }
-        double *tmp = (double *)alloca((n * n + 3*n) * sizeof(double));
-        double *tmp1 = (double *)alloca(3*n * sizeof(double));
-        for (int i = 0; i <= 3*n; i++)
+        double *tmp = (double *)alloca((n * n + n + 1) * sizeof(double));
+        double *tmp1 = (double *)alloca((n * n + n + 1) * sizeof(double));
+        for (int i = 0; i < (n * n + n + 1); i++)
         {
-            tmp1[i] = 0.0;
-        }
-        for (int i = 0; i <= n * n + 3*n ; i++)
-        {
-            tmp[i] = 0.0;
+            tmp1[i] = 0;
         }
         // generate p[0:n], e[0:n^2-1] into tmp
         for (int i = 0; i <= n; i++)

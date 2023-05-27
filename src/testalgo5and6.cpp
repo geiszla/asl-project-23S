@@ -4,11 +4,10 @@
 
 extern "C"
 {
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__clang__)
 #include "reference.h"
 #include "./basefunctions.c"
 #include "./fourmult.c"
-
 #else
 #include "reference.h"
 #include "basefunctions.h"

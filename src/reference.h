@@ -1,4 +1,5 @@
 #include <malloc.h>
+#include <stdlib.h>
 
 #ifdef _WIN32
 #define alloca _alloca
