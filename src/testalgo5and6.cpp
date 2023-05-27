@@ -271,7 +271,7 @@ void testmultiplication(void (*implementation)(double *, double *, double *, int
 }
 
 
-void testfourmultiplication(void (*implementation)(double *, double *, double *, double *, double *, double *,double *, double *, double *,double *, double *, double *,int, int, int) = fourtimesmultiplicationversion0){
+void testfourmultiplication(void (*implementation)(double *, double *, double *, double *, double *, double *,double *, double *, double *,double *, double *, double *,int, int, int) = fourtimesmultiplicationversion1){
 
  for(int c = 3; c<100; c+=1){
     double* a0 =  new double[c];
