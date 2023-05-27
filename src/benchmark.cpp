@@ -1,6 +1,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <cstring>
 
 #include "measure.cpp"
 
@@ -262,10 +263,7 @@ int main()
     output_file.open(string(OUTPUT_PATH) + "/benchmark.csv");
     if (!output_file.is_open())
     {
-        char error_message[80];
-        strerror_s(error_message, 80, errno);
-
-        cerr << "Error: cannot open output file: " << error_message << endl;
+        cerr << "Error: cannot open output file: " << strerror(errno) << endl;
         return 1;
     }
 

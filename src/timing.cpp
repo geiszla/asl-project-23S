@@ -2,10 +2,12 @@
 #include <windows.h> // Include if under windows
 #endif
 
+#include <algorithm>
+#include <chrono>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <chrono>
 
 #ifndef WIN32
 #include <sys/time.h>

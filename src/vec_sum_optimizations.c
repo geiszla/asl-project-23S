@@ -43,25 +43,24 @@ inline void vecSum3(double *x, double *e_res, int in_out_size)
 
 void renormalizationalgorithm2(double x[], int size_of_x, double f[], int m)
 {
-  int length = size_of_x;
+  double *err = (double *)alloca((size_of_x) * sizeof(double));
+  double *f_tmp = (double *)alloca((m + 1) * sizeof(double));
 
-  double *e = (double *)alloca(length * sizeof(double));
-  double *temp = (double *)alloca(length * sizeof(double));
-  double *g = (double *)alloca(m * sizeof(double));
-
-  vecSum3(x, e, size_of_x);
-  vecSumErrBranch(e, length, m + 1, temp);
-
-  for (int i = 0; i <= m - 2; i++)
+  for (int i = 0; i <= m; i++)
   {
-    vecSumErr(&temp[i], m, g);
-    for (int b = 0; b < m; b++)
-    {
-      double tmp = g[b];
-      temp[b + i] = tmp;
-    }
-    double t = temp[i];
-    f[i] = t;
+    f_tmp[i] = 0;
   }
-  f[m - 1] = temp[m - 1];
+
+  vecSum3(x, err, size_of_x);
+  vecSumErrBranch(err, size_of_x, m + 1, f_tmp);
+
+  for (int i = 0; i <= (m - 2); i++)
+  {
+    vecSumErr(&(f_tmp[i]), m - i + 1, &(f_tmp[i]));
+    f[i] = f_tmp[i];
+  }
+
+  f[m - 1] = f_tmp[m - 1];
+
+  return;
 }

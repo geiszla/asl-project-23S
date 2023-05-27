@@ -1,8 +1,0 @@
-{
-    "files.associations": {
-        "basefunctions.c": "cpp",
-        "random": "cpp",
-        "immintrin.h": "c",
-        "fourmult.c": "cpp"
-    }
-}

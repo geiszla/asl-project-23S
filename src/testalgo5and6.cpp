@@ -11,7 +11,7 @@ extern "C"
 #else
 #include "reference.h"
 #include "basefunctions.h"
-#include "./fourmult.c"
+#include "fourmult.c"
 #endif
 }
 
