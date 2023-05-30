@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
+#include <ctime>
 
 extern "C"
 {
@@ -75,9 +76,14 @@ void sort_double_array_descending(double *array, size_t size) {
 }
 double randfrom(double min, double max)
 {
+  /*
   double mantissa = rand() % (1ull << 52) + 1;
   int exponent = rand() % (1024) - 1023;
   return mantissa * pow(2, exponent);
+  */
+  srand((unsigned)time(NULL));
+  double X=((double)rand()/(double)RAND_MAX);
+  return X;
 }
 
 void testtwosum(void (*implementation)(double, double, double *, double *) = twoSum)

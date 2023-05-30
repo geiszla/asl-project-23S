@@ -153,14 +153,14 @@ void multiplication(double *a, double *b, double *r, const int sizea, const int 
 {
 
     int k = sizea;
-    double *err = (double *)calloc((sizea * sizea + 2 * sizea), sizeof(double));
+    double *err = (double *)calloc((sizea * sizea + 2 * sizea+1), sizeof(double));
     double *r_ext = (double *)calloc((sizea * sizea), sizeof(double));
 
     twoMultFMA(a[0], b[0], &(r_ext[0]), &(err[0]));
 
     for (int n = 1; n <= (k - 1); n++)
     {
-        double *e_tmp = (double *)calloc((n), sizeof(double));
+        double *e_tmp = (double *)calloc((n+1), sizeof(double));
         double *p = (double *)calloc((n + 1), sizeof(double));
 
         for (int i = 0; i <= n; i++)
@@ -168,7 +168,7 @@ void multiplication(double *a, double *b, double *r, const int sizea, const int 
             twoMultFMA(a[i], b[n - i], &(p[i]), &(e_tmp[i]));
         }
         double *tmp = &err[-n - 1];
-        double *tmp1 = (double *)calloc((n * n + n), sizeof(double));
+        double *tmp1 = (double *)calloc((n * n + n+1), sizeof(double));
 
         //-------------------------------- vecsum inline
         int length = (n * n + n);
