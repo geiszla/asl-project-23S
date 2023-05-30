@@ -23,6 +23,7 @@ def main():
         performance = optimization_data["Performance"]
 
         pyplot.xscale('log', base=2)
+        pyplot.ylim([0, 0.3])
         pyplot.gca().get_xaxis().set_major_formatter(ScalarFormatter())
 
         pyplot.plot(
