@@ -52,6 +52,6 @@ int main()
   /* multiplication */
   double naive_runtime = measure_multiplication();
 
-  evaluate_implementation(multiplication2, "multiplication2", multiplication_algorithm,
+  evaluate_implementation(multiplication, "multiplication2", multiplication_algorithm,
                           naive_runtime);
 }

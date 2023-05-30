@@ -171,7 +171,7 @@ void benchmark_multiplication(ofstream &output_file)
     cout << endl
          << "Multiplication: " << endl;
 
-    for (int term_count = 3; term_count < 999; term_count *= 1.4)
+    for (int term_count = 3; term_count < 50; term_count += 2)
     {
         double runtime = measure_multiplication(multiplication, term_count);
         double performance = get_multiplication_flops(term_count) / runtime;

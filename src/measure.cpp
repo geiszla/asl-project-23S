@@ -11,7 +11,7 @@ extern "C"
 #include "timing.cpp"
 
 // Needs to be low, otherwise we cannot place expansions on the stack
-#define DEFAULT_TERM_COUNT 100
+#define DEFAULT_TERM_COUNT 50
 
 double generate_random_double()
 {
