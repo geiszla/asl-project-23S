@@ -3,6 +3,12 @@
 #include <iostream>
 #include <cstring>
 
+extern "C"
+{
+#include "reference.h"
+#include "basefunctions.c"
+}
+
 #include "measure.cpp"
 
 // Compile with `g++ -std=c++17 ./benchmark.cpp` (plus additional optimization flags)

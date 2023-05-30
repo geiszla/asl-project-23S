@@ -5,13 +5,13 @@
 
 extern "C"
 {
-  #include "basefunctions.h"
   #include "mult2_optimizations.c"
 }
 
 #include "timing.cpp"
 
-#define DEFAULT_TERM_COUNT 128
+// Needs to be low, otherwise we cannot place expansions on the stack
+#define DEFAULT_TERM_COUNT 100
 
 double generate_random_double()
 {

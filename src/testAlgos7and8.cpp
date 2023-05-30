@@ -3,12 +3,6 @@
 #include <cstdio>
 #include <ctime>
 
-extern "C"
-{
-  // #include "reference.h"
-  #include "basefunctions.h"
-}
-
 #define dbl_prec 53
 
 // helpers

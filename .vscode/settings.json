@@ -1,0 +1,13 @@
+{
+  "files.associations": {
+    "numbers": "cpp",
+    "new": "cpp",
+    "mult2_optimizations.c": "cpp",
+    "basefunctions.c": "cpp",
+    "fourmult.c": "cpp",
+    "addition_optimizations.c": "cpp",
+    "renormalization_optimizations.c": "cpp",
+    "multiplication_optimizations.c": "cpp",
+    "cstdlib": "cpp"
+  }
+}

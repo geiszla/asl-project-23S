@@ -1,15 +1,25 @@
+========== GCC ==========
+
+Optimized:
+g++ -O3 -fno-tree-vectorize -ffp-contract=off -march=native -o playground playground.cpp
+
+Benchmark:
+g++ -O3 -fno-tree-vectorize -ffp-contract=off -march=native -std=c++17 -o benchmark benchmark.cpp
+
+Sanitizers:
+g++ -O1 -g -fno-tree-vectorize -ffp-contract=off -march=native -fsanitize=address,leak,pointer-compare,pointer-subtract -fno-omit-frame-pointer -fno-optimize-sibling-calls -o playground playground.cpp
+
+
 ========== Clang ==========
 
 Optimized:
-clang++ -O3 -fno-slp-vectorize -ffp-contract=off -march=native -o tests tests.cpp -x c basefunctions.c
+clang++ -O3 -fno-tree-vectorize -fno-slp-vectorize -ffp-contract=off -march=native -o playground playground.cpp
 
-C++17:
-clang++ -c -O3 -fno-slp-vectorize -ffp-contract=off -march=native -std=c++17 -o benchmark.o benchmark.cpp
-clang -c -O3 -fno-slp-vectorize -ffp-contract=off -march=native -o basefunctions.o basefunctions.c
-clang++ -O3 -fno-slp-vectorize -ffp-contract=off -march=native -o benchmark benchmark.o basefunctions.o
+Benchmark:
+clang++ -O3 -fno-tree-vectorize -fno-slp-vectorize -ffp-contract=off -march=native -std=c++17 -o benchmark benchmark.cpp
 
 Memory Sanitizer:
-clang++ -O1 -g -fsanitize=memory,undefined -fsanitize-recover=memory -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize-ignorelist="../sanitizer-ignorelist.txt" -o playground playground.cpp -x c basefunctions.c
+clang++ -O1 -g -fno-tree-vectorize -fno-slp-vectorize -ffp-contract=off -march=native -fsanitize=memory,undefined -fsanitize-recover=memory -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize-ignorelist="../sanitizer-ignorelist.txt" -o playground playground.cpp
 
 Other sanitizers:
-clang++ -O1 -g -fsanitize=address,leak,pointer-compare,pointer-subtract -fsanitize-recover=memory -fno-omit-frame-pointer -fno-optimize-sibling-calls -o tests tests.cpp -x c basefunctions.c
+clang++ -O1 -g -fno-tree-vectorize -fno-slp-vectorize -ffp-contract=off -march=native -fsanitize=address,leak,pointer-compare,pointer-subtract -fno-omit-frame-pointer -fno-optimize-sibling-calls -o playground playground.cpp

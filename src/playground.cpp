@@ -1,13 +1,17 @@
-#include "evaluate.cpp"
-
 extern "C"
 {
-  #include "vec_sum_optimizations.c"
-  #include "vec_sum_err_optimizations.c"
-  #include "vec_sum_err_branch_optimizations.c"
-  #include "renormalization_optimizations.c"
-  #include "addition_optimizations.c"
+#include "reference.h"
+#include "basefunctions.c"
+#include "vec_sum_optimizations.c"
+#include "vec_sum_err_optimizations.c"
+#include "vec_sum_err_branch_optimizations.c"
+#include "renormalization_optimizations.c"
+#include "addition_optimizations.c"
+#include "multiplication_optimizations.c"
 }
+
+#include "evaluate.cpp"
+
 
 // Compile with `g++ -std=c++17 ./benchmark.cpp` (plus additional optimization flags)
 
@@ -40,8 +44,14 @@ int main()
   //                         naive_runtime);
 
   /* addition */
-  double naive_runtime = measure_addition();
+  // double naive_runtime = measure_addition();
 
-  evaluate_implementation(addition3, "addition3", addition_algorithm, naive_runtime);
-  evaluate_implementation(addition4, "addition4", addition_algorithm, naive_runtime);
+  // evaluate_implementation(addition3, "addition3", addition_algorithm, naive_runtime);
+  // evaluate_implementation(addition4, "addition4", addition_algorithm, naive_runtime);
+
+  /* multiplication */
+  double naive_runtime = measure_multiplication();
+
+  evaluate_implementation(multiplication2, "multiplication2", multiplication_algorithm,
+                          naive_runtime);
 }
