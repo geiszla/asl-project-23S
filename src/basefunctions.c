@@ -197,7 +197,7 @@ void multiplication(double *a, double *b, double *r, const int sizea, const int 
         }
         for (int i = 0; i <= (n * n - 1); i++)
         {
-            tmp[n + i] = err[i];
+            tmp[n +1+ i] = err[i];
         }
         vecSum(tmp, tmp1, (n * n + n));
         /* write  tmp1 into r_ext[n], e[0:n^2 +n-1]*/
