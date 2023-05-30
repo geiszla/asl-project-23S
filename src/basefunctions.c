@@ -195,25 +195,21 @@ void multiplication(double *a, double *b, double *r, const int sizea, const int 
         {
             tmp[i] = p[i];
         }
-        for (int i = 0; i <= n * n - 1; i++)
+        for (int i = 0; i <= (n * n - 1); i++)
         {
             tmp[n + i] = err[i];
         }
         vecSum(tmp, tmp1, (n * n + n));
         /* write  tmp1 into r_ext[n], e[0:n^2 +n-1]*/
         r_ext[n] = tmp1[0];
-        for (int i = 0; i <= n * n + n - 1; i++)
+        for (int i = 0; i <= (n * n + n - 1); i++)
         {
             err[i] = tmp1[i + 1];
         }
         // writes err[0:n^2 +n-1],e_tmp[0:n] into err[0:n^2 +2n-1]
-        for (int i = 0; i <= n * n - 1; i++)
+        for (int i = (n * n) ; i <= ((n^2) +2*n-1); i++)
         {
-            err[n * n + n + i] = err[i];
-        }
-        for (int i = 0; i <= n; i++)
-        {
-            err[i] = e_tmp[i];
+            err[i] = e_tmp[i-n*n];
         }
     }
    
