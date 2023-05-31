@@ -1,10 +1,11 @@
-void multiplication(double *a, double *b, double *r, const int sizea, const int sizeb, const int sizer)
+void multiplication2(double *a, double *b, double *r, const int sizea, const int sizeb, const int sizer)
 {
   int k = sizea;
 
-  double *err = (double *)alloca(2 * (k * k + 3 * k) * sizeof(double));
+  int err_size = k * k;
+  double *err = (double *)alloca(err_size * sizeof(double));
 
-  for (int i = 0; i < 2 * k * k + 3 * k; i++)
+  for (int i = 0; i < err_size; i++)
   {
     err[i] = 0;
   }
@@ -17,7 +18,13 @@ void multiplication(double *a, double *b, double *r, const int sizea, const int 
     r_ext[i] = 0;
   }
 
-  twoMultFMA(a[0], b[0], &(r_ext[0]), &(err[0]));
+  double x = a[0];
+  double y = b[0];
+
+  double pi = x * y;
+
+  err[0] = fma(x, y, -pi);
+  r_ext[0] = pi;
 
   for (int n = 1; n <= (k - 1); n++)
   {
@@ -34,7 +41,13 @@ void multiplication(double *a, double *b, double *r, const int sizea, const int 
 
     for (int i = 0; i <= n; i++)
     {
-      twoMultFMA(a[i], b[n - i], &(p[i]), &(e_tmp[i]));
+      x = a[i];
+      y = b[n - i];
+
+      pi = x * y;
+
+      e_tmp[i] = fma(x, y, -pi);
+      p[i] = pi;
     }
 
     double *tmp = (double *)alloca((n * n + n + 1) * sizeof(double));
@@ -53,40 +66,34 @@ void multiplication(double *a, double *b, double *r, const int sizea, const int 
 
     for (int i = 0; i <= n * n - 1; i++)
     {
-      tmp[n + i] = err[i];
+      tmp[n + 1 + i] = err[i];
     }
 
     vecSum(tmp, tmp1, (n * n + n));
 
     /* write  tmp1 into r_ext[n], e[0:n^2 +n-1]*/
     r_ext[n] = tmp1[0];
+
     for (int i = 0; i <= n * n + n - 1; i++)
     {
       err[i] = tmp1[i + 1];
     }
 
     // writes err[0:n^2 +n-1],e_tmp[0:n] into err[0:n^2 +2n-1]
-    for (int i = 0; i <= n * n - 1; i++)
+    for (int i = n * n; i <= ((n * n) + 2 * n - 1); i++)
     {
-      err[n * n + n + i] = err[i];
-    }
-
-    for (int i = 0; i <= n; i++)
-    {
-      err[i] = e_tmp[i];
+      err[i] = e_tmp[i - n * n];
     }
   }
 
-  double r_ext_k = r_ext[k];
-  for (int i = 1; i < k; i++)
+  for (int i = 1; i <= k - 1; i++)
   {
-    r_ext_k += a[i] * b[k - i];
+    r_ext[k] += a[i] * b[k - i];
   }
-  r_ext[k] = r_ext_k;
 
-  for (int i = 0; i < k * k; i++)
+  for (int i = 0; i <= k * k - 1; i++)
   {
-    r_ext[i] += a[i] * b[k - i];
+    r_ext[i] += err[i];
   }
 
   renormalization4(r_ext, k + 1, r, k);

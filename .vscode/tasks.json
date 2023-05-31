@@ -6,15 +6,19 @@
             "command": "cl.exe",
             "args": [
                 "/Zi",
-                "/std:c++17",
                 "/EHsc",
                 "/MDd", 
+<<<<<<< HEAD
                 "/O0",
+=======
+                "/std:c++17",
+                "/O2",
+>>>>>>> fccba244d4d81d8ca501b09a6f271fb6432cd1da
                 "/GL",
+                "/arch:AVX2",
                 "/nologo",
                 "/Fe${fileDirname}\\${fileBasenameNoExtension}.exe",
-                "${file}",
-                "basefunctions.c"
+                "${file}"
             ],
             "options": {
                 "cwd": "${fileDirname}"

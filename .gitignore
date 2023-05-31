@@ -228,6 +228,5 @@ pyrightconfig.json
 # End of https://www.toptal.com/developers/gitignore/api/c++,visualstudiocode,python
 
 # Custom rules
-results/
 *.pdb
 *.ilk

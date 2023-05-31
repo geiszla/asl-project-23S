@@ -25,7 +25,8 @@ map<Algorithm, T_test_function> tests{
     {vec_sum_err_branch_algorithm, (T_test_function)testvecsumerrbranch},
     {two_mult_FMA_algorithm, (T_test_function)testfastfma},
     {renormalization_algorithm, (T_test_function)testrenormalization},
-    {addition_algorithm, (T_test_function)testaddition}};
+    {addition_algorithm, (T_test_function)testaddition},
+    {multiplication_algorithm, (T_test_function)testmultiplication}};
 
 template <typename T_measure_function>
 map<Algorithm, T_measure_function> measurement_functions{

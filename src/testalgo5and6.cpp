@@ -1,19 +1,11 @@
 #include <cassert>
 #include <cmath>
+#include <cstdlib>
 #include <ctime>
+
 extern "C"
 {
-#if defined(__GNUC__) && !defined(__clang__)
-#include "reference.h"
-#include "./basefunctions.c"
-#include "./fourmult.c"
-#include <stdlib.h>
-#else
-#include "reference.h"
-#include "basefunctions.h"
 #include "fourmult.c"
-#include <stdlib.h>
-#endif
 }
 
 const double onedifference = pow(10, -16);

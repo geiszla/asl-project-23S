@@ -1,5 +1,11 @@
 #include <cstdio>
 
+extern "C"
+{
+#include "reference.h"
+#include "basefunctions.c"
+}
+
 #include "testalgo5and6.cpp"
 #include "testAlgos7and8.cpp"
 

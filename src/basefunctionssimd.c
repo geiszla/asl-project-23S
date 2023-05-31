@@ -1,7 +1,5 @@
 #include <math.h>
 
-#include "reference.h"
-
 #ifdef _WIN32
 #define alloca _alloca
 #endif
