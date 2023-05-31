@@ -9,7 +9,7 @@
                 "/std:c++17",
                 "/EHsc",
                 "/MDd", 
-                "/O3",
+                "/O0",
                 "/GL",
                 "/nologo",
                 "/Fe${fileDirname}\\${fileBasenameNoExtension}.exe",
@@ -36,7 +36,7 @@
                 "-march=native",
                 "-fno-tree-vectorize",
                 "-ffp-contract=off",
-                "-O3",
+                "-O0",
 
                 "-o",
                 "${fileDirname}/a"

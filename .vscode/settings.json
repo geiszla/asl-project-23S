@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "random": "cpp",
+        "basefunctionsoptimized.c": "cpp",
+        "mult2_optimizations.c": "cpp"
+    }
+}
