@@ -215,12 +215,10 @@ void multiplication(double *a, double *b, double *r, const int sizea, const int 
             err[i] = tmp1[i + 1];
         }
         // writes err[0:n^2 +n-1],e_tmp[0:n] into err[0:n^2 +2n-1]
-        for (int i = (n * n+n); i <= ((n ^ 2) + 2 * n - 1); i++)
+        for (int i = (n * n+n); i <= (n*n + 2*n -1); i++)
         {
             err[i] = e_tmp[i - (n * n+n) ];
-            if (i - (n * n+n) <0 || i - (n * n+n) >=n){
-                printf("error");
-            }
+           
         }
     }
 
