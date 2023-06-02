@@ -52,7 +52,7 @@ void testvecsumerr(void (*implementation)(double *, int, double *) = vecSumErr) 
 	double* g = (double *)calloc(n, sizeof(double));
 
 	implementation(f,n, g); // apply function
-	fast_VecSumErr(f,n); // compute correct results (inplace)
+	fast_VecSumErr_(f,n); // compute correct results (inplace)
 	
 	// printf("Output Algo 8:\n");
 	// printf("OUR\t\t CAMPARY\n");
@@ -74,7 +74,7 @@ void testvecsumerrbranch(void (*implementation)(double *, int, int, double *) = 
 	double* h = (double *)calloc(n, sizeof(double));
 	
 	implementation(e, n, n, h); // apply function
-	fast_VecSumErrBranch(e, n, n); // compute correct results (inplace)
+	fast_VecSumErrBranch_(e, n, n); // compute correct results (inplace)
 	
 	// compare
 	// printf("Output Algo 7:\n");

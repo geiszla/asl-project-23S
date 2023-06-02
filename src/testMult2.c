@@ -42,7 +42,7 @@ double* create_matrix(int n) {
 	}
 	double* B = (double *)malloc(n*sizeof(double));
   	//renorm_rand2L(A, B, n,n); // renormalize to ulp-nonoverlapping
-  	fast_VecSumErrBranch(A,B,n,n);
+  	fast_VecSumErrBranch_(A,B,n,n);
   	return B;
 	//A=renormalize(A,n,n);
 

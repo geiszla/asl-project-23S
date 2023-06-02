@@ -11,7 +11,8 @@ extern "C"
 #include "timing.cpp"
 
 // Needs to be low, otherwise we cannot place expansions on the stack
-#define DEFAULT_TERM_COUNT 50
+// Needs to be at most 29 to comply with ulp-nonoverlapping restrictions
+#define DEFAULT_TERM_COUNT 29
 
 double generate_random_double()
 {
@@ -45,11 +46,11 @@ double generate_random_mantissa(int ending_zeros_count)
 
 /**
  * Generates an expansion that is at most d-overlapping (with d = 2)
- * @param term_count The number of terms to generate. Needs to be at most 998
+ * @param term_count The number of terms to generate. Needs to be at most 742
  */
 double *generate_d_nonoverlapping_expansion(int term_count)
 {
-    int exponent = 1023;
+    int exponent = 511;
 
     double *terms = new double[term_count];
 
@@ -67,15 +68,15 @@ double *generate_d_nonoverlapping_expansion(int term_count)
 
 /**
  * Generates an expansion that is S-nonoverlapping
- * @param term_count The number of terms to generate. Needs to be at most 2044
+ * @param term_count The number of terms to generate. Needs to be at most 1533
  */
 double *generate_s_nonoverlapping_expansion(int term_count)
 {
     // Generate `term_count` number of terms wit the minimum number of ending zeros possible
-    int exponent_difference = 2044 / (term_count - 1);
+    int exponent_difference = 1533 / (term_count - 1);
     int ending_zeros_count = max(0, 53 - exponent_difference);
 
-    int exponent = 1023;
+    int exponent = 511;
 
     double *terms = new double[term_count];
 
@@ -83,16 +84,20 @@ double *generate_s_nonoverlapping_expansion(int term_count)
     {
         // For this to be at most d-overlapping, exponent needs to decrease by at least 2
         // term-by-term and there needs to be at least 49 zeros at the end of each term
-        terms[i] = ldexp(generate_random_mantissa(ending_zeros_count),
-                         exponent - exponent_difference * i);
+        terms[i] = ldexp(generate_random_mantissa(ending_zeros_count), exponent);
+        exponent -= exponent_difference;
     }
 
     return terms;
 }
 
+/**
+ * Generates an expansion that is ulp-overlapping
+ * @param term_count The number of terms to generate. Needs to be at most 29
+ */
 double *generate_ulp_nonoverlapping_expansion(int term_count)
 {
-    int exponent = 500;
+    int exponent = 511;
     double mantissa = generate_random_double();
 
     double *terms = new double[term_count];

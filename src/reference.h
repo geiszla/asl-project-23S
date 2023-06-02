@@ -10,13 +10,13 @@
 #define binSize 45
 
 ///////////////////////////////// copied from CAMPARY package/////////////////////////////
-inline double FPadd_rn(const double x, const double y){
+double FPadd_rn(const double x, const double y){
   return x + y;
 }
-inline double FPmul_rn(const double x, const double y){
+double FPmul_rn(const double x, const double y){
   return x * y;
 }
-inline double fma_d_rn_cpu(const double x, const double y, double xy) {
+double fma_d_rn_cpu(const double x, const double y, double xy) {
   double C,px,qx,hx,py,qy,hy,lx,ly,fma;
   /*@ assert C == 0x1p27+1; */
 	C = 0x1p27+1;
@@ -38,7 +38,7 @@ inline double fma_d_rn_cpu(const double x, const double y, double xy) {
   return fma;
 }
 
-inline double FPfma_rn(const double x, const double y, const double z){
+double FPfma_rn(const double x, const double y, const double z){
 	#ifdef FP_FAST_FMA
   //#warning cpu has fma
 	  return fma(x, y, z);
@@ -47,12 +47,12 @@ inline double FPfma_rn(const double x, const double y, const double z){
 	#endif
 }
 /* Computes fl(a*b) and err(a*b). */
-inline double two_prod(const double a, const double b, double *err){
+double two_prod(const double a, const double b, double *err){
 	const double p = FPmul_rn(a, b);
  	*err = FPfma_rn(a, b, -p);
  	return p;
 }
-inline double two_sum(const double a, const double b, double *err){
+double two_sum(const double a, const double b, double *err){
   double s = FPadd_rn(a, b);
   double aa = FPadd_rn(s, -b);
   double bb = FPadd_rn(s, -aa);
@@ -62,14 +62,14 @@ inline double two_sum(const double a, const double b, double *err){
   return s;
 }
 /* Computes fl(a+b) and err(a+b). Assumes |a| >= |b| */
-inline double fast_two_sum(const double a, const double b, double *err){
+double fast_two_sum(const double a, const double b, double *err){
   double s = FPadd_rn(a, b);
   double z = FPadd_rn(s, -a);
   *err = FPadd_rn(b, -z);
   return s;
 }
 
-inline void fast_VecSumErrBranchmul(const double *x, double *r,int sX, int sR){
+void fast_VecSumErrBranchmul(const double *x, double *r,int sX, int sR){
   int ptr = 0, i = 1;
   double e = x[0];
 
@@ -81,7 +81,7 @@ inline void fast_VecSumErrBranchmul(const double *x, double *r,int sX, int sR){
   for(i=ptr; i<sR; i++) r[i] = 0.;
 }
 
-inline void fast_VecSumErrBranch(double *x, int sX, int sR){
+void fast_VecSumErrBranch_(double *x, int sX, int sR){
 	int ptr = 0, i = 1;
 	double e = x[0];
 
@@ -93,14 +93,34 @@ inline void fast_VecSumErrBranch(double *x, int sX, int sR){
 		for(i=ptr; i<sR; i++) x[i] = 0.;
 }
 
-inline void fast_VecSumErr(double *x, int sX){
+void fast_VecSumErrBranch(double *x, int sX, int sR, double *r){
+  int ptr = 0, i = 1;
+  double e = x[0];
+
+  while(i<sX && ptr<sR){
+    r[ptr] = fast_two_sum(e, x[i], &e); i++;
+    if(e == 0.) e = r[ptr]; else ptr++;
+  }
+  if(ptr<sR && e!=0.){ r[ptr] = e; ptr++; }
+  for(i=ptr; i<sR; i++) r[i] = 0.;
+}
+
+
+void fast_VecSumErr_(double *x, int sX){
 	double e;
 	x[0] = fast_two_sum(x[0], x[1], &e);
 	for(int i=2; i<sX-1; i++) x[i-1] = fast_two_sum(e, x[i], &e);
 	x[sX-2] = fast_two_sum(e, x[sX-1], &x[sX-1]);
 }
 
-inline void merge(double const *x, double const *y, double *z,int K,int L){
+void fast_VecSumErr(double *x, int sX, double *r){
+  double e;
+  r[0] = fast_two_sum(x[0], x[1], &e);
+  for(int i=2; i<sX-1; i++) r[i-1] = fast_two_sum(e, x[i], &e);
+  r[sX-2] = fast_two_sum(e, x[sX-1], &r[sX-1]);
+}
+
+void merge(double const *x, double const *y, double *z,int K,int L){
   int i=0, j=0;
   for(int n=0; n<K+L; n++){
     if(i==K || (j<L && fabs(y[j])>fabs(x[i]))){ z[n] = y[j]; j++; }
@@ -108,7 +128,7 @@ inline void merge(double const *x, double const *y, double *z,int K,int L){
   }
 }
 
-inline void renorm_rand2L(int sX, int sR, double x[]){
+void renorm_rand2L(int sX, int sR, double x[]){
 	double pr;
 	int i, j, ptr = 0;
 
@@ -138,7 +158,7 @@ inline void renorm_rand2L(int sX, int sR, double x[]){
     double-precision = 53, bin size = 45; **/
 // Multiplication_accurate with relative error <= 2^{-(p-1)R}( 1 + (r+1)2^{-p} )
 // template <int K, int L, int R>
-inline void certifiedMul(int K, int L, int R, const double *x, const double *y, double *r)
+void certifiedMul(int K, int L, int R, const double *x, const double *y, double *r)
 {
     int const LBN = R * dbl_prec / binSize + 2;
     double *B = (double *)alloca((LBN + 2) * sizeof(double));
