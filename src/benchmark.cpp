@@ -23,7 +23,7 @@ extern "C"
 #define FAST_TWO_SUM_FLOPS 3
 #define TWO_MULT_FMA_FLOPS 2
 
-#define BENCHMARK_REFERENCES
+// #define BENCHMARK_REFERENCES
 
 unsigned int get_vec_sum_flops(int vector_length)
 {

@@ -32,8 +32,8 @@ int main()
   /* vecSumErrBranch */
   // double naive_runtime = measure_vec_sum_err_branch();
 
-  // evaluate_implementation(vecSumErrBranch2, "vecSumErrBranch2", vec_sum_err_branch_algorithm,
-  //                         naive_runtime);
+  // evaluate_implementation(vecSumErrBranch2, "vecSumErrBranch2", vec_sum_err_branch_algorithm
+  //                         );
 
   /* renormalization */
   // double naive_runtime = measure_renormalization();
@@ -52,6 +52,6 @@ int main()
   /* multiplication */
   double naive_runtime = measure_multiplication();
 
-  evaluate_implementation(multiplication, "multiplication2", multiplication_algorithm,
+  evaluate_implementation(multiplication2, "multiplication2", multiplication_algorithm,
                           naive_runtime);
 }
