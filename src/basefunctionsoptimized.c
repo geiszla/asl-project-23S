@@ -176,11 +176,24 @@ void multiplication(double *a, double *b, double *r, const int sizea, const int 
         s[length - 1] = err[n * n - 1];
         for (int i = length - 2; i >= 0; i--)
         {
-            if (i == (n))
+            if (i <= (n))
             {
-                tmp = &p[(0)];
+                tmp = p;
             }
             double s_tmp, e_tmplocal;
+            /* tests--------
+            if (tmp == (p)){
+                if ((i<0)|| (i>=n)){
+                   printf("error");
+
+                }
+            }else{
+                if (((i-(n+1))<0)|| ((i-(n+1))>=(n*n-1))){
+                   printf("error");
+
+                }
+            }
+            */
 
             //-------------------------------- two sum inline
             double sl = tmp[i] + s[i + 1];
@@ -202,9 +215,12 @@ void multiplication(double *a, double *b, double *r, const int sizea, const int 
             err[i] = tmp1[i + 1];
         }
         // writes err[0:n^2 +n-1],e_tmp[0:n] into err[0:n^2 +2n-1]
-        for (int i = (n * n); i <= ((n ^ 2) + 2 * n - 1); i++)
+        for (int i = (n * n+n); i <= ((n ^ 2) + 2 * n - 1); i++)
         {
-            err[i] = e_tmp[i - n * n];
+            err[i] = e_tmp[i - (n * n+n) ];
+            if (i - (n * n+n) <0 || i - (n * n+n) >=n){
+                printf("error");
+            }
         }
     }
 
