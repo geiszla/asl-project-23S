@@ -56,7 +56,7 @@ void inline vecSum(double *x, double *e_res, int in_out_size){
         __m256d x1 = _mm256_loadu_pd(&x[lc]);
         __m256d t = _mm256_sub_pd(s1,splus1);
         __m256d e = _mm256_add_pd(_mm256_sub_pd(x1,t),_mm256_sub_pd(splus1,_mm256_sub_pd(s1,t)));
-        _mm256_storeu_pd(&e_res[lc],e);
+        _mm256_storeu_pd(&e_res[lc + 1],e);
       
     }
     // Note: no need for `s` to be an array here anymore, we can just use a variable

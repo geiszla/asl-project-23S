@@ -21,8 +21,8 @@ int main()
   // Pass the naive implementation's runtime to `evaluate_implementation` to calculate speedup
   // double naive_runtime = measure_vec_sum();
 
-  // evaluate_implementation(renormalizationalgorithm2, "renormalization2", renormalization_algorithm);
-  // evaluate_implementation(vecSum3, "vecSum3", vec_sum_algorithm, naive_runtime);
+  // evaluate_implementation(renormalizationalgorithm2, "renormalization21", renormalization_algorithm);
+  // evaluate_implementation(vecSum5, "vecSum5", vec_sum_algorithm, naive_runtime);
 
   /* vecSumErr */
   // double naive_runtime = measure_vec_sum_err();
