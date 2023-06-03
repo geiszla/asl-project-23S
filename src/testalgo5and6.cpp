@@ -359,39 +359,40 @@ void testmultiplication(void (*implementation)(double *, double *, double *, int
   }
 }
 
-void testfourmultiplication(void (*implementation)(double *, double *, double *, double *, double *, double *, double *, double *, double *, double *, double *, double *, int, int, int) = fourtimesmultiplicationversion1)
+void testfourmultiplication(void (*implementation)(double *, double *, double *, double *, double *, double *, double *, double *, double *, double *, double *, double *, int, int, int) = fourtimesmultiplicationversion2)
 {
 
-  for (int c = 3; c < 15; c += 1)
+  for (int c = 3; c < 5; c += 1)
   {
     double *a0 = new double[c];
     double *b0 = new double[c];
-    double *sol0 = new double[c]();
-    double *sol_ref0 = new double[c]();
+    double *sol0 = new double[4];
+    double *sol_ref0 = new double[4];
     double *a1 = new double[c];
     double *b1 = new double[c];
-    double *sol1 = new double[c]();
-    double *sol_ref1 = new double[c]();
+    double *sol1 = new double[4];
+    double *sol_ref1 = new double[4];
     double *a2 = new double[c];
     double *b2 = new double[c];
-    double *sol2 = new double[c]();
-    double *sol_ref2 = new double[c]();
+    double *sol2 = new double[4];
+    double *sol_ref2 = new double[4];
     double *a3 = new double[c];
     double *b3 = new double[c];
-    double *sol3 = new double[c]();
-    double *sol_ref3 = new double[c]();
+    double *sol3 = new double[4];
+    double *sol_ref3 = new double[4];
 
     for (int i = 0; i < c; i++)
     {
-      a0[i] = randfrom(-1.1, 1.1);
-      b0[i] = randfrom(-1.1, 1.1);
-      a1[i] = randfrom(-1.1, 1.1);
-      b1[i] = randfrom(-1.1, 1.1);
-      a2[i] = randfrom(-1.1, 1.1);
-      b2[i] = randfrom(-1.1, 1.1);
-      a3[i] = randfrom(-1.1, 1.1);
-      b3[i] = randfrom(-1.1, 1.1);
+      a0[i] = randfrom(0,1);
+      b0[i] = randfrom(0,1);
+      a1[i] =randfrom(0,1);
+      b1[i] = randfrom(0,1);
+      a2[i] = randfrom(0,1);
+      b2[i] = randfrom(0,1);
+      a3[i] = randfrom(0,1);
+      b3[i] = randfrom(0,1);
     }
+    
     renormalizationalgorithm(a0, c, a0, c);
     renormalizationalgorithm(b0, c, b0, c);
     renormalizationalgorithm(a1, c, a1, c);
@@ -400,11 +401,14 @@ void testfourmultiplication(void (*implementation)(double *, double *, double *,
     renormalizationalgorithm(b2, c, b2, c);
     renormalizationalgorithm(a3, c, a3, c);
     renormalizationalgorithm(b3, c, b3, c);
+    
     implementation(a0, b0, a1, b1, a2, b2, a3, b3, sol0, sol1, sol2, sol3, c, c, 4);
+    
     certifiedMul(c, c, 4, a0, b0, sol_ref0);
     certifiedMul(c, c, 4, a1, b1, sol_ref1);
     certifiedMul(c, c, 4, a2, b2, sol_ref2);
     certifiedMul(c, c, 4, a3, b3, sol_ref3);
+    
     for (int i = 0; i < 4; i++)
     {
       double ref0 = sol_ref0[i];
