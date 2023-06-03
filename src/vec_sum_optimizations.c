@@ -43,7 +43,7 @@ inline void vecSum3(double *x, double *e_res, int in_out_size)
   e_res[0] = s;
 }
 
-inline void inline vecSum4(double *x, double *e_res, int in_out_size)
+inline void vecSum4(double *x, double *e_res, int in_out_size)
 {
   double st;
   double s3;
@@ -88,7 +88,7 @@ inline void inline vecSum4(double *x, double *e_res, int in_out_size)
   e_res[0] = s0;
 }
 
-inline void inline vecSum5(double *x, double *e_res, int in_out_size)
+inline void vecSum5(double *x, double *e_res, int in_out_size)
 {
   double *s_array = (double *)alloca(in_out_size * sizeof(double));
 
