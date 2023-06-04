@@ -8,12 +8,7 @@
                 "/Zi",
                 "/EHsc",
                 "/MDd", 
-<<<<<<< HEAD
                 "/O0",
-=======
-                "/std:c++17",
-                "/O2",
->>>>>>> fccba244d4d81d8ca501b09a6f271fb6432cd1da
                 "/GL",
                 "/arch:AVX2",
                 "/nologo",
@@ -40,7 +35,8 @@
                 "-march=native",
                 "-fno-tree-vectorize",
                 "-ffp-contract=off",
-                "-O0",
+                // "-fsanitize=address,leak,pointer-compare,pointer-subtract",
+                "-O3",
 
                 "-o",
                 "${fileDirname}/a"

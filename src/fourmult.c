@@ -185,12 +185,6 @@ void fourtimesmultiplicationversion2(double *a0, double *b0, double *a1, double 
     twoMultFMA(a2[0], b2[0], &(r_ext2[0]), &(err2[0]));
     twoMultFMA(a3[0], b3[0], &(r_ext3[0]), &(err3[0]));
 
-    
-
-
-
-
-
 
     for (int n = 1; n <= (k - 1); n++)
     {
@@ -209,9 +203,7 @@ void fourtimesmultiplicationversion2(double *a0, double *b0, double *a1, double 
             twoMultFMA(a1[i], b1[n - i], &(p1[i]), &(e_tmp1[i]));
             twoMultFMA(a2[i], b2[n - i], &(p2[i]), &(e_tmp2[i]));
             twoMultFMA(a3[i], b3[n - i], &(p3[i]), &(e_tmp3[i]));
-            //------------------------------------------------
-            
-            //-------------------------------- twoMultFMa inline
+         
         }
         double *tmp0 = &err0[-n - 1];
         double *tmp1_0 = (double *)calloc((n * n + n+1), sizeof(double));

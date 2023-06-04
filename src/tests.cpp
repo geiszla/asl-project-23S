@@ -19,6 +19,6 @@ int main()
 	testrenormalization();
 	testaddition();
 	testmultiplication();
-
+	testfourmultiplication();
 	printf("successfully ran all test cases");
 }
