@@ -13,7 +13,7 @@ extern "C"
 #include "reference_cpp.h"
 
 // Compile with `g++ -std=c++17 ./benchmark.cpp` (plus additional optimization flags)
-// TODO: fix multiplication flop count
+// TODO: fix multiplication flop count, recalculate renormalization flop count
 
 #define OUTPUT_PATH "../results"
 
