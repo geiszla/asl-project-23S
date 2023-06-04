@@ -8,7 +8,7 @@ inline void renormalization2(double x[], int size_of_x, double f[], int m)
     f_tmp[i] = 0;
   }
 
-  vecSum3(x, err, size_of_x);
+  vecSum5(x, err, size_of_x);
   vecSumErrBranch2(err, size_of_x, m + 1, f_tmp);
 
   for (int i = 0; i <= (m - 2); i++)
