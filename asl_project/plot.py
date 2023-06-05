@@ -161,7 +161,7 @@ def plot_roofline(
         "Operational Intensity (flops/byte)",
         "Performance (flops/cycle)",
         title,
-        "roofline.png",
+        f"{filename}.png",
         is_show=True,
     )
 
