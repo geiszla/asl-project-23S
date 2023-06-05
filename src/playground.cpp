@@ -12,7 +12,6 @@ extern "C"
 
 #include "evaluate.cpp"
 
-
 // Compile with `g++ -std=c++17 ./benchmark.cpp` (plus additional optimization flags)
 
 int main()
@@ -38,9 +37,7 @@ int main()
   /* renormalization */
   // double naive_runtime = measure_renormalization();
 
-  // evaluate_implementation(renormalization3, "renormalization3", renormalization_algorithm,
-  //                         naive_runtime);
-  // evaluate_implementation(renormalization4, "renormalization4", renormalization_algorithm,
+  // evaluate_implementation(renormalization5, "renormalization5", renormalization_algorithm,
   //                         naive_runtime);
 
   /* addition */
@@ -50,7 +47,7 @@ int main()
   // evaluate_implementation(addition4, "addition4", addition_algorithm, naive_runtime);
 
   /* multiplication */
-  double naive_runtime = measure_multiplication();
+  // double naive_runtime = measure_multiplication();
 
   evaluate_implementation(multiplication2, "multiplication2", multiplication_algorithm,
                           naive_runtime);

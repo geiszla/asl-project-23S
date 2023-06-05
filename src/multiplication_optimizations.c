@@ -104,7 +104,8 @@ void multiplication2(double *a, double *b, double *r, const int sizea, const int
   return;
 }
 
-void multiplication3(double *a, double *b, double *r, const int sizea, const int sizeb, const int sizer)
+void multiplication3(double *a, double *b, double *r, const int sizea, const int sizeb,
+                     const int sizer)
 {
   int k = sizea;
 
