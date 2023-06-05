@@ -21,7 +21,7 @@ int main()
   // double naive_runtime = measure_vec_sum();
 
   // evaluate_implementation(renormalizationalgorithm2, "renormalization21", renormalization_algorithm);
-  // evaluate_implementation(vecSum5, "vecSum5", vec_sum_algorithm, naive_runtime);
+  // evaluate_implementation(vecSum6, "vecSum6", vec_sum_algorithm, naive_runtime);
 
   /* vecSumErr */
   // double naive_runtime = measure_vec_sum_err();
@@ -37,7 +37,7 @@ int main()
   /* renormalization */
   // double naive_runtime = measure_renormalization();
 
-  // evaluate_implementation(renormalization5, "renormalization5", renormalization_algorithm,
+  // evaluate_implementation(renormalization4, "renormalization4", renormalization_algorithm,
   //                         naive_runtime);
 
   /* addition */
