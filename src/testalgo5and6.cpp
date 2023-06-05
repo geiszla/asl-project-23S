@@ -2,7 +2,14 @@
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
-
+/*
+#include "vec_sum_optimizations.c"
+#include "vec_sum_err_optimizations.c"
+#include "vec_sum_err_branch_optimizations.c"
+#include "renormalization_optimizations.c"
+#include "addition_optimizations.c"
+#include "multiplication_optimizations.c"
+*/
 extern "C"
 {
 #include "fourmult.c"
