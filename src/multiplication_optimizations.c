@@ -1,5 +1,5 @@
 #include <immintrin.h>
-
+#include <cstring>
 void multiplication2(double *a, double *b, double *r, const int sizea, const int sizeb,
                      const int sizer)
 {
@@ -110,7 +110,9 @@ void multiplication3(double *a, double *b, double *r, const int sizea, const int
   int k = sizea;
 
   int err_size = k * k;
-  double err[err_size] = {0};
+  
+  double* err = (double*) alloca((err_size) * sizeof(double));
+  memset(err, 0, (err_size) * sizeof(double));
 
   int i = 0;
   __m256d err_vec = _mm256_setzero_pd();
@@ -131,7 +133,9 @@ void multiplication3(double *a, double *b, double *r, const int sizea, const int
   }
 
   int ext_size = 2 * (k * k);
-  double r_ext[ext_size] = {0};
+  double* r_ext = (double*) alloca((ext_size) * sizeof(double));
+  memset(r_ext, 0, (ext_size) * sizeof(double));
+
 
   int runner = 0;
   for (; runner < ext_size - 32; runner += 32)
@@ -161,8 +165,11 @@ void multiplication3(double *a, double *b, double *r, const int sizea, const int
   {
     int tmp_size = 2 * (n + 1);
 
-    double e_tmp[tmp_size] = {0};
-    double p[tmp_size] = {0};
+   
+    double* e_tmp = (double*) alloca((tmp_size) * sizeof(double));
+    memset(e_tmp, 0, (tmp_size) * sizeof(double));
+    double* p = (double*) alloca((tmp_size) * sizeof(double));
+    memset(p, 0, (tmp_size) * sizeof(double));
 
     int runner1 = 0;
     for (; runner1 < tmp_size - 32; runner1 += 32)
@@ -210,9 +217,12 @@ void multiplication3(double *a, double *b, double *r, const int sizea, const int
       e_tmp[runner2] = fma(x, y, -pi);
       p[runner2] = pi;
     }
-
-    double tmp[n * n + n + 1] = {0};
-    double tmp1[n * n + n + 1] = {0};
+    int size = n * n + n + 1;
+    
+    double* tmp = (double*) alloca((size) * sizeof(double));
+    memset(tmp, 0, (size) * sizeof(double));
+    double* tmp1 = (double*) alloca((size) * sizeof(double));
+    memset(tmp1, 0, (size) * sizeof(double));
 
     int runner3 = 0;
     for (; runner3 <= n; runner3++)
