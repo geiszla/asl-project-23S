@@ -7,11 +7,10 @@
             "args": [
                 "/Zi",
                 "/EHsc",
-                "/MDd", 
-                "/O0",
-                "/GL",
+                "/MDd",
                 "/arch:AVX2",
                 "/GL",
+                "/std:c++17",
                 "/nologo",
                 "/Fe${fileDirname}\\${fileBasenameNoExtension}.exe",
                 "${file}"
@@ -38,7 +37,6 @@
                 "-ffp-contract=off",
                 // "-fsanitize=address,leak,pointer-compare,pointer-subtract",
                 "-O3",
-
                 "-o",
                 "${fileDirname}/a"
             ],

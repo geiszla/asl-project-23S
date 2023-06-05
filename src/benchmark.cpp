@@ -7,6 +7,12 @@ extern "C"
 {
 #include "reference.h"
 #include "basefunctions.c"
+#include "vec_sum_optimizations.c"
+#include "vec_sum_err_optimizations.c"
+#include "vec_sum_err_branch_optimizations.c"
+#include "renormalization_optimizations.c"
+#include "addition_optimizations.c"
+#include "multiplication_optimizations.c"
 }
 
 #include "measure.cpp"
@@ -22,8 +28,6 @@ extern "C"
 #define TWO_SUM_FLOPS 6
 #define FAST_TWO_SUM_FLOPS 3
 #define TWO_MULT_FMA_FLOPS 2
-
-#define BENCHMARK_REFERENCES
 
 unsigned int get_vec_sum_flops(int vector_length)
 {
@@ -118,10 +122,10 @@ unsigned int get_multiplication_reference_flops(int expansion_length)
 
 // Helpers
 
-void write_results(string algorithm_name, double runtime, double performance, int input_size,
-                   ostream &output_file)
+void write_results(string algorithm_name, string variant_name, double runtime, double performance,
+                   int input_size, ostream &output_file)
 {
-    output_file << algorithm_name << ";" << input_size << ";" << runtime
+    output_file << algorithm_name << ";" << variant_name << ";" << input_size << ";" << runtime
                 << ";" << performance << endl;
 
     cout << "Input size: " << input_size
@@ -147,157 +151,133 @@ void benchmark_two_mult_FMA()
          << (TWO_MULT_FMA_FLOPS / runtime) << " flops/cycles" << endl;
 }
 
-void benchmark_vec_sum(ofstream &output_file)
+void benchmark_vec_sum(
+    ofstream &output_file,
+    void (*implementation)(double *, double *, int) = vecSum,
+    string variant_name = "VecSum",
+    unsigned int (*get_flops)(int) = get_vec_sum_flops)
 {
     cout << endl
-         << "VecSum: " << endl;
+         << variant_name << ":" << endl;
 
     for (int term_count = 3; term_count <= 742; term_count *= 1.4)
     {
-        double runtime = measure_vec_sum(vecSum, term_count);
-        double performance = get_vec_sum_flops(term_count) / runtime;
+        double runtime = measure_vec_sum(implementation, term_count);
+        double performance = get_flops(term_count) / runtime;
 
-        write_results("VecSum", runtime, performance, term_count, output_file);
+        write_results("VecSum", variant_name, runtime, performance, term_count, output_file);
     }
 }
 
-void benchmark_vec_sum_err_branch(ofstream &output_file)
+void benchmark_vec_sum_err_branch(
+    ofstream &output_file,
+    void (*implementation)(double *, int, int, double *) = vecSumErrBranch,
+    string variant_name = "VecSumErrBranch",
+    unsigned int (*get_flops)(int) = get_vec_sum_err_branch_flops)
 {
     cout << endl
-         << "VecSumErrBranch: " << endl;
+         << variant_name << ":" << endl;
 
     for (int term_count = 3; term_count <= 742; term_count *= 1.4)
     {
-        double runtime = measure_vec_sum_err_branch(vecSumErrBranch, term_count);
-        double performance = get_vec_sum_err_branch_flops(term_count) / runtime;
+        double runtime = measure_vec_sum_err_branch(implementation, term_count);
+        double performance = get_flops(term_count) / runtime;
 
-        write_results("VecSumErrBranch", runtime, performance, term_count, output_file);
+        write_results("VecSumErrBranch", variant_name, runtime, performance, term_count,
+                      output_file);
     }
 }
 
-void benchmark_vec_sum_err(ofstream &output_file)
+void benchmark_vec_sum_err(
+    ofstream &output_file,
+    void (*implementation)(double *, int, double *) = vecSumErr,
+    string variant_name = "VecSumErr",
+    unsigned int (*get_flops)(int) = get_vec_sum_err_flops)
 {
     cout << endl
-         << "VecSumErr: " << endl;
+         << variant_name << ":" << endl;
 
     for (int term_count = 3; term_count <= 742; term_count *= 1.4)
     {
-        double runtime = measure_vec_sum_err(vecSumErr, term_count);
-        double performance = get_vec_sum_err_flops(term_count) / runtime;
+        double runtime = measure_vec_sum_err(implementation, term_count);
+        double performance = get_flops(term_count) / runtime;
 
-        write_results("VecSumErr", runtime, performance, term_count, output_file);
+        write_results("VecSumErr", variant_name, runtime, performance, term_count, output_file);
     }
 }
 
-void benchmark_renormalization(ofstream &output_file)
+void benchmark_renormalization(
+    ofstream &output_file,
+    void (*implementation)(double *, int, double *, int) = renormalizationalgorithm,
+    string variant_name = "Renormalization",
+    unsigned int (*get_flops)(int, int) = get_renormalization_flops)
 {
     cout << endl
-         << "Renormalization: " << endl;
+         << variant_name << ":" << endl;
 
     for (int term_count = 3; term_count <= 742; term_count *= 1.4)
     {
-        double runtime = measure_renormalization(renormalizationalgorithm, term_count);
-        double performance = get_renormalization_flops(term_count, term_count) / runtime;
+        double runtime = measure_renormalization(implementation, term_count);
+        double performance = get_flops(term_count, term_count) / runtime;
 
-        write_results("Renormalization", runtime, performance, term_count, output_file);
+        write_results("Renormalization", variant_name, runtime, performance, term_count,
+                      output_file);
     }
 }
 
-void benchmark_addition(ofstream &output_file)
+void benchmark_addition(
+    ofstream &output_file,
+    void (*implementation)(double *, double *, double *, int, int, int) = addition,
+    string variant_name = "Addition",
+    unsigned int (*get_flops)(int, int, int) = get_addition_flops)
 {
     cout << endl
-         << "Addition: " << endl;
+         << variant_name << ":" << endl;
 
     for (int term_count = 3; term_count <= 742; term_count *= 1.4)
     {
-        double runtime = measure_addition(addition, term_count);
-        double performance = get_addition_flops(term_count, term_count, term_count) / runtime;
+        double runtime = measure_addition(implementation, term_count);
+        double performance = get_flops(term_count, term_count, term_count) / runtime;
 
-        write_results("Addition", runtime, performance, term_count, output_file);
+        write_results("Addition", variant_name, runtime, performance, term_count, output_file);
     }
 }
 
-void benchmark_multiplication(ofstream &output_file)
+void benchmark_multiplication(
+    ofstream &output_file,
+    void (*implementation)(double *, double *, double *, int, int, int) = multiplication,
+    string variant_name = "Multiplication",
+    unsigned int (*get_flops)(int) = get_multiplication_flops)
 {
     cout << endl
-         << "Multiplication: " << endl;
+         << variant_name << ":" << endl;
 
-    for (int term_count = 3; term_count <= 742; term_count += 2)
+    for (int term_count = 3; term_count <= 50; term_count += 2)
     {
-        double runtime = measure_multiplication(multiplication, term_count);
-        double performance = get_multiplication_flops(term_count) / runtime;
+        double runtime = measure_multiplication(implementation, term_count);
+        double performance = get_flops(term_count) / runtime;
 
-        write_results("Multiplication", runtime, performance, term_count, output_file);
+        write_results("Multiplication", variant_name, runtime, performance, term_count,
+                      output_file);
     }
 }
 
-void benchmark_multiplication2(ofstream &output_file)
+void benchmark_multiplication2(
+    ofstream &output_file,
+    void (*implementation)(double *, double *, double *, int, int, int) = mult2,
+    string variant_name = "Multiplication2",
+    unsigned int (*get_flops)(int) = get_multiplication2_flops)
 {
     cout << endl
-         << "Multiplication2: " << endl;
+         << variant_name << ":" << endl;
 
     for (int term_count = 1; term_count <= 29; term_count *= 2)
     {
-        double runtime = measure_multiplication2(mult2, term_count);
-        double performance = get_multiplication2_flops(term_count) / runtime;
+        double runtime = measure_multiplication2(implementation, term_count);
+        double performance = get_flops(term_count) / runtime;
 
-        write_results("Multiplication2", runtime, performance, term_count, output_file);
-    }
-}
-
-void benchmark_multiplication2_0(ofstream &output_file)
-{
-    cout << endl
-         << "Multiplication2_0: " << endl;
-
-    for (int term_count = 1; term_count <= 29; term_count *= 2)
-    {
-        double runtime = measure_multiplication2(mult2_0, term_count);
-        double performance = get_multiplication2_flops(term_count) / runtime;
-
-        write_results("Multiplication2_0", runtime, performance, term_count, output_file);
-    }
-}
-
-void benchmark_multiplication2_1(ofstream &output_file)
-{
-    cout << endl
-         << "Multiplication2_1: " << endl;
-
-    for (int term_count = 1; term_count <= 29; term_count *= 2)
-    {
-        double runtime = measure_multiplication2(mult2_1, term_count);
-        double performance = get_multiplication2_flops(term_count) / runtime;
-
-        write_results("Multiplication2_1", runtime, performance, term_count, output_file);
-    }
-}
-
-void benchmark_multiplication2_2(ofstream &output_file)
-{
-    cout << endl
-         << "Multiplication2_2: " << endl;
-
-    for (int term_count = 1; term_count <= 29; term_count *= 2)
-    {
-        double runtime = measure_multiplication2(mult2_1, term_count);
-        double performance = get_multiplication2_flops(term_count) / runtime;
-
-        write_results("Multiplication2_2", runtime, performance, term_count, output_file);
-    }
-}
-
-void benchmark_multiplication2_3(ofstream &output_file)
-{
-    cout << endl
-         << "Multiplication2_3: " << endl;
-
-    for (int term_count = 1; term_count <= 29; term_count *= 2)
-    {
-        double runtime = measure_multiplication2(mult2_1, term_count);
-        double performance = get_multiplication2_flops(term_count) / runtime;
-
-        write_results("Multiplication2_3", runtime, performance, term_count, output_file);
+        write_results("Multiplication2", variant_name, runtime, performance, term_count,
+                      output_file);
     }
 }
 
@@ -309,13 +289,13 @@ void measure_vec_sum_reference(ofstream &output_file)
     double runtime = measure_vec_sum(fast_VecSum<Term_count>, Term_count);
     double performance = get_fast_vec_sum_flops(Term_count) / runtime;
 
-    write_results("VecSumReference", runtime, performance, Term_count, output_file);
+    write_results("VecSum", "VecSumReference", runtime, performance, Term_count, output_file);
 }
 
 void benchmark_vec_sum_reference(ofstream &output_file)
 {
     cout << endl
-         << "VecSum reference: " << endl;
+         << "VecSumReference: " << endl;
 
     measure_vec_sum_reference<3>(output_file);
     measure_vec_sum_reference<4>(output_file);
@@ -337,47 +317,19 @@ void benchmark_vec_sum_reference(ofstream &output_file)
     measure_vec_sum_reference<604>(output_file);
 }
 
-void benchmark_vec_sum_err_branch_reference(ofstream &output_file)
-{
-    cout << endl
-         << "VecSumErrBranch Reference: " << endl;
-
-    for (int term_count = 3; term_count <= 742; term_count *= 1.4)
-    {
-        double runtime = measure_vec_sum_err_branch(fast_VecSumErrBranch, term_count);
-        double performance = get_fast_vec_sum_err_branch_flops(term_count) / runtime;
-
-        write_results("VecSumErrBranchReference", runtime, performance, term_count, output_file);
-    }
-}
-
-void benchmark_vec_sum_err_reference(ofstream &output_file)
-{
-    cout << endl
-         << "VecSumErr Reference: " << endl;
-
-    for (int term_count = 3; term_count <= 742; term_count *= 1.4)
-    {
-        double runtime = measure_vec_sum_err(fast_VecSumErr, term_count);
-        double performance = get_fast_vec_sum_err_flops(term_count) / runtime;
-
-        write_results("VecSumErrReference", runtime, performance, term_count, output_file);
-    }
-}
-
 template <int Term_count>
 void measure_renormalization_reference(ofstream &output_file)
 {
     double runtime = measure_renormalization(fast_renorm3L<Term_count, Term_count>, Term_count);
     double performance = get_fast_renormalization_flops(Term_count, Term_count) / runtime;
 
-    write_results("RenormalizationReference", runtime, performance, Term_count, output_file);
+    write_results("Renormalization", "RenormalizationReference", runtime, performance, Term_count, output_file);
 }
 
 void benchmark_renormalization_reference(ofstream &output_file)
 {
     cout << endl
-         << "Renormalization Reference: " << endl;
+         << "RenormalizationReference: " << endl;
 
     measure_renormalization_reference<3>(output_file);
     measure_renormalization_reference<4>(output_file);
@@ -405,13 +357,14 @@ void measure_addition_reference(ofstream &output_file)
     double runtime = measure_addition(certifiedAdd<Term_count, Term_count, Term_count>, Term_count);
     double performance = get_addition_reference_flops(Term_count, Term_count, Term_count) / runtime;
 
-    write_results("AdditionReference", runtime, performance, Term_count, output_file);
+    write_results("Addition", "AdditionReference", runtime, performance, Term_count,
+                  output_file);
 }
 
 void benchmark_addition_reference(ofstream &output_file)
 {
     cout << endl
-         << "Addition Reference: " << endl;
+         << "AdditionReference: " << endl;
 
     measure_addition_reference<3>(output_file);
     measure_addition_reference<4>(output_file);
@@ -440,32 +393,39 @@ void measure_multiplication_reference(ofstream &output_file)
                                             Term_count);
     double performance = get_multiplication_reference_flops(Term_count) / runtime;
 
-    write_results("MultiplicationReference", runtime, performance, Term_count, output_file);
+    write_results("Multiplication", "MultiplicationReference", runtime, performance, Term_count,
+                  output_file);
 }
 
 void benchmark_multiplication_reference(ofstream &output_file)
 {
     cout << endl
-         << "Multiplication Reference: " << endl;
+         << "MultiplicationReference: " << endl;
 
     measure_multiplication_reference<3>(output_file);
-    measure_multiplication_reference<4>(output_file);
     measure_multiplication_reference<5>(output_file);
     measure_multiplication_reference<7>(output_file);
     measure_multiplication_reference<9>(output_file);
-    measure_multiplication_reference<12>(output_file);
-    measure_multiplication_reference<16>(output_file);
-    measure_multiplication_reference<22>(output_file);
-    measure_multiplication_reference<30>(output_file);
-    measure_multiplication_reference<42>(output_file);
-    measure_multiplication_reference<58>(output_file);
-    measure_multiplication_reference<81>(output_file);
-    measure_multiplication_reference<113>(output_file);
-    measure_multiplication_reference<158>(output_file);
-    measure_multiplication_reference<221>(output_file);
-    measure_multiplication_reference<309>(output_file);
-    measure_multiplication_reference<432>(output_file);
-    measure_multiplication_reference<604>(output_file);
+    measure_multiplication_reference<11>(output_file);
+    measure_multiplication_reference<13>(output_file);
+    measure_multiplication_reference<15>(output_file);
+    measure_multiplication_reference<17>(output_file);
+    measure_multiplication_reference<19>(output_file);
+    measure_multiplication_reference<21>(output_file);
+    measure_multiplication_reference<23>(output_file);
+    measure_multiplication_reference<25>(output_file);
+    measure_multiplication_reference<27>(output_file);
+    measure_multiplication_reference<29>(output_file);
+    measure_multiplication_reference<31>(output_file);
+    measure_multiplication_reference<33>(output_file);
+    measure_multiplication_reference<35>(output_file);
+    measure_multiplication_reference<37>(output_file);
+    measure_multiplication_reference<39>(output_file);
+    measure_multiplication_reference<41>(output_file);
+    measure_multiplication_reference<43>(output_file);
+    measure_multiplication_reference<45>(output_file);
+    measure_multiplication_reference<47>(output_file);
+    measure_multiplication_reference<49>(output_file);
 }
 
 // Main
@@ -491,36 +451,64 @@ int main()
         return 1;
     }
 
-    output_file << "Algorithm;Input size;Runtime;Performance" << endl;
+    output_file << "Algorithm;Variant;Input size;Runtime;Performance" << endl;
 
     cout.setf(ios::fixed);
     cout.precision(3);
 
-#if !defined(BENCHMARK_REFERENCES)
+    // TwoSum
     benchmark_two_sum();
+
+    // TwoMultFMA
     benchmark_two_mult_FMA();
 
+    // VecSum
     benchmark_vec_sum(output_file);
-    benchmark_vec_sum_err_branch(output_file);
-    benchmark_vec_sum_err(output_file);
-
-    benchmark_renormalization(output_file);
-    benchmark_addition(output_file);
-    benchmark_multiplication(output_file);
-
-    benchmark_multiplication2(output_file);
-    benchmark_multiplication2_0(output_file);
-    benchmark_multiplication2_1(output_file);
-    benchmark_multiplication2_2(output_file);
-    benchmark_multiplication2_3(output_file);
-#else
+    benchmark_vec_sum(output_file, vecSum2, "VecSum2");
+    benchmark_vec_sum(output_file, vecSum3, "VecSum3");
+    benchmark_vec_sum(output_file, vecSum4, "VecSum4");
+    benchmark_vec_sum(output_file, vecSum5, "VecSum5");
+    benchmark_vec_sum(output_file, vecSum6, "VecSum6");
     benchmark_vec_sum_reference(output_file);
-    benchmark_vec_sum_err_branch_reference(output_file);
-    benchmark_vec_sum_err_reference(output_file);
+
+    // VecSumErrBranch
+    benchmark_vec_sum_err_branch(output_file);
+    benchmark_vec_sum_err_branch(output_file, vecSumErrBranch2, "VecSumErrBranch2");
+    benchmark_vec_sum_err_branch(output_file, fast_VecSumErrBranch, "VecSumErrBranchReference",
+                                 get_fast_vec_sum_err_branch_flops);
+
+    // VecSumErr
+    benchmark_vec_sum_err(output_file);
+    benchmark_vec_sum_err(output_file, vecSumErr2, "VecSumErr2");
+    benchmark_vec_sum_err(output_file, fast_VecSumErr, "VecSumErrReference",
+                          get_fast_vec_sum_err_flops);
+
+    // Renormalization
+    benchmark_renormalization(output_file);
+    benchmark_renormalization(output_file, renormalization2, "Renormalization2");
+    benchmark_renormalization(output_file, renormalization3, "Renormalization3");
+    benchmark_renormalization(output_file, renormalization4, "Renormalization4");
     benchmark_renormalization_reference(output_file);
+
+    // Addition
+    benchmark_addition(output_file);
+    benchmark_addition(output_file, addition2, "Addition2");
+    benchmark_addition(output_file, addition3, "Addition3");
+    benchmark_addition(output_file, addition4, "Addition4");
     benchmark_addition_reference(output_file);
+
+    // Multiplication
+    benchmark_multiplication(output_file);
+    benchmark_multiplication(output_file, multiplication2, "Multiplication2");
+    // benchmark_multiplication(output_file, multiplication3, "Multiplication3");
     benchmark_multiplication_reference(output_file);
-#endif
+
+    // Multiplication2
+    benchmark_multiplication2(output_file);
+    benchmark_multiplication2(output_file, mult2_0, "Multiplication2_0");
+    benchmark_multiplication2(output_file, mult2_1, "Multiplication2_1");
+    benchmark_multiplication2(output_file, mult2_2, "Multiplication2_2");
+    benchmark_multiplication2(output_file, mult2_3, "Multiplication2_3");
 
     output_file.close();
 }
