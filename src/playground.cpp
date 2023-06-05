@@ -47,12 +47,10 @@ int main()
   // evaluate_implementation(addition4, "addition4", addition_algorithm, naive_runtime);
 
   /* multiplication */
-  // double naive_runtime = measure_multiplication();
+  double naive_runtime = measure_multiplication();
 
   evaluate_implementation(multiplication2, "multiplication2", multiplication_algorithm,
                           naive_runtime);
   evaluate_implementation(multiplication3, "multiplication3", multiplication_algorithm,
                           naive_runtime);
-
-  
 }

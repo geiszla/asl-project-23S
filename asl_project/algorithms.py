@@ -2,9 +2,8 @@
 # pylint: disable=unnecessary-lambda
 
 from dataclasses import dataclass
-from typing import Protocol
-
 from math import floor
+from typing import Protocol
 
 TWO_SUM_FLOPS = 6
 FAST_TWO_SUM_FLOPS = 3
@@ -21,7 +20,7 @@ class Getter(Protocol):
 
 @dataclass
 class Algorithm:
-    """Represents and algorithm."""
+    """Represents an algorithm."""
 
     get_flops: Getter
     get_memory_movements: Getter
@@ -57,7 +56,7 @@ algorithms = {
         get_flops=lambda input_size: get_multiplication_flops(input_size),
         get_memory_movements=lambda input_size: 8 * 3 * input_size,
     ),
-        "Multiplication2": Algorithm(
+    "Multiplication2": Algorithm(
         get_flops=lambda input_size: get_multiplication2_flops(input_size),
         get_memory_movements=lambda input_size: 8 * 3 * input_size,
     ),
@@ -153,14 +152,24 @@ def get_addition_reference_flops(a_length: int, b_length: int):
 
 
 def get_multiplication2_flops(expansion_length: int):
-                              
+    """Calculate the number of flops done by Multiplication2"""
     frexp_flops = 1
     ldexp_flops = 1
 
     mult_flops = 1
     add_flops = 1
-    deposit_flops = TWO_SUM_FLOPS +1
-    accumulate_flops = 2*deposit_flops 
-    len_B = floor(expansion_length * 53 /45+2)
-    return 2* len_B* frexp_flops + 2* ldexp_flops +(len_B-1)*mult_flops+ pow(expansion_length, 2) / 2 * (TWO_MULT_FMA_FLOPS  + mult_flops + accumulate_flops) + (expansion_length-1)*(2*mult_flops +  2*deposit_flops)+len_B*add_flops+ expansion_length*TWO_SUM_FLOPS
+    deposit_flops = TWO_SUM_FLOPS + 1
+    accumulate_flops = 2 * deposit_flops
+    len_b = floor(expansion_length * 53 / 45 + 2)
 
+    return (
+        2 * len_b * frexp_flops
+        + 2 * ldexp_flops
+        + (len_b - 1) * mult_flops
+        + pow(expansion_length, 2)
+        / 2
+        * (TWO_MULT_FMA_FLOPS + mult_flops + accumulate_flops)
+        + (expansion_length - 1) * (2 * mult_flops + 2 * deposit_flops)
+        + len_b * add_flops
+        + expansion_length * TWO_SUM_FLOPS
+    )
