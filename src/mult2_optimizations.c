@@ -14,7 +14,7 @@ Optimization 0: Precompute
 */
 void mult2_0(double* x, double* y,double*pi, int n, int m, int r){
     int bins = r*dbl_prec/binSize+2;
-		double *B = (double *)alloca(bins*sizeof(double));
+		float *B = (double *)alloca(bins*sizeof(double));
     // get exponents
     int *exp_x = (int *)alloca(n*sizeof(int));
 	int *exp_y =(int *)alloca(m*sizeof(int));
@@ -72,7 +72,7 @@ Optimization 1: replace complex with simpler functions: fmin(a,b) -> a<b?a:b, fl
 */
 void mult2_1(double* x, double* y,double*pi, int n, int m, int r){
     int bins = r*dbl_prec/binSize+2;
-    int b_inv = 1/binSize;
+    float b_inv = 1/binSize;
 	double *B = (double *)alloca(bins*sizeof(double));
     // get exponents
     int *exp_x = (int *)alloca(n*sizeof(int));
@@ -134,7 +134,7 @@ Optimization 2: remove function calls accumulate,deposit, exponent, twoMultFma, 
 */
 void mult2_2(double* x, double* y,double*pi, int n, int m, int r){
     int bins = r*dbl_prec/binSize+2;
-    int b_inv = 1/binSize;
+    float b_inv = 1/binSize;
 	double *B = (double *)alloca(bins*sizeof(double));
     // get exponents
     int *exp_x = (int *)alloca(n*sizeof(int));
@@ -333,7 +333,7 @@ Optimization 3: unroll most inner loop twice
 */
 void mult2_3(double* x, double* y,double*pi, int n, int m, int r){
     int bins = r*dbl_prec/binSize+2;
-    int b_inv = 1/binSize;
+    float b_inv = 1/binSize;
 	int c = dbl_prec - binSize - 1;
 	const int COND1 = binSize - 2*c - 1;
 	const int COND2 = binSize - c;
