@@ -1,26 +1,27 @@
 #include <immintrin.h>
-/* multiplies 4 doubles at a time 
-it's important that the input sizes of all doubles and the outputsizes are the same 
+#include <cstring>
+/* multiplies 4 doubles at a time
+it's important that the input sizes of all doubles and the outputsizes are the same
 no cehck for this consition is performed*/
-void fourtimesmultiplicationversion0(double *a0, double *b0, double *a1, double *b1, double *a2, double *b2,double *a3, double *b3,double *r0, double *r1, double *r2, double *r3, const int sizea, const int sizeb, const int sizer)
+void fourtimesmultiplicationversion0(double *a0, double *b0, double *a1, double *b1, double *a2, double *b2, double *a3, double *b3, double *r0, double *r1, double *r2, double *r3, const int sizea, const int sizeb, const int sizer)
 {
-    multiplication(a0,b0,r0,sizea,sizeb,sizer);
-    multiplication(a1,b1,r1,sizea,sizeb,sizer);
-    multiplication(a2,b2,r2,sizea,sizeb,sizer);
-    multiplication(a3,b3,r3,sizea,sizeb,sizer);
+    multiplication(a0, b0, r0, sizea, sizeb, sizer);
+    multiplication(a1, b1, r1, sizea, sizeb, sizer);
+    multiplication(a2, b2, r2, sizea, sizeb, sizer);
+    multiplication(a3, b3, r3, sizea, sizeb, sizer);
     return;
 }
 // unrolled version of fourtimesmultiplicationversion0
-void fourtimesmultiplicationversion1(double *a0, double *b0, double *a1, double *b1, double *a2, double *b2,double *a3, double *b3,double *r0, double *r1, double *r2, double *r3, const int sizea, const int sizeb, const int sizer)
-{  
+void fourtimesmultiplicationversion1(double *a0, double *b0, double *a1, double *b1, double *a2, double *b2, double *a3, double *b3, double *r0, double *r1, double *r2, double *r3, const int sizea, const int sizeb, const int sizer)
+{
     int k = sizea;
-    double *err0 = (double *)calloc((sizea * sizea + 2 * sizea+1), sizeof(double));
+    double *err0 = (double *)calloc((sizea * sizea + 2 * sizea + 1), sizeof(double));
     double *r_ext0 = (double *)calloc((sizea * sizea), sizeof(double));
-    double *err1 = (double *)calloc((sizea * sizea + 2 * sizea+1), sizeof(double));
+    double *err1 = (double *)calloc((sizea * sizea + 2 * sizea + 1), sizeof(double));
     double *r_ext1 = (double *)calloc((sizea * sizea), sizeof(double));
-    double *err2 = (double *)calloc((sizea * sizea + 2 * sizea+1), sizeof(double));
+    double *err2 = (double *)calloc((sizea * sizea + 2 * sizea + 1), sizeof(double));
     double *r_ext2 = (double *)calloc((sizea * sizea), sizeof(double));
-    double *err3 = (double *)calloc((sizea * sizea + 2 * sizea+1), sizeof(double));
+    double *err3 = (double *)calloc((sizea * sizea + 2 * sizea + 1), sizeof(double));
     double *r_ext3 = (double *)calloc((sizea * sizea), sizeof(double));
 
     twoMultFMA(a0[0], b0[0], &(r_ext0[0]), &(err0[0]));
@@ -30,13 +31,13 @@ void fourtimesmultiplicationversion1(double *a0, double *b0, double *a1, double 
 
     for (int n = 1; n <= (k - 1); n++)
     {
-        double *e_tmp0 = (double *)calloc((n+1), sizeof(double));
+        double *e_tmp0 = (double *)calloc((n + 1), sizeof(double));
         double *p0 = (double *)calloc((n + 1), sizeof(double));
-        double *e_tmp1 = (double *)calloc((n+1), sizeof(double));
+        double *e_tmp1 = (double *)calloc((n + 1), sizeof(double));
         double *p1 = (double *)calloc((n + 1), sizeof(double));
-        double *e_tmp2 = (double *)calloc((n+1), sizeof(double));
+        double *e_tmp2 = (double *)calloc((n + 1), sizeof(double));
         double *p2 = (double *)calloc((n + 1), sizeof(double));
-        double *e_tmp3 = (double *)calloc((n+1), sizeof(double));
+        double *e_tmp3 = (double *)calloc((n + 1), sizeof(double));
         double *p3 = (double *)calloc((n + 1), sizeof(double));
 
         for (int i = 0; i <= n; i++)
@@ -46,19 +47,17 @@ void fourtimesmultiplicationversion1(double *a0, double *b0, double *a1, double 
             twoMultFMA(a2[i], b2[n - i], &(p2[i]), &(e_tmp2[i]));
             twoMultFMA(a3[i], b3[n - i], &(p3[i]), &(e_tmp3[i]));
             //------------------------------------------------
-            
+
             //-------------------------------- twoMultFMa inline
         }
         double *tmp0 = &err0[-n - 1];
-        double *tmp1_0 = (double *)calloc((n * n + n+1), sizeof(double));
+        double *tmp1_0 = (double *)calloc((n * n + n + 1), sizeof(double));
         double *tmp1 = &err1[-n - 1];
-        double *tmp1_1 = (double *)calloc((n * n + n+1), sizeof(double));
+        double *tmp1_1 = (double *)calloc((n * n + n + 1), sizeof(double));
         double *tmp2 = &err2[-n - 1];
-        double *tmp1_2 = (double *)calloc((n * n + n+1), sizeof(double));
+        double *tmp1_2 = (double *)calloc((n * n + n + 1), sizeof(double));
         double *tmp3 = &err3[-n - 1];
-        double *tmp1_3 = (double *)calloc((n * n + n+1), sizeof(double));
-        
-
+        double *tmp1_3 = (double *)calloc((n * n + n + 1), sizeof(double));
 
         //-------------------------------- vecsum inline
         int length = (n * n + n);
@@ -83,7 +82,7 @@ void fourtimesmultiplicationversion1(double *a0, double *b0, double *a1, double 
             double s_tmp1, e_tmplocal1;
             double s_tmp2, e_tmplocal2;
             double s_tmp3, e_tmplocal3;
-            
+
             double sl0 = tmp0[i] + s0[i + 1];
             double sl1 = tmp1[i] + s1[i + 1];
             double sl2 = tmp2[i] + s2[i + 1];
@@ -122,7 +121,7 @@ void fourtimesmultiplicationversion1(double *a0, double *b0, double *a1, double 
 
         //--------------------------------
         /* write  tmp1 into r_ext[n], e[0:n^2 +n-1]*/
-       
+
         for (int i = 0; i <= (n * n + n - 1); i++)
         {
             err0[i] = tmp1_0[i + 1];
@@ -131,13 +130,12 @@ void fourtimesmultiplicationversion1(double *a0, double *b0, double *a1, double 
             err3[i] = tmp1_3[i + 1];
         }
         // writes err[0:n^2 +n-1],e_tmp[0:n] into err[0:n^2 +2n-1]
-        for (int i = (n * n+n); i <= (n*n + 2*n -1); i++)
+        for (int i = (n * n + n); i <= (n * n + 2 * n - 1); i++)
         {
-            err0[i] = e_tmp0[i - (n * n+n) ];
-            err1[i] = e_tmp1[i - (n * n+n) ];
-            err2[i] = e_tmp2[i - (n * n+n) ];
-            err3[i] = e_tmp3[i - (n * n+n) ];
-           
+            err0[i] = e_tmp0[i - (n * n + n)];
+            err1[i] = e_tmp1[i - (n * n + n)];
+            err2[i] = e_tmp2[i - (n * n + n)];
+            err3[i] = e_tmp3[i - (n * n + n)];
         }
     }
 
@@ -168,53 +166,66 @@ void fourtimesmultiplicationversion1(double *a0, double *b0, double *a1, double 
 
 
 
-void fourtimesmultiplicationversion2(double *a0, double *b0, double *a1, double *b1, double *a2, double *b2,double *a3, double *b3,double *r0, double *r1, double *r2, double *r3, const int sizea, const int sizeb, const int sizer)
-{  
+void fourtimesmultiplicationversion2(double *a0, double *b0, double *a1, double *b1, double *a2, double *b2, double *a3, double *b3, double *r0, double *r1, double *r2, double *r3, const int sizea, const int sizeb, const int sizer)
+{
     int k = sizea;
-    double *err0 = (double *)calloc((sizea * sizea + 2 * sizea+1), sizeof(double));
-    double *r_ext0 = (double *)calloc((sizea * sizea), sizeof(double));
-    double *err1 = (double *)calloc((sizea * sizea + 2 * sizea+1), sizeof(double));
-    double *r_ext1 = (double *)calloc((sizea * sizea), sizeof(double));
-    double *err2 = (double *)calloc((sizea * sizea + 2 * sizea+1), sizeof(double));
-    double *r_ext2 = (double *)calloc((sizea * sizea), sizeof(double));
-    double *err3 = (double *)calloc((sizea * sizea + 2 * sizea+1), sizeof(double));
-    double *r_ext3 = (double *)calloc((sizea * sizea), sizeof(double));
+    double *err0 = (double *)alloca((sizea * sizea + 2 * sizea + 1) * sizeof(double));
+    double *r_ext0 = (double *)alloca((sizea * sizea) * sizeof(double));
+    double *err1 = (double *)alloca((sizea * sizea + 2 * sizea + 1) * sizeof(double));
+    double *r_ext1 = (double *)alloca((sizea * sizea) * sizeof(double));
+    double *err2 = (double *)alloca((sizea * sizea + 2 * sizea + 1) * sizeof(double));
+    double *r_ext2 = (double *)alloca((sizea * sizea) * sizeof(double));
+    double *err3 = (double *)alloca((sizea * sizea + 2 * sizea + 1) * sizeof(double));
+    double *r_ext3 = (double *)alloca((sizea * sizea) * sizeof(double));
+    memset(err0, 0, (sizea * sizea + 2 * sizea + 1) * sizeof(double));
+    memset(r_ext0, 0, (sizea * sizea) * sizeof(double));
+    memset(err1, 0, (sizea * sizea + 2 * sizea + 1) * sizeof(double));
+    memset(r_ext1, 0, (sizea * sizea) * sizeof(double));
+    memset(err2, 0, (sizea * sizea + 2 * sizea + 1) * sizeof(double));
+    memset(r_ext2, 0, (sizea * sizea) * sizeof(double));
+    memset(err3, 0, (sizea * sizea + 2 * sizea + 1) * sizeof(double));
+    memset(r_ext3, 0, (sizea * sizea) * sizeof(double));
 
     twoMultFMA(a0[0], b0[0], &(r_ext0[0]), &(err0[0]));
     twoMultFMA(a1[0], b1[0], &(r_ext1[0]), &(err1[0]));
     twoMultFMA(a2[0], b2[0], &(r_ext2[0]), &(err2[0]));
     twoMultFMA(a3[0], b3[0], &(r_ext3[0]), &(err3[0]));
-
+    // inline twoMultFMA(a0[0], b0[0], &(r_ext0[0]), &(err0[0]));
 
     for (int n = 1; n <= (k - 1); n++)
     {
-        double *e_tmp0 = (double *)calloc((n+1), sizeof(double));
-        double *p0 = (double *)calloc((n + 1), sizeof(double));
-        double *e_tmp1 = (double *)calloc((n+1), sizeof(double));
-        double *p1 = (double *)calloc((n + 1), sizeof(double));
-        double *e_tmp2 = (double *)calloc((n+1), sizeof(double));
-        double *p2 = (double *)calloc((n + 1), sizeof(double));
-        double *e_tmp3 = (double *)calloc((n+1), sizeof(double));
-        double *p3 = (double *)calloc((n + 1), sizeof(double));
+        double *e_tmp0 = (double *)alloca((n + 1) * sizeof(double));
+        double *p0 = (double *)alloca((n + 1) * sizeof(double));
+        double *e_tmp1 = (double *)alloca((n + 1) * sizeof(double));
+        double *p1 = (double *)alloca((n + 1) * sizeof(double));
+        double *e_tmp2 = (double *)alloca((n + 1) * sizeof(double));
+        double *p2 = (double *)alloca((n + 1) * sizeof(double));
+        double *e_tmp3 = (double *)alloca((n + 1) * sizeof(double));
+        double *p3 = (double *)alloca((n + 1) * sizeof(double));
 
+        memset(e_tmp0, 0, (n + 1) * sizeof(double));
+        memset(p0, 0, (n + 1) * sizeof(double));
+        memset(e_tmp1, 0, (n + 1) * sizeof(double));
+        memset(p1, 0, (n + 1) * sizeof(double));
+        memset(e_tmp2, 0, (n + 1) * sizeof(double));
+        memset(p2, 0, (n + 1) * sizeof(double));
+        memset(e_tmp3, 0, (n + 1) * sizeof(double));
+        memset(p3, 0, (n + 1) * sizeof(double)) ;
         for (int i = 0; i <= n; i++)
         {
             twoMultFMA(a0[i], b0[n - i], &(p0[i]), &(e_tmp0[i]));
             twoMultFMA(a1[i], b1[n - i], &(p1[i]), &(e_tmp1[i]));
             twoMultFMA(a2[i], b2[n - i], &(p2[i]), &(e_tmp2[i]));
             twoMultFMA(a3[i], b3[n - i], &(p3[i]), &(e_tmp3[i]));
-         
         }
         double *tmp0 = &err0[-n - 1];
-        double *tmp1_0 = (double *)calloc((n * n + n+1), sizeof(double));
+        double *tmp1_0 = (double *)calloc((n * n + n + 1), sizeof(double));
         double *tmp1 = &err1[-n - 1];
-        double *tmp1_1 = (double *)calloc((n * n + n+1), sizeof(double));
+        double *tmp1_1 = (double *)calloc((n * n + n + 1), sizeof(double));
         double *tmp2 = &err2[-n - 1];
-        double *tmp1_2 = (double *)calloc((n * n + n+1), sizeof(double));
+        double *tmp1_2 = (double *)calloc((n * n + n + 1), sizeof(double));
         double *tmp3 = &err3[-n - 1];
-        double *tmp1_3 = (double *)calloc((n * n + n+1), sizeof(double));
-        
-
+        double *tmp1_3 = (double *)calloc((n * n + n + 1), sizeof(double));
 
         //-------------------------------- vecsum inline
         int length = (n * n + n);
@@ -239,7 +250,7 @@ void fourtimesmultiplicationversion2(double *a0, double *b0, double *a1, double 
             double s_tmp1, e_tmplocal1;
             double s_tmp2, e_tmplocal2;
             double s_tmp3, e_tmplocal3;
-            
+
             double sl0 = tmp0[i] + s0[i + 1];
             double sl1 = tmp1[i] + s1[i + 1];
             double sl2 = tmp2[i] + s2[i + 1];
@@ -278,7 +289,7 @@ void fourtimesmultiplicationversion2(double *a0, double *b0, double *a1, double 
 
         //--------------------------------
         /* write  tmp1 into r_ext[n], e[0:n^2 +n-1]*/
-       
+
         for (int i = 0; i <= (n * n + n - 1); i++)
         {
             err0[i] = tmp1_0[i + 1];
@@ -287,13 +298,12 @@ void fourtimesmultiplicationversion2(double *a0, double *b0, double *a1, double 
             err3[i] = tmp1_3[i + 1];
         }
         // writes err[0:n^2 +n-1],e_tmp[0:n] into err[0:n^2 +2n-1]
-        for (int i = (n * n+n); i <= (n*n + 2*n -1); i++)
+        for (int i = (n * n + n); i <= (n * n + 2 * n - 1); i++)
         {
-            err0[i] = e_tmp0[i - (n * n+n) ];
-            err1[i] = e_tmp1[i - (n * n+n) ];
-            err2[i] = e_tmp2[i - (n * n+n) ];
-            err3[i] = e_tmp3[i - (n * n+n) ];
-           
+            err0[i] = e_tmp0[i - (n * n + n)];
+            err1[i] = e_tmp1[i - (n * n + n)];
+            err2[i] = e_tmp2[i - (n * n + n)];
+            err3[i] = e_tmp3[i - (n * n + n)];
         }
     }
 
