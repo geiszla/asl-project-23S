@@ -13,6 +13,7 @@ extern "C"
 #include "renormalization_optimizations.c"
 #include "addition_optimizations.c"
 #include "multiplication_optimizations.c"
+    // #include "mult2_optimizations.c"
 }
 
 #include "measure.cpp"
@@ -469,17 +470,25 @@ int main()
     benchmark_vec_sum(output_file, vecSum4, "VecSum4");
     benchmark_vec_sum(output_file, vecSum5, "VecSum5");
     benchmark_vec_sum(output_file, vecSum6, "VecSum6");
+    benchmark_vec_sum(output_file, vecSum3_fast, "VecSum3Fast", get_fast_vec_sum_flops);
+    benchmark_vec_sum(output_file, vecSum4_fast, "VecSum4Fast", get_fast_vec_sum_flops);
+    benchmark_vec_sum(output_file, vecSum5_fast, "VecSum5Fast", get_fast_vec_sum_flops);
+    benchmark_vec_sum(output_file, vecSum6_fast, "VecSum6Fast", get_fast_vec_sum_flops);
     benchmark_vec_sum_reference(output_file);
 
     // VecSumErrBranch
     benchmark_vec_sum_err_branch(output_file);
     benchmark_vec_sum_err_branch(output_file, vecSumErrBranch2, "VecSumErrBranch2");
+    benchmark_vec_sum_err_branch(output_file, vecSumErrBranch_fast, "VecSumErrBranchFast",
+                                 get_fast_vec_sum_err_branch_flops);
     benchmark_vec_sum_err_branch(output_file, fast_VecSumErrBranch, "VecSumErrBranchReference",
                                  get_fast_vec_sum_err_branch_flops);
 
     // VecSumErr
     benchmark_vec_sum_err(output_file);
     benchmark_vec_sum_err(output_file, vecSumErr2, "VecSumErr2");
+    benchmark_vec_sum_err(output_file, vecSumErr_fast, "VecSumErrFast",
+                          get_fast_vec_sum_err_flops);
     benchmark_vec_sum_err(output_file, fast_VecSumErr, "VecSumErrReference",
                           get_fast_vec_sum_err_flops);
 
@@ -488,6 +497,8 @@ int main()
     benchmark_renormalization(output_file, renormalization2, "Renormalization2");
     benchmark_renormalization(output_file, renormalization3, "Renormalization3");
     benchmark_renormalization(output_file, renormalization4, "Renormalization4");
+    benchmark_renormalization(output_file, renormalization_fast, "RenormalizationFast",
+                              get_fast_renormalization_flops);
     benchmark_renormalization_reference(output_file);
 
     // Addition
@@ -495,20 +506,21 @@ int main()
     benchmark_addition(output_file, addition2, "Addition2");
     benchmark_addition(output_file, addition3, "Addition3");
     benchmark_addition(output_file, addition4, "Addition4");
+    benchmark_addition(output_file, addition_fast, "AdditionFast", get_addition_reference_flops);
     benchmark_addition_reference(output_file);
 
     // Multiplication
     benchmark_multiplication(output_file);
     benchmark_multiplication(output_file, multiplication2, "Multiplication2");
-    // benchmark_multiplication(output_file, multiplication3, "Multiplication3");
+    benchmark_multiplication(output_file, multiplication3, "Multiplication3");
     benchmark_multiplication_reference(output_file);
 
     // Multiplication2
-    benchmark_multiplication2(output_file);
-    benchmark_multiplication2(output_file, mult2_0, "Multiplication2_0");
-    benchmark_multiplication2(output_file, mult2_1, "Multiplication2_1");
-    benchmark_multiplication2(output_file, mult2_2, "Multiplication2_2");
-    benchmark_multiplication2(output_file, mult2_3, "Multiplication2_3");
+    // benchmark_multiplication2(output_file);
+    // benchmark_multiplication2(output_file, mult2_0, "Multiplication2_0");
+    // benchmark_multiplication2(output_file, mult2_1, "Multiplication2_1");
+    // benchmark_multiplication2(output_file, mult2_2, "Multiplication2_2");
+    // benchmark_multiplication2(output_file, mult2_3, "Multiplication2_3");
 
     output_file.close();
 }

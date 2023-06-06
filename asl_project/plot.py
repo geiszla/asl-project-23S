@@ -42,6 +42,20 @@ def main():
     for algorithm in csv_data["Algorithm"].unique():
         optimization_data = csv_data[csv_data["Algorithm"] == algorithm]
 
+        # Plot fast VecSum algorithms separately
+        if algorithm == "VecSum":
+            fast_data = optimization_data[
+                optimization_data["Variant"].str.contains("Fast|Reference")
+            ]
+            optimization_data = optimization_data[
+                # pylint: disable=singleton-comparison
+                optimization_data["Variant"].str.contains("Fast")
+                == False  # noqa: E712
+            ]
+
+            plot_performance("Performance", fast_data, "VecSumFast")
+            plot_performance("Runtime", fast_data, "VecSumFast")
+
         plot_performance("Performance", optimization_data, algorithm)
         plot_performance("Runtime", optimization_data, algorithm)
 
