@@ -104,54 +104,20 @@ void multiplication2(double *a, double *b, double *r, const int sizea, const int
   return;
 }
 
-void multiplication3(double *a, double *b, double *r, const int sizea, const int sizeb,
-                     const int sizer)
+void multiplication3(double *a, double *b, double *r, const int sizea, const int sizeb, const int sizer)
 {
   int k = sizea;
 
   int err_size = k * k;
-
-  double *err = (double *)alloca((err_size) * sizeof(double));
-  memset(err, 0, (err_size) * sizeof(double));
-
-  int i = 0;
-  __m256d err_vec = _mm256_setzero_pd();
-  for (; i < err_size - 32; i += 32)
-  {
-    _mm256_storeu_pd(&err[i], err_vec);
-    _mm256_storeu_pd(&err[i + 4], err_vec);
-    _mm256_storeu_pd(&err[i + 8], err_vec);
-    _mm256_storeu_pd(&err[i + 12], err_vec);
-    _mm256_storeu_pd(&err[i + 16], err_vec);
-    _mm256_storeu_pd(&err[i + 20], err_vec);
-    _mm256_storeu_pd(&err[i + 24], err_vec);
-    _mm256_storeu_pd(&err[i + 28], err_vec);
-  }
-  for (; i < err_size; i += 1)
-  {
-    err[i] = 0;
-  }
-
   int ext_size = 2 * (k * k);
+  double *err = (double *)alloca((err_size) * sizeof(double));
   double *r_ext = (double *)alloca((ext_size) * sizeof(double));
+  memset(err, 0, (err_size) * sizeof(double));
   memset(r_ext, 0, (ext_size) * sizeof(double));
-
-  int runner = 0;
-  for (; runner < ext_size - 32; runner += 32)
-  {
-    _mm256_storeu_pd(&r_ext[runner], err_vec);
-    _mm256_storeu_pd(&r_ext[runner + 4], err_vec);
-    _mm256_storeu_pd(&r_ext[runner + 8], err_vec);
-    _mm256_storeu_pd(&r_ext[runner + 12], err_vec);
-    _mm256_storeu_pd(&r_ext[runner + 16], err_vec);
-    _mm256_storeu_pd(&r_ext[runner + 20], err_vec);
-    _mm256_storeu_pd(&r_ext[runner + 24], err_vec);
-    _mm256_storeu_pd(&r_ext[runner + 28], err_vec);
-  }
-  for (; runner < ext_size; runner++)
-  {
-    r_ext[runner] = 0;
-  }
+  int i = 0;
+  int runner=0;
+  double  r_ext_sum=0;
+  double err_sum=0;
 
   double x = a[0];
   double y = b[0];
@@ -164,47 +130,26 @@ void multiplication3(double *a, double *b, double *r, const int sizea, const int
   {
     int tmp_size = 2 * (n + 1);
 
+  
     double *e_tmp = (double *)alloca((tmp_size) * sizeof(double));
     memset(e_tmp, 0, (tmp_size) * sizeof(double));
     double *p = (double *)alloca((tmp_size) * sizeof(double));
     memset(p, 0, (tmp_size) * sizeof(double));
-
     int runner1 = 0;
-    for (; runner1 < tmp_size - 32; runner1 += 32)
-    {
-      _mm256_storeu_pd(&e_tmp[runner1], err_vec);
-      _mm256_storeu_pd(&p[runner1], err_vec);
-      _mm256_storeu_pd(&e_tmp[runner1 + 4], err_vec);
-      _mm256_storeu_pd(&p[runner1 + 4], err_vec);
-      _mm256_storeu_pd(&e_tmp[runner1 + 8], err_vec);
-      _mm256_storeu_pd(&p[runner1 + 8], err_vec);
-      _mm256_storeu_pd(&e_tmp[runner1 + 12], err_vec);
-      _mm256_storeu_pd(&p[runner1 + 12], err_vec);
-      _mm256_storeu_pd(&e_tmp[runner1 + 16], err_vec);
-      _mm256_storeu_pd(&p[runner1 + 16], err_vec);
-      _mm256_storeu_pd(&e_tmp[runner1 + 20], err_vec);
-      _mm256_storeu_pd(&p[runner1 + 20], err_vec);
-      _mm256_storeu_pd(&e_tmp[runner1 + 24], err_vec);
-      _mm256_storeu_pd(&p[runner1 + 24], err_vec);
-      _mm256_storeu_pd(&e_tmp[runner1 + 28], err_vec);
-      _mm256_storeu_pd(&p[runner1 + 28], err_vec);
-    }
-    for (; runner1 < tmp_size; runner1++)
-    {
-      e_tmp[runner1] = 0;
-      p[runner1] = 0;
-    }
-
+    
+    
     int runner2 = 0;
-    for (; runner2 <= n - 12; runner2 += 4)
+    for (; runner2 <= n-8; runner2+=4)
     {
+
+      // load b_vec first and then permute so it is faster 
+      __m256d b_vec = _mm256_loadu_pd(&b[n - runner2-3]);
       __m256d x_vec = _mm256_loadu_pd(&a[runner2]);
-      __m256d b_vec = _mm256_loadu_pd(&b[n - runner2 - 3]);
       __m256d y_vec = _mm256_permute4x64_pd(b_vec, 0b00011011);
       __m256d pi_vec = _mm256_mul_pd(x_vec, y_vec);
       __m256d e_tmp_vec = _mm256_fmsub_pd(x_vec, y_vec, pi_vec);
-      _mm256_storeu_pd(&e_tmp[runner2], e_tmp_vec);
-      _mm256_storeu_pd(&p[runner2], pi_vec);
+      _mm256_store_pd(&e_tmp[runner2], e_tmp_vec);
+      _mm256_store_pd(&p[runner2], pi_vec);
     }
 
     for (; runner2 <= n; runner2++)
@@ -215,88 +160,90 @@ void multiplication3(double *a, double *b, double *r, const int sizea, const int
       e_tmp[runner2] = fma(x, y, -pi);
       p[runner2] = pi;
     }
-    int size = n * n + n + 1;
 
-    double *tmp = (double *)alloca((size) * sizeof(double));
-    memset(tmp, 0, (size) * sizeof(double));
-    double *tmp1 = (double *)alloca((size) * sizeof(double));
-    memset(tmp1, 0, (size) * sizeof(double));
 
-    int runner3 = 0;
-    for (; runner3 <= n; runner3++)
+    double *tmp = (double *)alloca((n * n + n + 1) * sizeof(double));
+    memset(tmp, 0, (n * n + n + 1) * sizeof(double));
+    double *tmp1 = (double *)alloca((n * n + n + 1) * sizeof(double));
+    memset(tmp1, 0, (n * n + n + 1) * sizeof(double));
+    int run2= 0;
+    for(; run2 <= n-16; run2+=16)
     {
-      tmp[runner3] = p[runner3];
-      tmp[n + 1 + runner3] = err[runner3];
+      __m256d x_vec = _mm256_loadu_pd(&p[run2]);
+      _mm256_store_pd(&tmp[run2], x_vec);
+      __m256d x_vec1 = _mm256_loadu_pd(&p[run2+4]);
+      _mm256_store_pd(&tmp[run2+4], x_vec1);
+      __m256d x_vec2 = _mm256_loadu_pd(&p[run2+8]);
+      _mm256_store_pd(&tmp[run2+8], x_vec2);
+      __m256d x_vec3 = _mm256_loadu_pd(&p[run2+12]);
+      _mm256_store_pd(&tmp[run2+12], x_vec3);
+      
     }
-
-    for (; runner3 <= n * n - 1; runner3++)
+    for (; run2 <= n; run2++)
     {
-      tmp[n + 1 + runner3] = err[runner3];
+      tmp[run2] = p[run2];
+    }
+    
+    int run3=0;
+    for (; run3 <= n * n - 5; run3+=4)
+    {
+      __m256d x_vec = _mm256_loadu_pd(&err[run3]);
+      _mm256_storeu_pd(&tmp[n + 1 + run3], x_vec);
+      //tmp[n + 1 + run3] = err[run3];
+    }
+    for (; run3 <= n * n - 1; run3++)
+    {
+      tmp[n + 1 + run3] = err[run3];
     }
 
     vecSum5(tmp, tmp1, (n * n + n));
 
     r_ext[n] = tmp1[0];
-
-    for (int i = 0; i <= n * n + n - 1; i++)
+    int run5 = 0; 
+    for (; run5 <= n * n + n - 5; run5+=4)
     {
-      err[i] = tmp1[i + 1];
+      //err[run5] = tmp1[run5 + 1];
+      __m256d x_vec = _mm256_loadu_pd(&tmp1[run5+1]);
+      _mm256_storeu_pd(&err[run5], x_vec);
     }
-
-    for (int i = n * n; i <= ((n * n) + 2 * n - 1); i++)
+    for (; run5 <= n * n + n - 1; run5++)
     {
-      err[i] = e_tmp[i - n * n];
+      err[run5] = tmp1[run5 + 1];
     }
+    int run7 =  n * n;
+    for ( ;run7 <= ((n * n) + 2 * n - 5); run7++)
+    {
+      //err[run7] = e_tmp[run7 - n * n];
+      __m256d x_vec = _mm256_loadu_pd(&e_tmp[run7 - n * n]);
+      _mm256_storeu_pd(&err[run7], x_vec);
+    }
+    for ( ;run7 <= ((n * n) + 2 * n - 1); run7++)
+    {
+      err[run7] = e_tmp[run7 - n * n];
+    }
+    r_ext_sum += a[n] * b[k - n];
+    err_sum += err[k - 1];
   }
 
-  double r_ext_sum[4];
-  double err_sum[4];
-  r_ext_sum[0] = 0;
-  err_sum[0] = 0;
-  int runner4 = 0;
+  
+  /////////////////////////////////////////////////
+ 
 
-  __m256d r_ext_sum_vec = _mm256_setzero_pd();
-  for (; runner4 <= k - 17; runner4 += 16)
+  r_ext[k] += r_ext_sum;
+  r_ext[k - 1] += err_sum;
+  int run8 = k * k;
+  for ( ;run8 <= k * k - 5; run8+=4)
   {
-    __m256d x_vec = _mm256_load_pd(&a[runner4]);
-    __m256d b_vec = _mm256_load_pd(&b[k - runner4 - 3]);
-
-    __m256d x_vec1 = _mm256_load_pd(&a[runner4 + 4]);
-    __m256d b_vec1 = _mm256_load_pd(&b[k - runner4 - 3 - 4]);
-    __m256d x_vec2 = _mm256_load_pd(&a[runner4 + 8]);
-    __m256d b_vec2 = _mm256_load_pd(&b[k - runner4 - 3 - 8]);
-    __m256d x_vec3 = _mm256_load_pd(&a[runner4 + 12]);
-    __m256d b_vec3 = _mm256_load_pd(&b[k - runner4 - 3 - 12]);
-
-    __m256d y_vec = _mm256_permute4x64_pd(b_vec, 0b00011011);
-    __m256d r = _mm256_mul_pd(x_vec, y_vec);
-    r_ext_sum_vec = _mm256_add_pd(r_ext_sum_vec, r);
-
-    __m256d y_vec1 = _mm256_permute4x64_pd(b_vec1, 0b00011011);
-    __m256d r1 = _mm256_mul_pd(x_vec1, y_vec1);
-    r_ext_sum_vec = _mm256_add_pd(r_ext_sum_vec, r1);
-
-    __m256d y_vec2 = _mm256_permute4x64_pd(b_vec2, 0b00011011);
-    __m256d r2 = _mm256_mul_pd(x_vec2, y_vec2);
-    r_ext_sum_vec = _mm256_add_pd(r_ext_sum_vec, r2);
-
-    __m256d y_vec3 = _mm256_permute4x64_pd(b_vec3, 0b00011011);
-    __m256d r3 = _mm256_mul_pd(x_vec3, y_vec3);
-    r_ext_sum_vec = _mm256_add_pd(r_ext_sum_vec, r3);
+    //r_ext[run8] += err[run8];
+    __m256d x_vec = _mm256_loadu_pd(&r_ext[run8]);
+    __m256d y_vec = _mm256_loadu_pd(&err[run8]);
+    __m256d z_vec = _mm256_add_pd(x_vec, y_vec);
+    _mm256_storeu_pd(&r_ext[run8], z_vec);
   }
-
-  r_ext_sum_vec = _mm256_hadd_pd(r_ext_sum_vec, r_ext_sum_vec);
-  r_ext_sum_vec = _mm256_hadd_pd(r_ext_sum_vec, r_ext_sum_vec);
-
-  _mm256_storeu_pd(&r_ext_sum[0], r_ext_sum_vec);
-  err_sum[0] += k * err[k - 1];
-  for (; runner4 <= k - 1; runner4++)
+  for ( ;run8 <= k * k - 1; run8++)
   {
-    r_ext_sum[0] += a[runner4] * b[k - runner4];
+    r_ext[run8] += err[run8];
   }
-
-  r_ext[k] += r_ext_sum[0];
-  r_ext[k - 1] += err_sum[0];
 
   renormalization4(r_ext, k + 1, r, k);
 
