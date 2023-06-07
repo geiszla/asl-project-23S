@@ -1,6 +1,6 @@
 ///////////////////////////////// copied from CAMPARY package/////////////////////////////
 
-#define UNROLL_RENORM
+// #define UNROLL_RENORM
 
 /* ========== TwoSum ========== */
 
@@ -83,7 +83,7 @@ static inline void fast_renorm3L(double *x, int _sX, double *r, int _sR){
   r[(sR<sX)?sR-1:sX-2] = f[(sR<sX)?sR-1:sX-2];
   r[(sR<sX)?sR-1:sX-1] = f[(sR<sX)?sR-1:sX-1];
 
-  for(i=sR; i<sX; i++) r[i] = 0.;
+  // for(i=sR; i<sX; i++) r[i] = 0.;
 }
 
 /* ========== Addition ========== */
@@ -174,7 +174,8 @@ static inline void certifiedAdd(double *x, double *y, double *r, int _K, int _L,
   else{
     double f[K+L];
     merge<K,L>( x, y, f );
-    renorm2L<K+L,R>( f, r );
+    // renorm2L<K+L,R>( f, r );
+    fast_renorm3L<K+L,R>(f, K+L, r, R);
   }
 }
 
@@ -311,5 +312,6 @@ static inline void baileyMul_renorm(double *x, double *y, double *z, int _K, int
       f[R] = FPadd_rn(f[R], e);
     }
   }
-  renorm_rand2L<R+1,R>(f, z);	
+  // renorm_rand2L<R+1,R>(f, z);	
+  fast_renorm3L<R+1,R>(f, R+1, z, R);
 }
