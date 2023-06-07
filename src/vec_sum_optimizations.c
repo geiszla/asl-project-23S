@@ -89,7 +89,7 @@ inline void vecSum4(double *x, double *e_res, int in_out_size)
   e_res[0] = s0;
 }
 
-// Best for input size >= 21, < 38
+// Best for input size >= 21, < 33
 inline void vecSum5(double *x, double *e_res, int in_out_size)
 {
   double *s_array = (double *)alloca(in_out_size * sizeof(double));
@@ -149,7 +149,7 @@ inline void vecSum5(double *x, double *e_res, int in_out_size)
   e_res[0] = s0;
 }
 
-// Best for input size >= 38
+// Best for input size >= 33
 inline void vecSum6(double *x, double *e_res, int in_out_size)
 {
   double *s_array = (double *)alloca(in_out_size * sizeof(double));

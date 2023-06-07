@@ -14,7 +14,7 @@ Optimization 0: Precompute
 */
 void mult2_0(double* x, double* y,double*pi, int n, int m, int r){
     int bins = r*dbl_prec/binSize+2;
-		float *B = (double *)alloca(bins*sizeof(double));
+		double *B = (double *)alloca(bins*sizeof(double));
     // get exponents
     int *exp_x = (int *)alloca(n*sizeof(int));
 	int *exp_y =(int *)alloca(m*sizeof(int));

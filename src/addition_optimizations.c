@@ -106,7 +106,7 @@ void addition4(double *a, double *b, double *f, int length_a, int length_b, int 
       temp_array[i + 1] = e;
     }
   }
-  else if (size_of_x < 38)
+  else if (size_of_x < 33)
   {
     double s3;
     double s2;
@@ -364,7 +364,7 @@ void addition_fast(double *a, double *b, double *f, int length_a, int length_b, 
   double temp = merged_array[size_of_x - 1];
   temp_array[size_of_x - 1] = temp;
 
-  if (size_of_x < 12)
+  if (size_of_x < 11)
   {
     double st;
     double s3;
@@ -402,7 +402,7 @@ void addition_fast(double *a, double *b, double *f, int length_a, int length_b, 
       temp_array[i + 1] = e;
     }
   }
-  else if (size_of_x < 37)
+  else if (size_of_x < 40)
   {
     for (int i = size_of_x - 2; i >= 0; i--)
     {

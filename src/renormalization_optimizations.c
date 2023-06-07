@@ -12,7 +12,7 @@ inline void renormalization2(double x[], int size_of_x, double f[], int m)
   {
     vecSum4(x, err, size_of_x);
   }
-  else if (size_of_x < 38)
+  else if (size_of_x < 33)
   {
     vecSum5(x, err, size_of_x);
   }
@@ -47,7 +47,7 @@ inline void renormalization3(double x[], int size_of_x, double f[], int m)
   {
     vecSum4(x, err, size_of_x);
   }
-  else if (size_of_x < 38)
+  else if (size_of_x < 33)
   {
     vecSum5(x, err, size_of_x);
   }
@@ -164,7 +164,7 @@ inline void renormalization4(double x[], int size_of_x, double f[], int m)
       temp_array[i + 1] = e;
     }
   }
-  else if (size_of_x < 38)
+  else if (size_of_x < 33)
   {
     double s3;
     double s2;
@@ -396,7 +396,7 @@ inline void renormalization_fast(double x[], int size_of_x, double f[], int m)
   double temp = x[size_of_x - 1];
   temp_array[size_of_x - 1] = temp;
 
-  if (size_of_x < 12)
+  if (size_of_x < 11)
   {
     double st;
     double s3;
@@ -434,7 +434,7 @@ inline void renormalization_fast(double x[], int size_of_x, double f[], int m)
       temp_array[i + 1] = e;
     }
   }
-  else if (size_of_x < 37)
+  else if (size_of_x < 40)
   {
     for (int i = size_of_x - 2; i >= 0; i--)
     {
