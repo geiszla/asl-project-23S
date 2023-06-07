@@ -1,5 +1,6 @@
 #include <immintrin.h>
 #include <cstring>
+
 void multiplication2(double *a, double *b, double *r, const int sizea, const int sizeb,
                      const int sizer)
 {

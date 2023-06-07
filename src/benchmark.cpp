@@ -20,15 +20,10 @@ extern "C"
 #include "reference_cpp.h"
 
 // Compile with `g++ -std=c++17 ./benchmark.cpp` (plus additional optimization flags)
-// TODO: fix multiplication flop count, recalculate renormalization flop count
 
 #define OUTPUT_PATH "../results"
 
 // Flop counts
-
-#define TWO_SUM_FLOPS 6
-#define FAST_TWO_SUM_FLOPS 3
-#define TWO_MULT_FMA_FLOPS 2
 
 unsigned int get_vec_sum_flops(int vector_length)
 {
@@ -83,6 +78,15 @@ unsigned int get_multiplication_flops(int expansion_length)
            get_renormalization_flops(expansion_length + 1, expansion_length);
 }
 
+unsigned int get_optimized_multiplication_flops(int expansion_length)
+{
+    return expansion_length * (expansion_length + 1) / 2 * TWO_MULT_FMA_FLOPS +
+           (expansion_length / 2) * get_vec_sum_flops(expansion_length) +
+           (expansion_length - 1) * 2 +
+           pow(expansion_length, 2) +
+           get_optimized_renormalization_flops(expansion_length + 1, expansion_length);
+}
+
 unsigned int get_multiplication2_flops(int expansion_length)
 { // return Flp count from paper 2, Proposition 3.7
     return 13 / 2 * pow(expansion_length, 2) + 33 / 2 * expansion_length + 6 * (floor(expansion_length * 53 / 45) + 2) + 55;
@@ -114,19 +118,15 @@ unsigned int get_fast_renormalization_flops(int input_expansion_length, int outp
     return vec_sum_flops + vec_sum_err_branch_flops + vec_sum_err_flops;
 }
 
-unsigned int get_addition_reference_flops(int a_length, int b_length, int result_length)
+unsigned int get_fast_addition_flops(int a_length, int b_length, int result_length)
 {
     return get_fast_renormalization_flops(a_length + b_length, result_length);
 }
 
-unsigned int get_multiplication_reference_flops(int expansion_length)
+template <int Term_count>
+unsigned int get_multiplication_reference_flops()
 {
-    // TODO: fix flop count
-    return expansion_length * (expansion_length + 1) / 2 * TWO_MULT_FMA_FLOPS +
-           (expansion_length / 2) * get_vec_sum_flops(expansion_length) +
-           (expansion_length - 1) * 2 +
-           pow(expansion_length, 2) +
-           get_renormalization_flops(expansion_length + 1, expansion_length);
+    return calculate_multiplication_flops<Term_count, Term_count, Term_count>();
 }
 
 // Helpers
@@ -364,7 +364,7 @@ template <int Term_count>
 void measure_addition_reference(ofstream &output_file)
 {
     double runtime = measure_addition(certifiedAdd<Term_count, Term_count, Term_count>, Term_count);
-    double performance = get_addition_reference_flops(Term_count, Term_count, Term_count) / runtime;
+    double performance = get_fast_addition_flops(Term_count, Term_count, Term_count) / runtime;
 
     write_results("Addition", "AdditionReference", runtime, performance, Term_count,
                   output_file);
@@ -400,7 +400,7 @@ void measure_multiplication_reference(ofstream &output_file)
 {
     double runtime = measure_multiplication(baileyMul_renorm<Term_count, Term_count, Term_count>,
                                             Term_count);
-    double performance = get_multiplication_reference_flops(Term_count) / runtime;
+    double performance = get_multiplication_reference_flops<Term_count>() / runtime;
 
     write_results("Multiplication", "MultiplicationReference", runtime, performance, Term_count,
                   output_file);
@@ -515,13 +515,15 @@ int main()
     benchmark_addition(output_file, addition2, "Addition2");
     benchmark_addition(output_file, addition3, "Addition3");
     benchmark_addition(output_file, addition4, "Addition4", get_optimized_addition_flops);
-    benchmark_addition(output_file, addition_fast, "AdditionFast", get_addition_reference_flops);
+    benchmark_addition(output_file, addition_fast, "AdditionFast", get_fast_addition_flops);
     benchmark_addition_reference(output_file);
 
     // Multiplication
     benchmark_multiplication(output_file);
-    benchmark_multiplication(output_file, multiplication2, "Multiplication2");
-    benchmark_multiplication(output_file, multiplication3, "Multiplication3");
+    benchmark_multiplication(output_file, multiplication2, "Multiplication2",
+                             get_optimized_multiplication_flops);
+    benchmark_multiplication(output_file, multiplication3, "Multiplication3",
+                             get_optimized_multiplication_flops);
     benchmark_multiplication_reference(output_file);
 
     // Multiplication2
