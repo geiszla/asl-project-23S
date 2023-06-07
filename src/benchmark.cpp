@@ -55,9 +55,23 @@ unsigned int get_renormalization_flops(int input_expansion_length, int output_ex
     return vec_sum_flops + vec_sum_err_branch_flops + vec_sum_err_flops;
 }
 
+unsigned int get_optimized_renormalization_flops(int input_expansion_length, int output_expansion_length)
+{
+    int vec_sum_flops = get_vec_sum_flops(input_expansion_length);
+    int vec_sum_err_branch_flops = (input_expansion_length - 2) * TWO_SUM_FLOPS;
+    int vec_sum_err_flops = ((output_expansion_length - 2) * (output_expansion_length + 1) / 2.0) * TWO_SUM_FLOPS;
+
+    return vec_sum_flops + vec_sum_err_branch_flops + vec_sum_err_flops;
+}
+
 unsigned int get_addition_flops(int a_length, int b_length, int result_length)
 {
     return get_renormalization_flops(a_length + b_length, result_length);
+}
+
+unsigned int get_optimized_addition_flops(int a_length, int b_length, int result_length)
+{
+    return get_optimized_renormalization_flops(a_length + b_length, result_length);
 }
 
 unsigned int get_multiplication_flops(int expansion_length)
@@ -95,20 +109,14 @@ unsigned int get_fast_renormalization_flops(int input_expansion_length, int outp
 {
     int vec_sum_flops = get_fast_vec_sum_flops(input_expansion_length);
     int vec_sum_err_branch_flops = (input_expansion_length - 2) * FAST_TWO_SUM_FLOPS;
-    int vec_sum_err_flops = get_fast_vec_sum_err_flops(
-        (output_expansion_length * (output_expansion_length + 1) / 2.0));
+    int vec_sum_err_flops = ((output_expansion_length - 2) * (output_expansion_length + 1) / 2.0) * FAST_TWO_SUM_FLOPS;
 
     return vec_sum_flops + vec_sum_err_branch_flops + vec_sum_err_flops;
 }
 
 unsigned int get_addition_reference_flops(int a_length, int b_length, int result_length)
 {
-    int input_expansion_length = a_length + b_length;
-
-    int vec_sum_flops = get_vec_sum_flops(input_expansion_length);
-    int vec_sum_err_branch_flops = (input_expansion_length - 2) * FAST_TWO_SUM_FLOPS;
-
-    return vec_sum_flops + vec_sum_err_branch_flops;
+    return get_fast_renormalization_flops(a_length + b_length, result_length);
 }
 
 unsigned int get_multiplication_reference_flops(int expansion_length)
@@ -496,7 +504,8 @@ int main()
     benchmark_renormalization(output_file);
     benchmark_renormalization(output_file, renormalization2, "Renormalization2");
     benchmark_renormalization(output_file, renormalization3, "Renormalization3");
-    benchmark_renormalization(output_file, renormalization4, "Renormalization4");
+    benchmark_renormalization(output_file, renormalization4, "Renormalization4",
+                              get_optimized_renormalization_flops);
     benchmark_renormalization(output_file, renormalization_fast, "RenormalizationFast",
                               get_fast_renormalization_flops);
     benchmark_renormalization_reference(output_file);
@@ -505,7 +514,7 @@ int main()
     benchmark_addition(output_file);
     benchmark_addition(output_file, addition2, "Addition2");
     benchmark_addition(output_file, addition3, "Addition3");
-    benchmark_addition(output_file, addition4, "Addition4");
+    benchmark_addition(output_file, addition4, "Addition4", get_optimized_addition_flops);
     benchmark_addition(output_file, addition_fast, "AdditionFast", get_addition_reference_flops);
     benchmark_addition_reference(output_file);
 
