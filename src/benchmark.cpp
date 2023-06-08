@@ -13,21 +13,17 @@ extern "C"
 #include "renormalization_optimizations.c"
 #include "addition_optimizations.c"
 #include "multiplication_optimizations.c"
+#include "mult2_optimizations.c"
 }
 
 #include "measure.cpp"
 #include "reference_cpp.h"
 
 // Compile with `g++ -std=c++17 ./benchmark.cpp` (plus additional optimization flags)
-// TODO: fix multiplication flop count, recalculate renormalization flop count
 
 #define OUTPUT_PATH "../results"
 
 // Flop counts
-
-#define TWO_SUM_FLOPS 6
-#define FAST_TWO_SUM_FLOPS 3
-#define TWO_MULT_FMA_FLOPS 2
 
 unsigned int get_vec_sum_flops(int vector_length)
 {
@@ -54,18 +50,58 @@ unsigned int get_renormalization_flops(int input_expansion_length, int output_ex
     return vec_sum_flops + vec_sum_err_branch_flops + vec_sum_err_flops;
 }
 
+unsigned int get_optimized_renormalization_flops(int input_expansion_length, int output_expansion_length)
+{
+    int vec_sum_flops = get_vec_sum_flops(input_expansion_length);
+    int vec_sum_err_branch_flops = (input_expansion_length - 2) * TWO_SUM_FLOPS;
+    int vec_sum_err_flops = ((output_expansion_length - 2) * (output_expansion_length + 1) / 2.0) * TWO_SUM_FLOPS;
+
+    return vec_sum_flops + vec_sum_err_branch_flops + vec_sum_err_flops;
+}
+
 unsigned int get_addition_flops(int a_length, int b_length, int result_length)
 {
     return get_renormalization_flops(a_length + b_length, result_length);
 }
 
+unsigned int get_optimized_addition_flops(int a_length, int b_length, int result_length)
+{
+    return get_optimized_renormalization_flops(a_length + b_length, result_length);
+}
+
 unsigned int get_multiplication_flops(int expansion_length)
+{
+    /*return expansion_length * (expansion_length + 1) / 2 * TWO_MULT_FMA_FLOPS +
+           (expansion_length / 2) * get_vec_sum_flops(expansion_length) +
+           (expansion_length - 1) * 2 +
+           pow(expansion_length, 2) +
+           get_renormalization_flops(expansion_length + 1, expansion_length);*/
+    // new flop count implementation
+    int flops = 0;
+    flops += TWO_MULT_FMA_FLOPS;
+    for (int n = 0; n < expansion_length; n++)
+    {
+        for (int i = 0; i <= n; i++)
+        {
+            flops += TWO_MULT_FMA_FLOPS;
+        }
+        flops += get_vec_sum_flops(n * n + n + 1);
+        flops += n * n + 2 * n;
+        
+    }
+    
+    flops += expansion_length * 3 + 2 * expansion_length * expansion_length;
+    flops += get_renormalization_flops(expansion_length + 1, expansion_length);
+    return flops;
+}
+
+unsigned int get_optimized_multiplication_flops(int expansion_length)
 {
     return expansion_length * (expansion_length + 1) / 2 * TWO_MULT_FMA_FLOPS +
            (expansion_length / 2) * get_vec_sum_flops(expansion_length) +
            (expansion_length - 1) * 2 +
            pow(expansion_length, 2) +
-           get_renormalization_flops(expansion_length + 1, expansion_length);
+           get_optimized_renormalization_flops(expansion_length + 1, expansion_length);
 }
 
 unsigned int get_multiplication2_flops(int expansion_length)
@@ -94,39 +130,105 @@ unsigned int get_fast_renormalization_flops(int input_expansion_length, int outp
 {
     int vec_sum_flops = get_fast_vec_sum_flops(input_expansion_length);
     int vec_sum_err_branch_flops = (input_expansion_length - 2) * FAST_TWO_SUM_FLOPS;
-    int vec_sum_err_flops = get_fast_vec_sum_err_flops(
-        (output_expansion_length * (output_expansion_length + 1) / 2.0));
+    int vec_sum_err_flops = ((output_expansion_length - 2) * (output_expansion_length + 1) / 2.0) * FAST_TWO_SUM_FLOPS;
 
     return vec_sum_flops + vec_sum_err_branch_flops + vec_sum_err_flops;
 }
 
-unsigned int get_addition_reference_flops(int a_length, int b_length, int result_length)
+unsigned int get_fast_addition_flops(int a_length, int b_length, int result_length)
 {
-    int input_expansion_length = a_length + b_length;
-
-    int vec_sum_flops = get_vec_sum_flops(input_expansion_length);
-    int vec_sum_err_branch_flops = (input_expansion_length - 2) * FAST_TWO_SUM_FLOPS;
-
-    return vec_sum_flops + vec_sum_err_branch_flops;
+    return get_fast_renormalization_flops(a_length + b_length, result_length);
 }
 
+template <int Term_count>
 unsigned int get_multiplication_reference_flops(int expansion_length)
 {
     // TODO: fix flop count
-    return expansion_length * (expansion_length + 1) / 2 * TWO_MULT_FMA_FLOPS +
-           (expansion_length / 2) * get_vec_sum_flops(expansion_length) +
-           (expansion_length - 1) * 2 +
-           pow(expansion_length, 2) +
-           get_renormalization_flops(expansion_length + 1, expansion_length);
+    int K, L, R = expansion_length;
+    int flops = 0;
+    for (int i = K + L - 1; i < R; i++){
+        flops += 1;
+    }
+    const int nn = R;
+    flops++;
+    for (int i = nn - L + 2; i < K; i++)
+    {
+        flops += 2;
+    }
+    for (int n = (R + 1 > K + L - 1) ? K + L - 2 : R - 1; n >= K; n--)
+    {
+        flops += 3;
+        for (int j = n + 1; j < R; j++)
+            flops += 5;
+        flops += 1;
+
+        for (int i = n - L + 2; i < K; i++)
+        {
+            flops += 3;
+            for (int j = n + 1; j < R; j++)
+                flops += 6;
+            flops += 1;
+
+            flops += 6;
+            for (int j = n + 1; j < R; j++)
+                flops += 6;
+            flops += 1;
+        }
+    }
+    // computes the elements with the same number of products inside
+    // we will have L products to compute and sum
+    for (int n = (R + 1 > K) ? K - 1 : R - 1; n >= L; n--)
+    {
+        flops += 3;
+        for (int i = n + 1; i < R; i++)
+            flops += 6;
+        flops += 1;
+
+        for (int j = 1; j < L; j++)
+        {
+            flops += 3;
+            for (int i = n + 1; i < R; i++)
+                flops += 6;
+            flops += 1;
+            flops += 6;
+            for (int i = n + 1; i < R; i++)
+                flops += 6;
+            flops += 1;
+        }
+    }
+    // computes the first L doubles of the result
+    // we will have (n+1) prducts to compute and sum
+    for (int n = (R + 1 > L) ? L - 1 : R - 1; n >= 0; n--)
+    {
+        flops += 3;
+        for (int j = n + 1; j < R; j++)
+            flops += 6;
+        flops += 1;
+
+        for (int i = 1; i <= n; i++)
+        {
+            flops += 3;
+            for (int j = n + 1; j < R; j++)
+                flops += 6;
+            flops += 1;
+
+            flops += 6;
+            for (int j = n + 1; j < R; j++)
+                flops += 6;
+            flops += 1;
+        }
+    }
+    flops += get_renormalization_flops(expansion_length + 1, expansion_length);
+    return flops;
 }
 
 // Helpers
 
 void write_results(string algorithm_name, string variant_name, double runtime, double performance,
-                   int input_size, ostream &output_file)
+                   int flop_count, int input_size, ostream &output_file)
 {
     output_file << algorithm_name << ";" << variant_name << ";" << input_size << ";" << runtime
-                << ";" << performance << endl;
+                << ";" << performance << ";" << flop_count << endl;
 
     cout << "Input size: " << input_size
          << "     runtime: " << runtime << " cycles, performance: "
@@ -163,9 +265,11 @@ void benchmark_vec_sum(
     for (int term_count = 3; term_count <= 742; term_count *= 1.4)
     {
         double runtime = measure_vec_sum(implementation, term_count);
-        double performance = get_flops(term_count) / runtime;
+        double flop_count = get_flops(term_count);
+        double performance = flop_count / runtime;
 
-        write_results("VecSum", variant_name, runtime, performance, term_count, output_file);
+        write_results("VecSum", variant_name, runtime, performance, flop_count, term_count,
+                      output_file);
     }
 }
 
@@ -181,9 +285,10 @@ void benchmark_vec_sum_err_branch(
     for (int term_count = 3; term_count <= 742; term_count *= 1.4)
     {
         double runtime = measure_vec_sum_err_branch(implementation, term_count);
-        double performance = get_flops(term_count) / runtime;
+        double flop_count = get_flops(term_count);
+        double performance = flop_count / runtime;
 
-        write_results("VecSumErrBranch", variant_name, runtime, performance, term_count,
+        write_results("VecSumErrBranch", variant_name, runtime, performance, flop_count, term_count,
                       output_file);
     }
 }
@@ -200,9 +305,11 @@ void benchmark_vec_sum_err(
     for (int term_count = 3; term_count <= 742; term_count *= 1.4)
     {
         double runtime = measure_vec_sum_err(implementation, term_count);
-        double performance = get_flops(term_count) / runtime;
+        double flop_count = get_flops(term_count);
+        double performance = flop_count / runtime;
 
-        write_results("VecSumErr", variant_name, runtime, performance, term_count, output_file);
+        write_results("VecSumErr", variant_name, runtime, performance, flop_count, term_count,
+                      output_file);
     }
 }
 
@@ -218,9 +325,10 @@ void benchmark_renormalization(
     for (int term_count = 3; term_count <= 742; term_count *= 1.4)
     {
         double runtime = measure_renormalization(implementation, term_count);
-        double performance = get_flops(term_count, term_count) / runtime;
+        double flop_count = get_flops(term_count, term_count);
+        double performance = flop_count / runtime;
 
-        write_results("Renormalization", variant_name, runtime, performance, term_count,
+        write_results("Renormalization", variant_name, runtime, performance, flop_count, term_count,
                       output_file);
     }
 }
@@ -237,9 +345,11 @@ void benchmark_addition(
     for (int term_count = 3; term_count <= 742; term_count *= 1.4)
     {
         double runtime = measure_addition(implementation, term_count);
-        double performance = get_flops(term_count, term_count, term_count) / runtime;
+        double flop_count = get_flops(term_count, term_count, term_count);
+        double performance = flop_count / runtime;
 
-        write_results("Addition", variant_name, runtime, performance, term_count, output_file);
+        write_results("Addition", variant_name, runtime, performance, flop_count, term_count,
+                      output_file);
     }
 }
 
@@ -255,9 +365,10 @@ void benchmark_multiplication(
     for (int term_count = 3; term_count <= 50; term_count += 2)
     {
         double runtime = measure_multiplication(implementation, term_count);
-        double performance = get_flops(term_count) / runtime;
+        double flop_count = get_flops(term_count);
+        double performance = flop_count / runtime;
 
-        write_results("Multiplication", variant_name, runtime, performance, term_count,
+        write_results("Multiplication", variant_name, runtime, performance, flop_count, term_count,
                       output_file);
     }
 }
@@ -274,9 +385,10 @@ void benchmark_multiplication2(
     for (int term_count = 1; term_count <= 29; term_count *= 2)
     {
         double runtime = measure_multiplication2(implementation, term_count);
-        double performance = get_flops(term_count) / runtime;
+        double flop_count = get_flops(term_count);
+        double performance = flop_count / runtime;
 
-        write_results("Multiplication2", variant_name, runtime, performance, term_count,
+        write_results("Multiplication2", variant_name, runtime, performance, flop_count, term_count,
                       output_file);
     }
 }
@@ -287,9 +399,11 @@ template <int Term_count>
 void measure_vec_sum_reference(ofstream &output_file)
 {
     double runtime = measure_vec_sum(fast_VecSum<Term_count>, Term_count);
-    double performance = get_fast_vec_sum_flops(Term_count) / runtime;
+    double flop_count = get_fast_vec_sum_flops(Term_count);
+    double performance = flop_count / runtime;
 
-    write_results("VecSum", "VecSumReference", runtime, performance, Term_count, output_file);
+    write_results("VecSum", "VecSumReference", runtime, performance, flop_count, Term_count,
+                  output_file);
 }
 
 void benchmark_vec_sum_reference(ofstream &output_file)
@@ -321,9 +435,11 @@ template <int Term_count>
 void measure_renormalization_reference(ofstream &output_file)
 {
     double runtime = measure_renormalization(fast_renorm3L<Term_count, Term_count>, Term_count);
-    double performance = get_fast_renormalization_flops(Term_count, Term_count) / runtime;
+    double flop_count = get_fast_renormalization_flops(Term_count, Term_count);
+    double performance = flop_count / runtime;
 
-    write_results("Renormalization", "RenormalizationReference", runtime, performance, Term_count, output_file);
+    write_results("Renormalization", "RenormalizationReference", runtime, performance, flop_count,
+                  Term_count, output_file);
 }
 
 void benchmark_renormalization_reference(ofstream &output_file)
@@ -355,9 +471,10 @@ template <int Term_count>
 void measure_addition_reference(ofstream &output_file)
 {
     double runtime = measure_addition(certifiedAdd<Term_count, Term_count, Term_count>, Term_count);
-    double performance = get_addition_reference_flops(Term_count, Term_count, Term_count) / runtime;
+    double flop_count = get_fast_addition_flops(Term_count, Term_count, Term_count);
+    double performance = flop_count / runtime;
 
-    write_results("Addition", "AdditionReference", runtime, performance, Term_count,
+    write_results("Addition", "AdditionReference", runtime, performance, flop_count, Term_count,
                   output_file);
 }
 
@@ -391,10 +508,11 @@ void measure_multiplication_reference(ofstream &output_file)
 {
     double runtime = measure_multiplication(baileyMul_renorm<Term_count, Term_count, Term_count>,
                                             Term_count);
-    double performance = get_multiplication_reference_flops(Term_count) / runtime;
+    double flop_count = get_multiplication_reference_flops<Term_count>();
+    double performance = flop_count / runtime;
 
-    write_results("Multiplication", "MultiplicationReference", runtime, performance, Term_count,
-                  output_file);
+    write_results("Multiplication", "MultiplicationReference", runtime, performance, flop_count,
+                  Term_count, output_file);
 }
 
 void benchmark_multiplication_reference(ofstream &output_file)
@@ -451,7 +569,7 @@ int main()
         return 1;
     }
 
-    output_file << "Algorithm;Variant;Input size;Runtime;Performance" << endl;
+    output_file << "Algorithm;Variant;Input size;Runtime;Performance;Flop count" << endl;
 
     cout.setf(ios::fixed);
     cout.precision(3);
@@ -469,17 +587,25 @@ int main()
     benchmark_vec_sum(output_file, vecSum4, "VecSum4");
     benchmark_vec_sum(output_file, vecSum5, "VecSum5");
     benchmark_vec_sum(output_file, vecSum6, "VecSum6");
+    benchmark_vec_sum(output_file, vecSum3_fast, "VecSum3Fast", get_fast_vec_sum_flops);
+    benchmark_vec_sum(output_file, vecSum4_fast, "VecSum4Fast", get_fast_vec_sum_flops);
+    benchmark_vec_sum(output_file, vecSum5_fast, "VecSum5Fast", get_fast_vec_sum_flops);
+    benchmark_vec_sum(output_file, vecSum6_fast, "VecSum6Fast", get_fast_vec_sum_flops);
     benchmark_vec_sum_reference(output_file);
 
     // VecSumErrBranch
     benchmark_vec_sum_err_branch(output_file);
     benchmark_vec_sum_err_branch(output_file, vecSumErrBranch2, "VecSumErrBranch2");
+    benchmark_vec_sum_err_branch(output_file, vecSumErrBranch_fast, "VecSumErrBranchFast",
+                                 get_fast_vec_sum_err_branch_flops);
     benchmark_vec_sum_err_branch(output_file, fast_VecSumErrBranch, "VecSumErrBranchReference",
                                  get_fast_vec_sum_err_branch_flops);
 
     // VecSumErr
     benchmark_vec_sum_err(output_file);
     benchmark_vec_sum_err(output_file, vecSumErr2, "VecSumErr2");
+    benchmark_vec_sum_err(output_file, vecSumErr_fast, "VecSumErrFast",
+                          get_fast_vec_sum_err_flops);
     benchmark_vec_sum_err(output_file, fast_VecSumErr, "VecSumErrReference",
                           get_fast_vec_sum_err_flops);
 
@@ -487,20 +613,26 @@ int main()
     benchmark_renormalization(output_file);
     benchmark_renormalization(output_file, renormalization2, "Renormalization2");
     benchmark_renormalization(output_file, renormalization3, "Renormalization3");
-    benchmark_renormalization(output_file, renormalization4, "Renormalization4");
+    benchmark_renormalization(output_file, renormalization4, "Renormalization4",
+                              get_optimized_renormalization_flops);
+    benchmark_renormalization(output_file, renormalization_fast, "RenormalizationFast",
+                              get_fast_renormalization_flops);
     benchmark_renormalization_reference(output_file);
 
     // Addition
     benchmark_addition(output_file);
     benchmark_addition(output_file, addition2, "Addition2");
     benchmark_addition(output_file, addition3, "Addition3");
-    benchmark_addition(output_file, addition4, "Addition4");
+    benchmark_addition(output_file, addition4, "Addition4", get_optimized_addition_flops);
+    benchmark_addition(output_file, addition_fast, "AdditionFast", get_fast_addition_flops);
     benchmark_addition_reference(output_file);
 
     // Multiplication
     benchmark_multiplication(output_file);
-    benchmark_multiplication(output_file, multiplication2, "Multiplication2");
-    // benchmark_multiplication(output_file, multiplication3, "Multiplication3");
+    benchmark_multiplication(output_file, multiplication2, "Multiplication2",
+                             get_optimized_multiplication_flops);
+    benchmark_multiplication(output_file, multiplication3, "Multiplication3",
+                             get_optimized_multiplication_flops);
     benchmark_multiplication_reference(output_file);
 
     // Multiplication2

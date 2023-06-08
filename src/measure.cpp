@@ -3,11 +3,6 @@
 #include <limits>
 #include <random>
 
-extern "C"
-{
-  #include "mult2_optimizations.c"
-}
-
 #include "timing.cpp"
 
 // Needs to be low, otherwise we cannot place expansions on the stack

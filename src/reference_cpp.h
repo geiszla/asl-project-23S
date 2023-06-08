@@ -1,6 +1,10 @@
 ///////////////////////////////// copied from CAMPARY package/////////////////////////////
 
-#define UNROLL_RENORM
+#define TWO_SUM_FLOPS 6
+#define FAST_TWO_SUM_FLOPS 3
+#define TWO_MULT_FMA_FLOPS 3
+
+// #define UNROLL_RENORM
 
 /* ========== TwoSum ========== */
 
@@ -83,7 +87,7 @@ static inline void fast_renorm3L(double *x, int _sX, double *r, int _sR){
   r[(sR<sX)?sR-1:sX-2] = f[(sR<sX)?sR-1:sX-2];
   r[(sR<sX)?sR-1:sX-1] = f[(sR<sX)?sR-1:sX-1];
 
-  for(i=sR; i<sX; i++) r[i] = 0.;
+  // for(i=sR; i<sX; i++) r[i] = 0.;
 }
 
 /* ========== Addition ========== */
@@ -174,7 +178,8 @@ static inline void certifiedAdd(double *x, double *y, double *r, int _K, int _L,
   else{
     double f[K+L];
     merge<K,L>( x, y, f );
-    renorm2L<K+L,R>( f, r );
+    // renorm2L<K+L,R>( f, r );
+    fast_renorm3L<K+L,R>(f, K+L, r, R);
   }
 }
 
@@ -311,5 +316,127 @@ static inline void baileyMul_renorm(double *x, double *y, double *z, int _K, int
       f[R] = FPadd_rn(f[R], e);
     }
   }
-  renorm_rand2L<R+1,R>(f, z);	
+  // renorm_rand2L<R+1,R>(f, z);	
+  fast_renorm3L<R+1,R>(f, R+1, z, R);
+}
+
+// Calculate flop count for multiplication
+template <int K, int L, int R>
+unsigned int calculate_multiplication_flops(){
+  int i, j, n = R;
+
+  int flops = 0;
+
+  //computes the last term of the result f[R]
+  //computes the necessary products (if any) using just simple multiplication
+  const int nn = R;
+  if (nn<L){
+    flops += 1;
+    for(i=1; i<=nn; i++){
+      #if defined __CUDA_ARCH__ || FP_FAST_FMA
+        flops += 2;
+      #else
+        flops += 2;
+      #endif
+    }
+  }else if (nn<K){
+    flops += 1;
+    for(j=1; j<L; j++){
+      #if defined __CUDA_ARCH__ || FP_FAST_FMA
+        flops += 2;
+      #else
+        flops += 2;
+      #endif
+    }
+  }else if (nn<K+L-1){
+    flops += 1;
+    for(i=nn-L+2; i<K; i++){
+      #if defined __CUDA_ARCH__ || FP_FAST_FMA
+        flops += 2;
+      #else
+        flops += 2;
+      #endif
+    }
+  }
+
+  // computes the last R-K elements of the result
+  // we will have (K+L-1 - n) products to compute and sum
+  for (n=(R+1>K+L-1)?K+L-2:R-1; n>=K; n--){
+    flops += TWO_MULT_FMA_FLOPS;
+    for(j=n+1; j<R; j++) 
+    {
+      flops += TWO_SUM_FLOPS;
+    }
+    flops += 1;
+
+    for(i=n-L+2; i<K; i++){
+      flops += TWO_MULT_FMA_FLOPS;
+      for(j=n+1; j<R; j++) 
+      {
+        flops += TWO_SUM_FLOPS;
+      }
+      flops += 1;
+
+      flops += TWO_SUM_FLOPS;
+      for(j=n+1; j<R; j++) 
+      {
+        flops += TWO_SUM_FLOPS;
+      }
+      flops += 1;
+    }
+  }
+  // computes the elements with the same number of products inside
+  // we will have L products to compute and sum
+  for (n=(R+1>K)?K-1:R-1; n>=L; n--){
+    flops += TWO_MULT_FMA_FLOPS;
+    for(i=n+1; i<R; i++) 
+    {
+      flops += TWO_SUM_FLOPS;
+    }
+    flops += 1;
+
+    for(j=1; j<L; j++){
+      flops += TWO_MULT_FMA_FLOPS;
+      for(i=n+1; i<R; i++) 
+      {
+        flops += TWO_SUM_FLOPS;
+      }
+      flops += 1;
+
+      flops += TWO_SUM_FLOPS;
+      for(i=n+1; i<R; i++) 
+      {
+        flops += TWO_SUM_FLOPS;
+      }
+      flops += 1;
+    }
+  }
+  // computes the first L doubles of the result
+  // we will have (n+1) prducts to compute and sum
+  for (n=(R+1>L)?L-1:R-1; n>=0; n--){
+    flops += TWO_MULT_FMA_FLOPS;
+    for(j=n+1; j<R; j++) 
+    {
+      flops += TWO_SUM_FLOPS;
+    }
+    flops += 1;
+
+    for(i=1; i<=n; i++){
+      flops += TWO_MULT_FMA_FLOPS;
+      for(j=n+1; j<R; j++) 
+      {
+        flops += TWO_SUM_FLOPS;
+      }
+      flops += 1;
+
+      flops += TWO_SUM_FLOPS;
+      for(j=n+1; j<R; j++) 
+      {
+        flops += TWO_SUM_FLOPS;
+      }
+      flops += 1;
+    }
+  }
+
+  return flops + get_fast_renormalization_flops(R + 1, R);
 }

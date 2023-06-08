@@ -10,7 +10,7 @@ import pandas
 from matplotlib import pyplot
 from matplotlib.ticker import ScalarFormatter
 
-from .algorithms import algorithms
+from .algorithms import memory_movement_calculations
 
 BANDWIDTH = 18.7  # Bytes/cycle
 PERFORMANCE_BOUND = 6  # flops/cycle
@@ -24,7 +24,8 @@ results_path = path.join(script_path, "..", "results")
 class Run:
     """Represents a run of the program."""
 
-    label: str
+    algorithm: str
+    variant: str
     operational_intensity: float
     performance: float
 
@@ -36,40 +37,48 @@ def main():
     csv_data = pandas.read_csv(path.join(results_path, "benchmark.csv"), delimiter=";")
 
     runs: list[Run] = []
-    reference_runs: list[Run] = []
 
     # Plot Input size vs Runtime columns for each Algorithm
     for algorithm in csv_data["Algorithm"].unique():
         optimization_data = csv_data[csv_data["Algorithm"] == algorithm]
 
+        # Plot fast VecSum algorithms separately
+        if algorithm == "VecSum":
+            fast_data = optimization_data[
+                optimization_data["Variant"].str.contains("Fast|Reference")
+            ]
+            optimization_data = optimization_data[
+                # pylint: disable=singleton-comparison
+                optimization_data["Variant"].str.contains("Fast")
+                == False  # noqa: E712
+            ]
+
+            plot_performance("Performance", fast_data, "VecSumFast")
+            plot_performance("Runtime", fast_data, "VecSumFast")
+
+            runs.append(
+                plot_optimizations(
+                    fast_data,
+                    algorithm,
+                    title="VecSumFast roofline",
+                    filename="roofline_VecSumFast",
+                )
+            )
+
         plot_performance("Performance", optimization_data, algorithm)
         plot_performance("Runtime", optimization_data, algorithm)
 
-        if algorithm not in algorithms:
+        runs.append(plot_optimizations(optimization_data, algorithm))
+
+        if algorithm not in memory_movement_calculations:
             print(
                 "Warning: could not find work and memory movement calculations"
                 f" for {algorithm}"
             )
             continue
 
-        # Calculate operational intensity
-        # Assumes that the last variant of an algorithm is the reference, and the
-        # last but one is the most optimized implementation
-        variants = optimization_data["Variant"].unique()
-
-        reference_data = optimization_data[optimization_data["Variant"] == variants[-1]]
-        reference_runs.append(calculate_run_statistics(algorithm, reference_data))
-
-        optimized_data = optimization_data[optimization_data["Variant"] == variants[-2]]
-        runs.append(calculate_run_statistics(algorithm, optimized_data))
-
     # Create the roofline plot
-    plot_roofline(runs)
-    plot_roofline(runs, "Reference roofline model", "reference_roofline")
-
-
-if __name__ == "__main__":
-    main()
+    plot_roofline(runs, is_connect=False)
 
 
 # Main functions
@@ -95,34 +104,62 @@ def plot_performance(
 
         pyplot.plot(input_sizes, performances, label=variant)
 
-    pyplot.legend()
-
     unit = "(flops/cycle)" if performance_column == "Performance" else "cycles"
+
+    pyplot.legend()
 
     finalize_plot(
         x_label="Input size (n)",
         y_label=f"{performance_column} {unit}",
         title=algorithm,
         file_name=f"{performance_column.lower()}_vs_input_size_{algorithm}.png",
-        is_show=True,
+        # is_show=True,
     )
 
 
-def calculate_run_statistics(algorithm: str, optimization_data: pandas.DataFrame):
-    """Calculate operational intensity and collect performance statistics."""
-    sample_index = 5
-    input_size = optimization_data["Input size"].iloc[sample_index]
-    performance = optimization_data["Performance"].iloc[sample_index]
+def plot_optimizations(
+    optimization_data: pandas.DataFrame,
+    algorithm: str,
+    title: str = None,
+    filename: str = None,
+):
+    """Calculate operational intensity and performance of the algorithm variants
 
-    flops = algorithms[algorithm].get_flops(input_size)
-    memory_movements = algorithms[algorithm].get_memory_movements(input_size)
-    operational_intensity = flops / memory_movements
+    Assumes that the last variant of an algorithm is the reference, the first one is
+    the least, and the last but one is the most optimized implementation
+    """
+    variants = optimization_data["Variant"].unique()
 
-    return Run(algorithm, operational_intensity, performance)
+    variant_runs: list[Run] = []
+
+    for variant in variants:
+        variant_data = optimization_data[optimization_data["Variant"] == variant]
+
+        sample_index = 6
+        input_size = variant_data["Input size"].iloc[sample_index]
+        performance = variant_data["Performance"].iloc[sample_index]
+        flops = variant_data["Flop count"].iloc[sample_index]
+
+        memory_movements = memory_movement_calculations[algorithm](input_size)
+        operational_intensity = flops / memory_movements
+
+        run = Run(algorithm, variant, operational_intensity, performance)
+        variant_runs.append(run)
+
+    plot_roofline(
+        variant_runs,
+        title=f"{algorithm} roofline" if title is None else title,
+        filename=f"roofline_{algorithm}" if filename is None else filename,
+    )
+
+    return variant_runs[-2]
 
 
 def plot_roofline(
-    runs: list[Run], title: str = "Roofline model", filename: str = "roofline"
+    runs: list[Run],
+    is_connect=True,
+    title: str = "Roofline model",
+    filename: str = "roofline",
 ):
     """Draw the roofline plot and place the program runs on it."""
     # Draw performance bounds
@@ -152,8 +189,28 @@ def plot_roofline(
     pyplot.xscale("log", base=2)
     pyplot.yscale("log", base=2)
 
-    for run in runs:
-        pyplot.plot(run.operational_intensity, run.performance, "o", label=run.label)
+    if is_connect:
+        pyplot.plot(
+            [run.operational_intensity for run in runs[:-1]],
+            [run.performance for run in runs[:-1]],
+            marker="o",
+            label=runs[0].algorithm,
+        )
+
+        pyplot.plot(
+            runs[-1].operational_intensity,
+            runs[-1].performance,
+            marker="^",
+            label=runs[-1].variant,
+        )
+    else:
+        for run in runs:
+            pyplot.plot(
+                run.operational_intensity,
+                run.performance,
+                marker="o",
+                label=run.algorithm,
+            )
 
     pyplot.legend()
 
@@ -209,3 +266,7 @@ def finalize_plot(
         pyplot.show()
 
     pyplot.clf()
+
+
+if __name__ == "__main__":
+    main()
