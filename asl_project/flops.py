@@ -42,7 +42,7 @@ def multiplication_flops(k):
         for i in range(0, n + 1):
             flops += 3
 
-        flops += vec_sum_flops(n + 1)
+        flops += vec_sum_flops(n**2 + n + 1)
 
     for i in range(1, k):
         flops += 2
