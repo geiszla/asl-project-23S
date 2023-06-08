@@ -71,11 +71,28 @@ unsigned int get_optimized_addition_flops(int a_length, int b_length, int result
 
 unsigned int get_multiplication_flops(int expansion_length)
 {
-    return expansion_length * (expansion_length + 1) / 2 * TWO_MULT_FMA_FLOPS +
+    /*return expansion_length * (expansion_length + 1) / 2 * TWO_MULT_FMA_FLOPS +
            (expansion_length / 2) * get_vec_sum_flops(expansion_length) +
            (expansion_length - 1) * 2 +
            pow(expansion_length, 2) +
-           get_renormalization_flops(expansion_length + 1, expansion_length);
+           get_renormalization_flops(expansion_length + 1, expansion_length);*/
+    // new flop count implementation
+    int flops = 0;
+    flops += TWO_MULT_FMA_FLOPS;
+    for (int n = 0; n < expansion_length; n++)
+    {
+        for (int i = 0; i <= n; i++)
+        {
+            flops += TWO_MULT_FMA_FLOPS;
+        }
+        flops += get_vec_sum_flops(n * n + n + 1);
+        flops += n * n + 2 * n;
+        
+    }
+    
+    flops += expansion_length * 3 + 2 * expansion_length * expansion_length;
+    flops += get_renormalization_flops(expansion_length + 1, expansion_length);
+    return flops;
 }
 
 unsigned int get_optimized_multiplication_flops(int expansion_length)
@@ -124,9 +141,85 @@ unsigned int get_fast_addition_flops(int a_length, int b_length, int result_leng
 }
 
 template <int Term_count>
-unsigned int get_multiplication_reference_flops()
+unsigned int get_multiplication_reference_flops(int expansion_length)
 {
-    return calculate_multiplication_flops<Term_count, Term_count, Term_count>();
+    // TODO: fix flop count
+    int K, L, R = expansion_length;
+    int flops = 0;
+    for (int i = K + L - 1; i < R; i++){
+        flops += 1;
+    }
+    const int nn = R;
+    flops++;
+    for (int i = nn - L + 2; i < K; i++)
+    {
+        flops += 2;
+    }
+    for (int n = (R + 1 > K + L - 1) ? K + L - 2 : R - 1; n >= K; n--)
+    {
+        flops += 3;
+        for (int j = n + 1; j < R; j++)
+            flops += 5;
+        flops += 1;
+
+        for (int i = n - L + 2; i < K; i++)
+        {
+            flops += 3;
+            for (int j = n + 1; j < R; j++)
+                flops += 6;
+            flops += 1;
+
+            flops += 6;
+            for (int j = n + 1; j < R; j++)
+                flops += 6;
+            flops += 1;
+        }
+    }
+    // computes the elements with the same number of products inside
+    // we will have L products to compute and sum
+    for (int n = (R + 1 > K) ? K - 1 : R - 1; n >= L; n--)
+    {
+        flops += 3;
+        for (int i = n + 1; i < R; i++)
+            flops += 6;
+        flops += 1;
+
+        for (int j = 1; j < L; j++)
+        {
+            flops += 3;
+            for (int i = n + 1; i < R; i++)
+                flops += 6;
+            flops += 1;
+            flops += 6;
+            for (int i = n + 1; i < R; i++)
+                flops += 6;
+            flops += 1;
+        }
+    }
+    // computes the first L doubles of the result
+    // we will have (n+1) prducts to compute and sum
+    for (int n = (R + 1 > L) ? L - 1 : R - 1; n >= 0; n--)
+    {
+        flops += 3;
+        for (int j = n + 1; j < R; j++)
+            flops += 6;
+        flops += 1;
+
+        for (int i = 1; i <= n; i++)
+        {
+            flops += 3;
+            for (int j = n + 1; j < R; j++)
+                flops += 6;
+            flops += 1;
+
+            flops += 6;
+            for (int j = n + 1; j < R; j++)
+                flops += 6;
+            flops += 1;
+        }
+    }
+    flops += get_renormalization_flops(expansion_length + 1, expansion_length);
+    return flops;
 }
 
 // Helpers
