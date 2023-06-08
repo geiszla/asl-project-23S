@@ -140,7 +140,7 @@ unsigned int get_fast_addition_flops(int a_length, int b_length, int result_leng
     return get_fast_renormalization_flops(a_length + b_length, result_length);
 }
 
-template <int Term_count>
+//template <int Term_count>
 unsigned int get_multiplication_reference_flops(int expansion_length)
 {
     // TODO: fix flop count
@@ -221,6 +221,17 @@ unsigned int get_multiplication_reference_flops(int expansion_length)
     flops += get_renormalization_flops(expansion_length + 1, expansion_length);
     return flops;
 }
+unsigned int get_truncatedMul_flops(int expansion_length){
+    int FPmul_flops = 1;
+    int FPadd_flops = 1;
+    
+    int frexp_flops = 1;
+    int ldexp_flops = 1;
+    int floor_flops = 1;
+    int division_flops = 1;
+
+    int len_B = floor(expansion_length * 53 /45+2);
+    return division_flops + 1+ expansion_length*2*frexp_flops + 2 *ldexp_flops + (len_B+1) * FPmul_flops + pow(expansion_length, 2) / 2 * (2* FAST_TWO_SUM_FLOPS + 2*FPadd_flops + division_flops) + (expansion_length + 1)*(1*FPmul_flops + 2*FAST_TWO_SUM_FLOPS + 1* FPadd_flops + division_flops) + len_B * FPadd_flops + len_B*FAST_TWO_SUM_FLOPS;}
 
 // Helpers
 
@@ -382,7 +393,7 @@ void benchmark_multiplication2(
     cout << endl
          << variant_name << ":" << endl;
 
-    for (int term_count = 1; term_count <= 29; term_count *= 2)
+    for (int term_count = 1; term_count < 30; term_count += 4)
     {
         double runtime = measure_multiplication2(implementation, term_count);
         double flop_count = get_flops(term_count);
@@ -508,7 +519,7 @@ void measure_multiplication_reference(ofstream &output_file)
 {
     double runtime = measure_multiplication(baileyMul_renorm<Term_count, Term_count, Term_count>,
                                             Term_count);
-    double flop_count = get_multiplication_reference_flops<Term_count>();
+    double flop_count = get_multiplication_reference_flops(Term_count);
     double performance = flop_count / runtime;
 
     write_results("Multiplication", "MultiplicationReference", runtime, performance, flop_count,
@@ -545,6 +556,39 @@ void benchmark_multiplication_reference(ofstream &output_file)
     measure_multiplication_reference<47>(output_file);
     measure_multiplication_reference<49>(output_file);
 }
+
+
+template <int K, int L, int M>
+void measure_mult2_reference(ofstream &output_file)
+{   
+    double runtime = measure_multiplication2(truncatedMul<K,L,M>, K);
+
+    double flop_count = get_truncatedMul_flops(K);
+    double performance = flop_count / runtime;
+
+    write_results("Multiplication2", "Multiplication2Reference", runtime, performance, flop_count,
+                  K, output_file);
+
+}
+
+void benchmark_multiplication2_reference(ofstream &output_file)
+{
+    cout << endl
+         << "Multiplication2 reference: " << endl;
+
+    measure_mult2_reference<1,1,1>(output_file);
+    measure_mult2_reference<5,5,5>(output_file);
+    measure_mult2_reference<9,9,9>(output_file);
+    measure_mult2_reference<13,13,13>(output_file);
+    measure_mult2_reference<17,17,17>(output_file);
+    measure_mult2_reference<21,21,21>(output_file);
+    measure_mult2_reference<25,25,25>(output_file);
+    measure_mult2_reference<29,29,29>(output_file);
+    
+
+
+}
+
 
 // Main
 
@@ -641,6 +685,6 @@ int main()
     benchmark_multiplication2(output_file, mult2_1, "Multiplication2_1");
     benchmark_multiplication2(output_file, mult2_2, "Multiplication2_2");
     benchmark_multiplication2(output_file, mult2_3, "Multiplication2_3");
-
+    benchmark_multiplication2_reference(output_file);
     output_file.close();
 }
