@@ -43,16 +43,18 @@ def multiplication_flops(k):
             flops += 3
 
         flops += vec_sum_flops(n**2 + n + 1)
+        flops+= n**2 +2*n
 
     for i in range(1, k):
-        flops += 2
+        flops += 3
 
     for i in range(0, k**2):
-        flops += 1
+        flops += 2
 
     flops += renormalization_flops(k + 1, k)
 
     return flops
+
 
 
 def multiplication(expansion_length):
