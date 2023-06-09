@@ -42,22 +42,22 @@ int main()
   /* renormalization */
   // double naive_runtime = measure_renormalization();
 
-  // evaluate_implementation(renormalization4, "renormalization4", renormalization_algorithm,
-  //                         naive_runtime);
   // evaluate_implementation(renormalization_fast, "renormalization_fast", renormalization_algorithm,
+  //                         naive_runtime);
+  // evaluate_implementation(renormalization_fast2, "renormalization_fast2", renormalization_algorithm,
   //                         naive_runtime);
 
   /* addition */
   // double naive_runtime = measure_addition();
 
-  // evaluate_implementation(addition4, "addition4", addition_algorithm, naive_runtime);
   // evaluate_implementation(addition_fast, "addition_fast", addition_algorithm, naive_runtime);
+  // evaluate_implementation(addition_fast2, "addition_fast2", addition_algorithm, naive_runtime);
 
   /* multiplication */
   double naive_runtime = measure_multiplication();
 
-  evaluate_implementation(multiplication2, "multiplication2", multiplication_algorithm,
-                          naive_runtime);
   evaluate_implementation(multiplication3, "multiplication3", multiplication_algorithm,
+                          naive_runtime);
+  evaluate_implementation(multiplication_fast, "multiplication_fast", multiplication_algorithm,
                           naive_runtime);
 }

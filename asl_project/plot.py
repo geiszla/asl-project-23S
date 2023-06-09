@@ -16,6 +16,8 @@ BANDWIDTH = 18.7  # Bytes/cycle
 PERFORMANCE_BOUND = 6  # flops/cycle
 PERFORMANCE_BOUND_SIMD = 24  # flops/cycle
 
+ALGORITHM_FILTER = None
+
 script_path = Path(__file__).parent.resolve()
 results_path = path.join(script_path, "..", "results")
 
@@ -113,7 +115,7 @@ def plot_performance(
         y_label=f"{performance_column} {unit}",
         title=algorithm,
         file_name=f"{performance_column.lower()}_vs_input_size_{algorithm}.png",
-        # is_show=True,
+        is_show=ALGORITHM_FILTER in algorithm if ALGORITHM_FILTER is not None else True,
     )
 
 
@@ -150,6 +152,7 @@ def plot_optimizations(
         variant_runs,
         title=f"{algorithm} roofline" if title is None else title,
         filename=f"roofline_{algorithm}" if filename is None else filename,
+        is_show=ALGORITHM_FILTER in algorithm if ALGORITHM_FILTER is not None else True,
     )
 
     return variant_runs[-2]
@@ -160,6 +163,7 @@ def plot_roofline(
     is_connect=True,
     title: str = "Roofline model",
     filename: str = "roofline",
+    is_show=True,
 ):
     """Draw the roofline plot and place the program runs on it."""
     # Draw performance bounds
@@ -219,7 +223,7 @@ def plot_roofline(
         "Performance (flops/cycle)",
         title,
         f"{filename}.png",
-        is_show=True,
+        is_show=is_show,
     )
 
 

@@ -200,6 +200,27 @@ void testrenormalization(void (*implementation)(double *, int, double *, int) = 
     delete[] renorm;
     delete[] solution;
   }
+
+  // for (int c = 14; c < 50; c += 10)
+  // {
+  //   double *renorm = generate_d_nonoverlapping_expansion(c);
+  //   double *solution = new double[c];
+
+  //   implementation(renorm, c, solution, c);
+
+  //   renorm_rand2L(c, c, renorm);
+  //   for (int n = 0; n < c; n++)
+  //   {
+  //     double rt = renorm[n];
+  //     double st = solution[n];
+
+  //     // test for reduction onto size 2 thus if failed thats the problem
+  //     assert(abs(rt - st) < 0.00001);
+  //   }
+
+  //   delete[] renorm;
+  //   delete[] solution;
+  // }
 }
 
 void testaddition(void (*implementation)(double *, double *, double *, int, int, int) = addition)
