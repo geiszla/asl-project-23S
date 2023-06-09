@@ -71,36 +71,42 @@ unsigned int get_optimized_addition_flops(int a_length, int b_length, int result
 
 unsigned int get_multiplication_flops(int expansion_length)
 {
-    /*return expansion_length * (expansion_length + 1) / 2 * TWO_MULT_FMA_FLOPS +
-           (expansion_length / 2) * get_vec_sum_flops(expansion_length) +
-           (expansion_length - 1) * 2 +
-           pow(expansion_length, 2) +
-           get_renormalization_flops(expansion_length + 1, expansion_length);*/
-    // new flop count implementation
-    int flops = 0;
-    flops += TWO_MULT_FMA_FLOPS;
+    int flops = TWO_MULT_FMA_FLOPS;
+
     for (int n = 0; n < expansion_length; n++)
     {
         for (int i = 0; i <= n; i++)
         {
             flops += TWO_MULT_FMA_FLOPS;
         }
+
         flops += get_vec_sum_flops(n * n + n + 1);
-        flops += n * n + 2 * n;
     }
 
-    flops += expansion_length * 3 + 2 * expansion_length * expansion_length;
+    flops += (expansion_length - 1) * 2 + expansion_length * expansion_length;
     flops += get_renormalization_flops(expansion_length + 1, expansion_length);
+
     return flops;
 }
 
 unsigned int get_optimized_multiplication_flops(int expansion_length)
 {
-    return expansion_length * (expansion_length + 1) / 2 * TWO_MULT_FMA_FLOPS +
-           (expansion_length / 2) * get_vec_sum_flops(expansion_length) +
-           (expansion_length - 1) * 2 +
-           pow(expansion_length, 2) +
-           get_optimized_renormalization_flops(expansion_length + 1, expansion_length);
+    int flops = TWO_MULT_FMA_FLOPS;
+
+    for (int n = 0; n < expansion_length; n++)
+    {
+        for (int i = 0; i <= n; i++)
+        {
+            flops += TWO_MULT_FMA_FLOPS;
+        }
+
+        flops += get_vec_sum_flops(n * n + n + 1);
+    }
+
+    flops += (expansion_length - 1) * 2 + expansion_length * expansion_length;
+    flops += get_optimized_renormalization_flops(expansion_length + 1, expansion_length);
+
+    return flops;
 }
 
 unsigned int get_multiplication2_flops(int expansion_length)
@@ -139,10 +145,30 @@ unsigned int get_fast_addition_flops(int a_length, int b_length, int result_leng
     return get_fast_renormalization_flops(a_length + b_length, result_length);
 }
 
+unsigned int get_fast_multiplication_flops(int expansion_length)
+{
+    int flops = TWO_MULT_FMA_FLOPS;
+
+    for (int n = 0; n < expansion_length; n++)
+    {
+        for (int i = 0; i <= n; i++)
+        {
+            flops += TWO_MULT_FMA_FLOPS;
+        }
+
+        flops += get_fast_vec_sum_flops(n * n + n + 1);
+    }
+
+    flops += (expansion_length - 1) * 2 + expansion_length * expansion_length;
+    flops += get_fast_renormalization_flops(expansion_length + 1, expansion_length);
+
+    return flops;
+}
+
 template <int Term_count>
 unsigned int get_multiplication_reference_flops()
 {
-    calculate_multiplication_flops<Term_count, Term_count, Term_count>();
+    return calculate_multiplication_flops<Term_count, Term_count, Term_count>();
 }
 
 unsigned int get_truncatedMul_flops(int expansion_length)
@@ -594,14 +620,14 @@ int main()
     benchmark_addition(output_file, addition_fast2, "AdditionFast2", get_fast_addition_flops);
     benchmark_addition_reference(output_file);
 
-    // Multiplication
+    // // Multiplication
     benchmark_multiplication(output_file);
     benchmark_multiplication(output_file, multiplication2, "Multiplication2",
                              get_optimized_multiplication_flops);
     benchmark_multiplication(output_file, multiplication3, "Multiplication3",
                              get_optimized_multiplication_flops);
     benchmark_multiplication(output_file, multiplication_fast, "MultiplicationFast",
-                             get_optimized_multiplication_flops);
+                             get_fast_multiplication_flops);
     benchmark_multiplication_reference(output_file);
 
     // Multiplication2

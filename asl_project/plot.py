@@ -16,7 +16,8 @@ BANDWIDTH = 18.7  # Bytes/cycle
 PERFORMANCE_BOUND = 6  # flops/cycle
 PERFORMANCE_BOUND_SIMD = 24  # flops/cycle
 
-ALGORITHM_FILTER = None
+# Change it to, e.g., "Addition" or "Multiplication" to only show those graphs
+ALGORITHM_FILTER = "Addition"
 
 script_path = Path(__file__).parent.resolve()
 results_path = path.join(script_path, "..", "results")
