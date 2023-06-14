@@ -345,7 +345,7 @@ void benchmark_multiplication2(
     cout << endl
          << variant_name << ":" << endl;
 
-    for (int term_count = 1; term_count < 30; term_count += 4)
+    for (int term_count = 1; term_count < 40; term_count += 2)
     {
         double runtime = measure_multiplication2(implementation, term_count);
         double flop_count = get_flops(term_count);
@@ -355,6 +355,26 @@ void benchmark_multiplication2(
                       output_file);
     }
 }
+void benchmark_multiplication2_fastTS(
+    ofstream &output_file,
+    void (*implementation)(double *, double *, double *, int, int, int) = mult2,
+    string variant_name = "Multiplication2",
+    unsigned int (*get_flops)(int) = get_truncatedMul_flops)
+{
+    cout << endl
+         << variant_name << ":" << endl;
+
+    for (int term_count = 1; term_count < 40; term_count += 2)
+    {
+        double runtime = measure_multiplication2(implementation, term_count);
+        double flop_count = get_flops(term_count);
+        double performance = flop_count / runtime;
+
+        write_results("Multiplication2", variant_name, runtime, performance, flop_count, term_count,
+                      output_file);
+    }
+}
+
 
 // References
 
@@ -526,14 +546,26 @@ void benchmark_multiplication2_reference(ofstream &output_file)
     cout << endl
          << "Multiplication2 reference: " << endl;
 
-    measure_mult2_reference<1, 1, 1>(output_file);
-    measure_mult2_reference<5, 5, 5>(output_file);
-    measure_mult2_reference<9, 9, 9>(output_file);
-    measure_mult2_reference<13, 13, 13>(output_file);
-    measure_mult2_reference<17, 17, 17>(output_file);
-    measure_mult2_reference<21, 21, 21>(output_file);
-    measure_mult2_reference<25, 25, 25>(output_file);
-    measure_mult2_reference<29, 29, 29>(output_file);
+ measure_mult2_reference<1,1, 1>(output_file);
+ measure_mult2_reference<3,3, 3>(output_file);
+ measure_mult2_reference<5,5, 5>(output_file);
+ measure_mult2_reference<7,7, 7>(output_file);
+ measure_mult2_reference<9,9, 9>(output_file);
+ measure_mult2_reference<11,11, 11>(output_file);
+ measure_mult2_reference<13,13, 13>(output_file);
+ measure_mult2_reference<15,15, 15>(output_file);
+ measure_mult2_reference<17,17, 17>(output_file);
+ measure_mult2_reference<19,19, 19>(output_file);
+ measure_mult2_reference<21,21, 21>(output_file);
+ measure_mult2_reference<23,23, 23>(output_file);
+ measure_mult2_reference<25,25, 25>(output_file);
+ measure_mult2_reference<27,27, 27>(output_file);
+ measure_mult2_reference<29,29, 29>(output_file);
+ measure_mult2_reference<31,31, 31>(output_file);
+ measure_mult2_reference<33,33, 33>(output_file);
+ measure_mult2_reference<35,35, 35>(output_file);
+ measure_mult2_reference<37,37, 37>(output_file);
+ measure_mult2_reference<39,39, 39>(output_file);
 }
 
 // Main
@@ -637,6 +669,7 @@ int main()
     benchmark_multiplication2(output_file, mult2_2, "Multiplication2_2");
     benchmark_multiplication2(output_file, mult2_3, "Multiplication2_3");
     benchmark_multiplication2_reference(output_file);
+    benchmark_multiplication2_fastTS(output_file, mult2_2_fast, "Multiplication2_2_fast");
 
     output_file.close();
 }
