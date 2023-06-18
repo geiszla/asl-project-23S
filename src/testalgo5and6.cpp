@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
@@ -432,10 +433,11 @@ void testfourmultiplication(void (*implementation)(double *, double *, double *,
     
     implementation(a0, b0, a1, b1, a2, b2, a3, b3, sol0, sol1, sol2, sol3, c, c, 4);
     
-    certifiedMul(c, c, 4, a0, b0, sol_ref0);
-    certifiedMul(c, c, 4, a1, b1, sol_ref1);
-    certifiedMul(c, c, 4, a2, b2, sol_ref2);
-    certifiedMul(c, c, 4, a3, b3, sol_ref3);
+    multiplication(a0, b0, sol_ref0, c, c,4);
+    multiplication(a1, b1, sol_ref1, c, c,4);
+    multiplication(a2, b2, sol_ref2, c, c,4);
+    multiplication(a3, b3, sol_ref3, c, c,4);
+ 
     
     for (int i = 0; i < 4; i++)
     {
@@ -447,10 +449,11 @@ void testfourmultiplication(void (*implementation)(double *, double *, double *,
       double sol_our2 = sol2[i];
       double ref3 = sol_ref3[i];
       double sol_our3 = sol3[i];
-      assert(abs(sol_our0 - ref0) < 0.00000001);
-      assert(abs(sol_our1 - ref1) < 0.00000001);
-      assert(abs(sol_our2 - ref2) < 0.00000001);
-      assert(abs(sol_our3 - ref3) < 0.00000001);
+      assert(abs(sol_our0 - ref0) == (0));
+      assert(abs(sol_our1 - ref1) == (0));
+      assert(abs(sol_our2 - ref2) == (0));
+      assert(abs(sol_our3 - ref3) == (0));
+     
     }
 
     delete[] a0;
