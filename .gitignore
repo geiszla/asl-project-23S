@@ -203,6 +203,9 @@ poetry.toml
 # ruff
 .ruff_cache/
 
+# Custom rule
+*.json
+
 # LSP config files
 pyrightconfig.json
 
@@ -230,4 +233,3 @@ pyrightconfig.json
 # Custom rules
 *.pdb
 *.ilk
-*.json

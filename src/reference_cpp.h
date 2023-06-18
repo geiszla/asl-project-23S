@@ -440,3 +440,127 @@ unsigned int calculate_multiplication_flops(){
 
   return flops + get_fast_renormalization_flops(R + 1, R);
 }
+
+template<int sX, int sR>
+static inline void fast_VecSumErrBranch(const double *x, double *r){
+  int ptr = 0, i = 1;
+  double e = x[0];
+
+  while(i<sX && ptr<sR){
+    r[ptr] = fast_two_sum(e, x[i], e); i++;
+    if(e == 0.) e = r[ptr]; else ptr++;
+  }
+  if(ptr<sR && e!=0.){ r[ptr] = e; ptr++; }
+  for(i=ptr; i<sR; i++) r[i] = 0.;
+}
+
+/** Multiplies x and y and returns the result in r, as an ulp-nonoverlapping expansion. 
+    K - size of x, L - size of y, R - size of z. Constraints: K>=L.
+    The algorithm computes the partial products in a paper-and-pencil fashion and then 
+    accumulates them in a special designed structure that has a fixed-point flavour.
+		double-precision = 53, bin size = 45;
+    For operations using double-double, triple-double and quad-double we provide specialized 
+    versions that use a generalization of the QD library's multiplication algorithm. **/
+// Multiplication_accurate with relative error <= 2^{-(p-1)R}( 1 + (r+1)2^{-p} + 2^{-p+2}(K+L-R-2) )
+template <int K, int L, int R>
+static inline void truncatedMul(double *x, double *y, double *r, int _K, int _L, int _R){
+	int const LBN = R*dbl_prec/binSize + 2;
+  double B[LBN+2], lim[LBN+2];
+  int i;
+
+	int exp_x[(R+1<K)?R+1:K], exp_y[(R+1<L)?R+1:L];
+	for(i=0; i<((R+1<K)?R+1:K); i++) frexp(x[i], &exp_x[i]);
+	for(i=0; i<((R+1<L)?R+1:L); i++) frexp(y[i], &exp_y[i]);
+
+	double factor = ldexp(1.0, -binSize); // 2^(-45)
+	int exp_start = exp_x[0] + exp_y[0];
+	lim[0] = ldexp(1.5, exp_start - binSize + dbl_prec-1); B[0] = lim[0];
+	for(i=1; i<LBN+2; i++){ lim[i] = FPmul_rn(lim[i-1], factor); B[i] = lim[i]; }
+
+	#ifdef UNROLL_MUL_MAIN
+	  unrollPartialProds< L, R, 0, (R<K?R:K), 1 > :: unrollX_trunc(exp_start, LBN, x, exp_x, y, exp_y, B);
+	#else
+		int j, l, sh;
+		double p, e;
+		for(i=0; i<(R<K?R:K); i++){
+			for(j=0; j<(R-i<L?R-i:L); j++){
+				l  = exp_start - (exp_x[i]+exp_y[j]);
+				sh = (int)(l/binSize);
+		  	l  = l - sh*binSize;
+			  if(sh < LBN-1){
+					p = two_prod(x[i], y[j], e);
+			    if(l < 30){ // binSize - 2*(dbl_prec-binSize-1) - 1){
+						B[sh] = fast_two_sum(B[sh], p, p);
+						B[sh+1] = FPadd_rn(B[sh+1], p);
+
+						B[sh+1] = fast_two_sum(B[sh+1], e, e);
+						B[sh+2] = FPadd_rn(B[sh+2], e);
+					}else if(l < 37){ // binSize - (dbl_prec-binSize-1) - 1){
+						B[sh] = fast_two_sum(B[sh], p, p);
+		        B[sh+1] = FPadd_rn(B[sh+1], p);
+
+						B[sh+1] = fast_two_sum(B[sh+1], e, e);
+						B[sh+2] = fast_two_sum(B[sh+2], e, e);
+		        B[sh+3] = FPadd_rn(B[sh+3], e);
+					}else{
+						B[sh] = fast_two_sum(B[sh], p, p);
+						B[sh+1] = fast_two_sum(B[sh+1], p, p);
+		        B[sh+2] = FPadd_rn(B[sh+2], p);
+
+						B[sh+2] = fast_two_sum(B[sh+2], e, e);
+		        B[sh+3] = FPadd_rn(B[sh+3], e);
+		}}}}
+	#endif
+	
+	//computation of the error correction terms; using just simple multiplication
+  if (R < L){
+  	#ifdef UNROLL_MUL_ERROR
+  		unrollPartialProds< L, R, 0, R+1, 1 > :: unroll_simple1(exp_start, LBN, x, exp_x, y, exp_y, B);
+  	#else
+  		double p;
+  		int sh;
+			for(i=0; i<=R; i++){
+		  	sh = (int)((exp_start - (exp_x[i]+exp_y[R-i])) / binSize);
+		    if(sh < LBN){
+					p = FPmul_rn(x[i], y[R-i]);
+					B[sh] = fast_two_sum(B[sh], p, p);
+		      B[sh+1] = fast_two_sum(B[sh+1], p, p);
+		      B[sh+2] = FPadd_rn(B[sh+2], p);
+		  }}
+    #endif
+	}else if(R < K){
+  	#ifdef UNROLL_MUL_ERROR
+  		unrollPartialProds< L, R, 0, L, 1 > :: unroll_simple2(exp_start, LBN, x, exp_x, y, exp_y, B);
+  	#else
+  		double p;
+  		int sh;
+		  for(i=0; i<L; i++){
+				sh = (int)((exp_start - (exp_x[R-i]+exp_y[i])) / binSize);
+		    if(sh < LBN){
+		      p = FPmul_rn(x[R-i], y[i]);
+					B[sh] = fast_two_sum(B[sh], p, p);
+		      B[sh+1] = fast_two_sum(B[sh+1], p, p);
+		      B[sh+2] = FPadd_rn(B[sh+2], p);
+		  }}
+		#endif
+  }else if(R < K+L-1){
+  	#ifdef UNROLL_MUL_ERROR
+			unrollPartialProds< L, R, R-L+1, K, 1 > :: unroll_simple1(exp_start, LBN, x, exp_x, y, exp_y, B);
+  	#else
+  		double p;
+  		int sh;
+		  for(i=R-L+1; i<K; i++){
+				sh = (int)((exp_start - (exp_x[i]+exp_y[R-i])) / binSize);
+		    if(sh < LBN){
+		      p = FPmul_rn(x[i], y[R-i]);
+					B[sh] = fast_two_sum(B[sh], p, p);
+		      B[sh+1] = fast_two_sum(B[sh+1], p, p);
+		      B[sh+2] = FPadd_rn(B[sh+2], p);
+			}}
+		#endif
+	}
+
+	/* unbias the B's */
+	for (i=0; i<LBN; i++) B[i] = FPadd_rn(B[i], -lim[i]);
+  fast_VecSumErrBranch<LBN,R>(B, r);
+}

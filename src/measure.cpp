@@ -45,6 +45,8 @@ double generate_random_mantissa(int ending_zeros_count)
  */
 double *generate_d_nonoverlapping_expansion(int term_count)
 {
+    int exponent_difference = 742 * 2 / (term_count - 1);
+
     int exponent = 511;
 
     double *terms = new double[term_count];
@@ -55,7 +57,8 @@ double *generate_d_nonoverlapping_expansion(int term_count)
     {
         // For this to be at most d-overlapping, exponent needs to decrease by at least 2
         // term-by-term and there needs to be at least 49 zeros at the end of each term
-        terms[i] = ldexp(generate_random_mantissa(49), exponent - 51 - 2 * (i - 1));
+        terms[i] = ldexp(generate_random_mantissa(49),
+                         exponent - 51 - exponent_difference * (i - 1));
     }
 
     return terms;
