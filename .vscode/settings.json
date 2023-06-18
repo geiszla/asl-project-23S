@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "random": "cpp",
+        "basefunctionsoptimized.c": "cpp",
+        "mult2_optimizations.c": "cpp",
+        "multiplication_optimizations.c": "cpp",
+        "addition_optimizations.c": "cpp",
+        "unordered_map": "c"
+    }
+}
