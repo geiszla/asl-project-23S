@@ -459,10 +459,24 @@ void fourtimesmultiplicationversion3(double *a0, double *b0, double *a1, double 
             tmp_2[n + 1 + i] = err2[i];
             tmp_3[n + 1 + i] = err3[i];
         }
-        vecSum(tmp_0, tmp1_0, (n * n + n));
+        //vecSum(tmp_0, tmp1_0, (n * n + n));
         vecSum(tmp_1, tmp1_1, (n * n + n));
         vecSum(tmp_2, tmp1_2, (n * n + n));
         vecSum(tmp_3, tmp1_3, (n * n + n));
+
+        int length = (n * n + n);
+        double *s = (double *)alloca(length * sizeof(double));
+        s[length - 1] = tmp_0[length - 1];
+        for (int i = length - 2; i >= 0; i--)
+        {
+            double s_tmp, e_tmp;
+            twoSum(tmp_0[i], s[i + 1], &s_tmp, &e_tmp);
+            s[i] = s_tmp;
+            tmp1_0[i + 1] = e_tmp;
+        }
+        tmp1_0[0] = s[0];
+
+
         /* write  tmp1 into r_ext[n], e[0:n^2 +n-1]*/
         r_ext0[n] = tmp1_0[0];
         r_ext1[n] = tmp1_1[0];
