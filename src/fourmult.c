@@ -422,15 +422,15 @@ void fourtimesmultiplicationversion3(double *a0, double *b0, double *a1, double 
         int i = 0;
         for (; i <= n - 4; i += 4)
         {
-            __m256d p0_vec = _mm256_loadu_pd(&p0[i]);
-            __m256d p1_vec = _mm256_loadu_pd(&p1[i]);
-            __m256d p2_vec = _mm256_loadu_pd(&p2[i]);
-            __m256d p3_vec = _mm256_loadu_pd(&p3[i]);
+            __m256d p0_vec = _mm256_load_pd(&p0[i]);
+            __m256d p1_vec = _mm256_load_pd(&p1[i]);
+            __m256d p2_vec = _mm256_load_pd(&p2[i]);
+            __m256d p3_vec = _mm256_load_pd(&p3[i]);
 
-            _mm256_storeu_pd(&tmp_0[i], p0_vec);
-            _mm256_storeu_pd(&tmp_1[i], p1_vec);
-            _mm256_storeu_pd(&tmp_2[i], p2_vec);
-            _mm256_storeu_pd(&tmp_3[i], p3_vec);
+            _mm256_store_pd(&tmp_0[i], p0_vec);
+            _mm256_store_pd(&tmp_1[i], p1_vec);
+            _mm256_store_pd(&tmp_2[i], p2_vec);
+            _mm256_store_pd(&tmp_3[i], p3_vec);
         }
         for (; i <= n; i++)
         {
@@ -442,15 +442,15 @@ void fourtimesmultiplicationversion3(double *a0, double *b0, double *a1, double 
         i = 0;
         for (; i <= (n * n - 1) - 5; i += 4)
         {
-            __m256d err0_vec = _mm256_loadu_pd(&err0[i]);
-            __m256d err1_vec = _mm256_loadu_pd(&err1[i]);
-            __m256d err2_vec = _mm256_loadu_pd(&err2[i]);
-            __m256d err3_vec = _mm256_loadu_pd(&err3[i]);
+            __m256d err0_vec = _mm256_load_pd(&err0[i]);
+            __m256d err1_vec = _mm256_load_pd(&err1[i]);
+            __m256d err2_vec = _mm256_load_pd(&err2[i]);
+            __m256d err3_vec = _mm256_load_pd(&err3[i]);
 
-            _mm256_storeu_pd(&tmp_0[n + 1 + i], err0_vec);
-            _mm256_storeu_pd(&tmp_1[n + 1 + i], err1_vec);
-            _mm256_storeu_pd(&tmp_2[n + 1 + i], err2_vec);
-            _mm256_storeu_pd(&tmp_3[n + 1 + i], err3_vec);
+            _mm256_store_pd(&tmp_0[n + 1 + i], err0_vec);
+            _mm256_store_pd(&tmp_1[n + 1 + i], err1_vec);
+            _mm256_store_pd(&tmp_2[n + 1 + i], err2_vec);
+            _mm256_store_pd(&tmp_3[n + 1 + i], err3_vec);
         }
         for (; i <= (n * n - 1); i++)
         {
@@ -459,22 +459,56 @@ void fourtimesmultiplicationversion3(double *a0, double *b0, double *a1, double 
             tmp_2[n + 1 + i] = err2[i];
             tmp_3[n + 1 + i] = err3[i];
         }
-        //vecSum(tmp_0, tmp1_0, (n * n + n));
-        vecSum(tmp_1, tmp1_1, (n * n + n));
-        vecSum(tmp_2, tmp1_2, (n * n + n));
-        vecSum(tmp_3, tmp1_3, (n * n + n));
+  
 
         int length = (n * n + n);
-        double *s = (double *)alloca(length * sizeof(double));
-        s[length - 1] = tmp_0[length - 1];
+        double *s0 = (double *)alloca(length * sizeof(double));
+        double *s1 = (double *)alloca(length * sizeof(double));
+        double *s2 = (double *)alloca(length * sizeof(double));
+        double *s3 = (double *)alloca(length * sizeof(double));
+        s0[length - 1] = tmp_0[length - 1];
+        s1[length - 1] = tmp_1[length - 1];
+        s2[length - 1] = tmp_2[length - 1];
+        s3[length - 1] = tmp_3[length - 1];
         for (int i = length - 2; i >= 0; i--)
         {
-            double s_tmp, e_tmp;
-            twoSum(tmp_0[i], s[i + 1], &s_tmp, &e_tmp);
-            s[i] = s_tmp;
-            tmp1_0[i + 1] = e_tmp;
+            double s_tmp0, e_tmp0;
+            double s_tmp1, e_tmp1;
+            double s_tmp2, e_tmp2;
+            double s_tmp3, e_tmp3;
+
+            double ssum0 = tmp_0[i] + s0[i + 1];
+            double ssum1 = tmp_1[i] + s1[i + 1];
+            double ssum2 = tmp_2[i] + s2[i + 1];
+            double ssum3 = tmp_3[i] + s3[i + 1];
+            double t0 = ssum0 - s0[i + 1];
+            double t1 = ssum1 - s1[i + 1];
+            double t2 = ssum2 - s2[i + 1];
+            double t3 = ssum3 - s3[i + 1];
+
+            e_tmp0 = (tmp_0[i] - t0) + (s0[i + 1] - (ssum0 - t0));
+            e_tmp1 = (tmp_1[i] - t1) + (s1[i + 1] - (ssum1 - t1));
+            e_tmp2 = (tmp_2[i] - t2) + (s2[i + 1] - (ssum2 - t2));
+            e_tmp3 = (tmp_3[i] - t3) + (s3[i + 1] - (ssum3 - t3));
+
+            s_tmp0 = ssum0;
+            s_tmp1 = ssum1;
+            s_tmp2 = ssum2;
+            s_tmp3 = ssum3;
+            
+            s0[i] = s_tmp0;
+            s1[i] = s_tmp1;
+            s2[i] = s_tmp2;
+            s3[i] = s_tmp3;
+            tmp1_0[i + 1] = e_tmp0;
+            tmp1_1[i + 1] = e_tmp1;
+            tmp1_2[i + 1] = e_tmp2;
+            tmp1_3[i + 1] = e_tmp3;
         }
-        tmp1_0[0] = s[0];
+        tmp1_0[0] = s0[0];
+        tmp1_1[0] = s1[0];
+        tmp1_2[0] = s2[0];
+        tmp1_3[0] = s3[0];
 
 
         /* write  tmp1 into r_ext[n], e[0:n^2 +n-1]*/
