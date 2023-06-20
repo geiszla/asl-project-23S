@@ -476,7 +476,6 @@ void fourtimesmultiplicationversion3(double *a0, double *b0, double *a1, double 
             double s_tmp1, e_tmp1;
             double s_tmp2, e_tmp2;
             double s_tmp3, e_tmp3;
-
             double ssum0 = tmp_0[i] + s0[i + 1];
             double ssum1 = tmp_1[i] + s1[i + 1];
             double ssum2 = tmp_2[i] + s2[i + 1];
@@ -505,6 +504,9 @@ void fourtimesmultiplicationversion3(double *a0, double *b0, double *a1, double 
             tmp1_2[i + 1] = e_tmp2;
             tmp1_3[i + 1] = e_tmp3;
         }
+
+
+        
         tmp1_0[0] = s0[0];
         tmp1_1[0] = s1[0];
         tmp1_2[0] = s2[0];
