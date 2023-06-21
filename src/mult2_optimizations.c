@@ -916,9 +916,10 @@ void mult2_2_fast(double* x, double* y,double*pi, int n, int m, int r){
 	while (i < bins && j < r) {
 		//twoSum(eps, B[i], &pi[j], &eps);
 		double s = eps+B[i];
-		double t = s-B[i]; 
+		double t = s-B[i];
+		eps = eps - t;
 		pi[j] = s; 
-		eps= (eps-t) + (B[i]-(s-t));
+	
 
 
 		
@@ -932,4 +933,245 @@ void mult2_2_fast(double* x, double* y,double*pi, int n, int m, int r){
 	if (eps != 0 && j < r) {
 		pi[j] = eps;
 	} 
+}
+
+
+void twoSum_fast(const double a, const double b, double *s_res, double *e_res)
+{
+    double s = a + b;
+    double t = s - b;
+    double e = b-t;
+    // write ouput
+    *s_res = s;
+    *e_res = e;
+    return;
+}
+
+
+void deposit_fast(double *p, double *b1, double *b2)
+{
+    twoSum_fast(*b1, *p, b1, p);
+    *b2 = *b2 + *p;
+}
+/**
+Implementation of Accumulate algorithm (Algorithm 2, Paper 2)
+
+Input: 	double p, e
+        vector<double> b
+        int sh, l
+Output: vector<double> b
+
+**/
+
+void accumulate_fast(double p, double e, double *b, int sh, int l)
+{
+    int c = dbl_prec - binSize - 1;
+    if (l < binSize - 2 * c - 1)
+    {
+        deposit_fast(&p, &b[sh], &b[sh + 1]);
+        deposit_fast(&e, &b[sh + 1], &b[sh + 2]);
+    }
+    else if (l < binSize - c)
+    {
+        deposit_fast(&p, &b[sh], &b[sh + 1]);
+        twoSum_fast(b[sh + 1], e, &b[sh + 1], &e);
+        deposit_fast(&e, &b[sh + 2], &b[sh + 3]);
+    }
+    else
+    {
+        twoSum_fast(b[sh], p, &b[sh], &p);
+        deposit_fast(&p, &b[sh + 1], &b[sh + 2]);
+        deposit_fast(&e, &b[sh + 2], &b[sh + 3]);
+    }
+}
+
+
+
+void renormalize_fast(double *x, double *r, int n, int k)
+{
+    double eps = x[0];
+
+    int j = 0;
+    int i = 1;
+    while (i < n && j < k)
+    {
+        twoSum_fast(eps, x[i], &r[j], &eps);
+        if (eps == 0)
+        { // no overflow
+            eps = r[j];
+        }
+        else
+        {
+            j++;
+        }
+        i++;
+    }
+    if (eps != 0 && j < k)
+    {
+        r[j] = eps;
+    }
+}
+
+
+
+void mult2_fast(double *x, double *y, double *pi, int n, int m, int r)
+{
+
+    double *B = (double *)alloca((r * dbl_prec / binSize + 2) * sizeof(double));
+    // get sum of first exponents
+    int e = exponent(x[0]) + exponent(y[0]);
+
+    // initialize each Bin with starting value
+    for (int i = 0; i < r * dbl_prec / binSize + 2; i++)
+    {
+        B[i] = ldexp(1.5, e - (i + 1) * binSize + dbl_prec - 1); // 1.5*2^(e-(i+1)b+p-1)
+    }
+    int j, l, sh;
+    double p, err;
+    for (int i = 0; i <= fmin(n - 1, r); i++)
+    {
+        for (j = 0; j <= fmin(m - 1, r - 1 - i); j++)
+        {
+            // p = two_prod(x[i], y[j], &err); this leads to more similar result as CAMPARY
+            twoMultFMA(x[i], y[j], &p, &err);
+            l = e - exponent(x[i]) - exponent(y[j]);
+            sh = floor(l / binSize);      // bin of the first pair
+            l = l - sh * binSize;         // number of leading bits
+            accumulate_fast(p, err, B, sh, l); // add to correct bins
+        }
+        j -= 1;
+        if (j < m - 1)
+        { //  I don't get what this part does
+            p = x[i] * y[j];
+            l = e - exponent(x[i]) - exponent(y[j]);
+            sh = floor(l / binSize);
+            l = l - sh * binSize;
+            accumulate_fast(p, 0., B, sh, l);
+        }
+    }
+    for (int i = 0; i < r * dbl_prec / binSize + 2; i++)
+    {
+        B[i] = B[i] - ldexp(1.5, e - (i + 1) * binSize + dbl_prec - 1); // B_i - 1.5*2^(e-(i+1)b+p-1)
+    }
+
+    renormalize_fast(B, pi, r * dbl_prec / binSize + 2, r);
+}
+
+
+/*
+Optimization 0: Precompute 
+*/
+void mult2_0_fast(double* x, double* y,double*pi, int n, int m, int r){
+    int bins = r*dbl_prec/binSize+2;
+		double *B = (double *)alloca(bins*sizeof(double));
+    // get exponents
+    int *exp_x = (int *)alloca(n*sizeof(int));
+	int *exp_y =(int *)alloca(m*sizeof(int));
+    for(int i=0;i<n;i++){
+        exp_x[i] = exponent(x[i]);
+    }
+        for(int j=0;j<m;j++){
+        exp_y[j] = exponent(y[j]);
+    }
+	// get sum of first exponents
+	int e = exp_x[0] + exp_x[0];
+	
+
+    double *B_start = (double *)alloca(bins*sizeof(double));
+	// initialize each Bin with starting value
+    B_start[0] = ldexp(1.5,e+dbl_prec-1-binSize); // since 1.5*2^(e-(i+1)b+p-1) == 1.5*2^(e-b+p-1)*2^(-b*i)
+    B[0] = B_start[0];
+    double const C1 = ldexp(1.0, -binSize); // multiply in each iteration last value by 2^-b instead of 2^(-b*i)
+	for (int i=1; i<bins;i++){
+        B_start[i] = B_start[i-1]*C1; // 1.5*2^(e-(i+1)b+p-1)
+		B[i] = B_start[i];
+	}
+	int j,l,sh;
+	double p, err;
+    int max_terms = fmin(n-1, r);
+	for(int i=0; i<= max_terms; i++){
+		for(j=0;j<= fmin(m-1,r-1-i); j++){
+			//p = two_prod(x[i], y[j], &err); this leads to more similar result as CAMPARY
+			twoMultFMA(x[i], y[j],&p,&err);
+			l = e- exp_x[i] - exp_y[j]; 
+			sh = floor(l/binSize); // bin of the first pair
+			l = l- sh*binSize; // number of leading bits
+			accumulate_fast(p,err,B,sh,l); // add to correct bins
+		}
+		j-=1;
+		if (j < m-1){ 
+			p = x[i]*y[j];
+			l = e- exp_x[i] - exp_y[j]; 
+			sh = floor(l/binSize); 
+			l = l- sh*binSize; 
+			accumulate_fast(p,0.,B,sh,l);
+		}
+	}
+	for (int i=0;  i<bins;i++){
+		B[i] = B[i]-B_start[i]; // B_i - 1.5*2^(e-(i+1)b+p-1)
+	}
+
+	
+	renormalize_fast(B,pi,bins,r);
+}
+
+/*
+Optimization 0: Precompute 
+Optimization 1: replace complex with simpler functions: fmin(a,b) -> a<b?a:b, floor -> (int),a/b -> a*b^-1
+
+*/
+void mult2_1_fast(double* x, double* y,double*pi, int n, int m, int r){
+    int bins = r*dbl_prec/binSize+2;
+    float b_inv = 1/binSize;
+	double *B = (double *)alloca(bins*sizeof(double));
+    // get exponents
+    int *exp_x = (int *)alloca(n*sizeof(int));
+		int *exp_y = (int *)alloca(m*sizeof(int));
+    for(int i=0;i<n;i++){
+        exp_x[i] = exponent(x[i]);
+    }
+        for(int j=0;j<m;j++){
+        exp_y[j] = exponent(y[j]);
+    }
+	// get sum of first exponents
+	int e = exp_x[0] + exp_x[0];
+	
+
+    double *B_start = (double *)alloca(bins*sizeof(double));
+	// initialize each Bin with starting value
+    B_start[0] = ldexp(1.5,e+dbl_prec-1-binSize); // since 1.5*2^(e-(i+1)b+p-1) == 1.5*2^(e-b+p-1)*2^(-b*i)
+    B[0] = B_start[0];
+    double const C1 = ldexp(1.0, -binSize); // multiply in each iteration last value by 2^-b instead of 2^(-b*i)
+	for (int i=1; i<bins;i++){
+        B_start[i] = B_start[i-1]*C1; // 1.5*2^(e-(i+1)b+p-1)
+		B[i] = B_start[i];
+	}
+	int j,l,sh;
+	double p, err;
+    int max_terms_x = (n-1)<r?(n-1):r;
+	for(int i=0; i<= max_terms_x; i++){ // 
+        int max_terms_y = ((m-1)<(r-1-i)?(m-1):(r-1-i));
+		for(j=0;j<= max_terms_y; j++){ //(m-1)<(r-1-i)?(m-1):(r-1-i)
+			//p = two_prod(x[i], y[j], &err); this leads to more similar result as CAMPARY
+			twoMultFMA(x[i], y[j],&p,&err);
+			l = e- exp_x[i] - exp_y[j]; 
+			sh = (int)(l*b_inv); // bin of the first pair
+			l = l- sh*binSize; // number of leading bits
+			accumulate_fast(p,err,B,sh,l); // add to correct bins
+		}
+		j-=1;
+		if (j < m-1){ 
+			p = x[i]*y[j];
+			l = e- exp_x[i] - exp_y[j]; 
+			sh = (int)(l*b_inv); 
+			l = l- sh*binSize; 
+			accumulate_fast(p,0.,B,sh,l);
+		}
+	}
+	for (int i=0;  i<bins;i++){
+		B[i] = B[i]-B_start[i]; // B_i - 1.5*2^(e-(i+1)b+p-1)
+	}
+
+	
+	renormalize_fast(B,pi,bins,r);
 }
