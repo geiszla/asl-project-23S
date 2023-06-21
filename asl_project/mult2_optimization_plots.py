@@ -18,12 +18,12 @@ print(data["Algorithm"].unique())
 print(data["Variant"].unique())
 
 algorithms = ["Multiplication2"]
-variants = ['Multiplication2Reference', "Multiplication2_2_fast", "Multiplication2_1_fast", "Multiplication2_0_fast", "Multiplication2_fast" ] # ,
-colors = ["green", "red", "orange", "blue", "gray"]
-line_styles = ["--", "-", "-", "-", "-"]
-labels = [ "truncatedMul (CAMPARY)", "Opt: 2", "Opt: 1", "Opt: 0","Baseline",] # "truncatedMul (CAMPARY) (with FTS)", "Opt: 2  (with FTS)"
-markers = ["o", "s","^", "v","D"]
-baseline_performance = np.mean(data.query('Algorithm == "Multiplication2"').query('Variant == "Multiplication2_fast"')["Performance"])
+variants = ['Multiplication2Reference', "Multiplication2_3","Multiplication2_2", "Multiplication2_1", "Multiplication2_0", "Multiplication2" ] # ,
+colors = ["green", "red", "orange", "blue", "purple","gray"]
+line_styles = ["--", "-", "-", "-", "-", "-"]
+labels = [ "truncatedMul (CAMPARY)", "Opt: 3", "Opt: 2", "Opt: 1", "Opt: 0","Baseline",] # "truncatedMul (CAMPARY) (with FTS)", "Opt: 2  (with FTS)"
+markers = ["o", "s","^", "v","D", "P"]
+baseline_performance = np.mean(data.query('Algorithm == "Multiplication2"').query('Variant == "Multiplication2"')["Performance"])
 
 input_sizes = []
 i = 0
