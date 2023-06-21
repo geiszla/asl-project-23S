@@ -338,9 +338,9 @@ void benchmark_multiplication(
 
 void benchmark_multiplication2(
     ofstream &output_file,
-    void (*implementation)(double *, double *, double *, int, int, int) = mult2,
+    void (*implementation)(double *, double *, double *, int, int, int) = mult2_fast,
     string variant_name = "Multiplication2",
-    unsigned int (*get_flops)(int) = get_multiplication2_flops)
+    unsigned int (*get_flops)(int) = get_truncatedMul_flops)
 {
     cout << endl
          << variant_name << ":" << endl;
@@ -628,14 +628,14 @@ int main()
                              get_optimized_multiplication_flops);
     benchmark_multiplication(output_file, multiplication_fast, "MultiplicationFast",
                              get_fast_multiplication_flops);
-    benchmark_multiplication_reference(output_file);
+    benchmark_multiplication_reference(output_file); 
 
     // Multiplication2
     benchmark_multiplication2(output_file);
-    benchmark_multiplication2(output_file, mult2_0, "Multiplication2_0");
-    benchmark_multiplication2(output_file, mult2_1, "Multiplication2_1");
-    benchmark_multiplication2(output_file, mult2_2, "Multiplication2_2");
-    benchmark_multiplication2(output_file, mult2_3, "Multiplication2_3");
+    benchmark_multiplication2(output_file, mult2_0_fast, "Multiplication2_0");
+    benchmark_multiplication2(output_file, mult2_1_fast, "Multiplication2_1");
+    benchmark_multiplication2(output_file, mult2_2_fast, "Multiplication2_2");
+    benchmark_multiplication2(output_file, mult2_3_fast, "Multiplication2_3");
     benchmark_multiplication2_reference(output_file);
 
     output_file.close();
