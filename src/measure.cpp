@@ -257,6 +257,53 @@ double measure_multiplication(
     return runtime;
 }
 
+double measure_fourmultiplications(
+    void (*implementation)(double *, double *, double *, double *, double *, double *,
+                           double *, double *, double *, double *, double *, double *,
+                           const int, const int, const int),
+    int term_count = DEFAULT_TERM_COUNT)
+{
+    double *a0 = generate_d_nonoverlapping_expansion(term_count);
+    double *b0 = generate_d_nonoverlapping_expansion(term_count);
+
+    double *a1 = generate_d_nonoverlapping_expansion(term_count);
+    double *b1 = generate_d_nonoverlapping_expansion(term_count);
+
+    double *a2 = generate_d_nonoverlapping_expansion(term_count);
+    double *b2 = generate_d_nonoverlapping_expansion(term_count);
+
+    double *a3 = generate_d_nonoverlapping_expansion(term_count);
+    double *b3 = generate_d_nonoverlapping_expansion(term_count);
+
+    double *result0 = new double[term_count];
+    double *result1 = new double[term_count];
+    double *result2 = new double[term_count];
+    double *result3 = new double[term_count];
+
+    double runtime = measure_runtime(implementation, a0, b0, a1, b1, a2, b2, a3, b3,
+                                     result0, result1, result2, result3,
+                                     term_count, term_count, term_count);
+
+    delete[] a0;
+    delete[] b0;
+
+    delete[] a1;
+    delete[] b1;
+
+    delete[] a2;
+    delete[] b2;
+
+    delete[] a3;
+    delete[] b3;
+
+    delete[] result0;
+    delete[] result1;
+    delete[] result2;
+    delete[] result3;
+
+    return runtime;
+}
+
 double measure_multiplication2(
     void (*implementation)(double *, double *, double *, int, int, int) = mult2,
     int term_count = DEFAULT_TERM_COUNT)

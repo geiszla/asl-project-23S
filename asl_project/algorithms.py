@@ -25,5 +25,6 @@ memory_movement_calculations: dict[str, FlopCalculation] = {
     "Renormalization": lambda input_size: 8 * (input_size + 2 * input_size),
     "Addition": lambda input_size: 8 * (input_size + input_size + input_size),
     "Multiplication": lambda input_size: 8 * 3 * input_size,
+    "FourMultiplications": lambda input_size: 4 * 8 * 3 * input_size,
     "Multiplication2": lambda input_size: 8 * 3 * input_size,
 }

@@ -11,10 +11,6 @@
 #include "addition_optimizations.c"
 #include "multiplication_optimizations.c"
 */
-extern "C"
-{
-#include "fourmult.c"
-}
 
 const double onedifference = pow(10, -16);
 const double allonesindouble = 4.503599627370496;
@@ -388,7 +384,7 @@ void testmultiplication(void (*implementation)(double *, double *, double *, int
   }
 }
 
-void testfourmultiplication(void (*implementation)(double *, double *, double *, double *, double *, double *, double *, double *, double *, double *, double *, double *, int, int, int) = fourtimesmultiplicationversion2)
+void testfourmultiplication(void (*implementation)(double *, double *, double *, double *, double *, double *, double *, double *, double *, double *, double *, double *, int, int, int) = fourtimesmultiplicationversion3)
 {
 
   for (int c = 3; c < 5; c += 1)

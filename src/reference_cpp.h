@@ -438,7 +438,7 @@ unsigned int calculate_multiplication_flops(){
     }
   }
 
-  return flops + get_fast_renormalization_flops(R + 1, R);
+  return flops;
 }
 
 template<int sX, int sR>

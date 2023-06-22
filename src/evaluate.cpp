@@ -15,6 +15,7 @@ enum Algorithm
     renormalization_algorithm,
     addition_algorithm,
     multiplication_algorithm,
+    fourmultiplications_algorithm,
     multiplication2_algorithm
 };
 
@@ -26,7 +27,8 @@ map<Algorithm, T_test_function> tests{
     {two_mult_FMA_algorithm, (T_test_function)testfastfma},
     {renormalization_algorithm, (T_test_function)testrenormalization},
     {addition_algorithm, (T_test_function)testaddition},
-    {multiplication_algorithm, (T_test_function)testmultiplication}};
+    {multiplication_algorithm, (T_test_function)testmultiplication},
+    {fourmultiplications_algorithm, (T_test_function)testfourmultiplication}};
 
 template <typename T_measure_function>
 map<Algorithm, T_measure_function> measurement_functions{
@@ -38,6 +40,7 @@ map<Algorithm, T_measure_function> measurement_functions{
     {renormalization_algorithm, (T_measure_function)measure_renormalization},
     {addition_algorithm, (T_measure_function)measure_addition},
     {multiplication_algorithm, (T_measure_function)measure_multiplication},
+    {fourmultiplications_algorithm, (T_measure_function)measure_fourmultiplications},
     {multiplication2_algorithm, (T_measure_function)measure_multiplication2}};
 
 /**

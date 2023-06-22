@@ -13,6 +13,7 @@ extern "C"
 #include "renormalization_optimizations.c"
 #include "addition_optimizations.c"
 #include "multiplication_optimizations.c"
+#include "fourmult.c"
 #include "mult2_optimizations.c"
 }
 
@@ -168,7 +169,10 @@ unsigned int get_fast_multiplication_flops(int expansion_length)
 template <int Term_count>
 unsigned int get_multiplication_reference_flops()
 {
-    return calculate_multiplication_flops<Term_count, Term_count, Term_count>();
+    int multiplication_flops = calculate_multiplication_flops<Term_count, Term_count, Term_count>();
+    int renormalization_flops = get_fast_renormalization_flops(Term_count + 1, Term_count);
+
+    return multiplication_flops + renormalization_flops;
 }
 
 unsigned int get_truncatedMul_flops(int expansion_length)
@@ -329,6 +333,28 @@ void benchmark_multiplication(
     {
         double runtime = measure_multiplication(implementation, term_count);
         double flop_count = get_flops(term_count);
+        double performance = flop_count / runtime;
+
+        write_results("Multiplication", variant_name, runtime, performance, flop_count, term_count,
+                      output_file);
+    }
+}
+
+void benchmark_fourmultiplications(
+    ofstream &output_file,
+    void (*implementation)(double *, double *, double *, double *, double *, double *,
+                           double *, double *, double *, double *, double *, double *,
+                           const int, const int, const int),
+    string variant_name = "FourMultiplications",
+    unsigned int (*get_flops)(int) = get_fast_multiplication_flops)
+{
+    cout << endl
+         << variant_name << ":" << endl;
+
+    for (int term_count = 3; term_count <= 32; term_count += 2)
+    {
+        double runtime = measure_fourmultiplications(implementation, term_count);
+        double flop_count = 4 * get_flops(term_count);
         double performance = flop_count / runtime;
 
         write_results("Multiplication", variant_name, runtime, performance, flop_count, term_count,
@@ -620,15 +646,23 @@ int main()
     benchmark_addition(output_file, addition_fast2, "AdditionFast2", get_fast_addition_flops);
     benchmark_addition_reference(output_file);
 
-    // // Multiplication
+    // Multiplication
     benchmark_multiplication(output_file);
     benchmark_multiplication(output_file, multiplication2, "Multiplication2",
                              get_optimized_multiplication_flops);
     benchmark_multiplication(output_file, multiplication3, "Multiplication3",
                              get_optimized_multiplication_flops);
+
+    benchmark_fourmultiplications(output_file, fourtimesmultiplicationversion0,
+                                  "FourMultiplications0");
+    benchmark_fourmultiplications(output_file, fourtimesmultiplicationversion1,
+                                  "FourMultiplications1");
+    benchmark_fourmultiplications(output_file, fourtimesmultiplicationversion3,
+                                  "FourMultiplications3");
+
     benchmark_multiplication(output_file, multiplication_fast, "MultiplicationFast",
                              get_fast_multiplication_flops);
-    benchmark_multiplication_reference(output_file); 
+    benchmark_multiplication_reference(output_file);
 
     // Multiplication2
     benchmark_multiplication2(output_file);

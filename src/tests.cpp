@@ -4,6 +4,7 @@ extern "C"
 {
 #include "reference.h"
 #include "basefunctions.c"
+#include "fourmult.c"
 }
 
 #include "testalgo5and6.cpp"

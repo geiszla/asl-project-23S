@@ -8,6 +8,7 @@ extern "C"
 #include "renormalization_optimizations.c"
 #include "addition_optimizations.c"
 #include "multiplication_optimizations.c"
+#include "fourmult.c"
 }
 
 #include "evaluate.cpp"
