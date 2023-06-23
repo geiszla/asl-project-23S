@@ -1,4 +1,5 @@
 """Module to plot benchmark results."""
+import math
 import os
 from dataclasses import dataclass
 from os import path
@@ -17,7 +18,10 @@ PERFORMANCE_BOUND = 6  # flops/cycle
 PERFORMANCE_BOUND_SIMD = 24  # flops/cycle
 
 # Change it to, e.g., "Addition" or "Multiplication" to only show those graphs
-ALGORITHM_FILTER = "Addition"
+ALGORITHM_FILTER = "???"
+
+COLORS = ["gray", "purple", "blue", "orange", "red", "cyan", "black"]
+MARKERS = ["P", "D", "v", "^", "s", "x", "H"]
 
 script_path = Path(__file__).parent.resolve()
 results_path = path.join(script_path, "..", "results")
@@ -94,28 +98,54 @@ def plot_performance(
     pyplot.xscale("log", base=2)
 
     if performance_column == "Performance":
-        pyplot.ylim([0, 2])
+        pyplot.ylim([0, 2.1])
 
     pyplot.gca().get_xaxis().set_major_formatter(ScalarFormatter())
 
     variants = optimization_data["Variant"].unique()
+    baseline = optimization_data[optimization_data["Variant"] == algorithm]
 
-    for variant in variants:
+    for index, variant in enumerate(variants):
         variant_data = optimization_data[optimization_data["Variant"] == variant]
         input_sizes = variant_data["Input size"]
         performances = variant_data[performance_column]
 
-        pyplot.plot(input_sizes, performances, label=variant)
+        is_reference = index == len(variants) - 1
 
-    unit = "(flops/cycle)" if performance_column == "Performance" else "cycles"
+        biggest_speedup = (
+            max(baseline["Runtime"] / variant_data["Runtime"].values)
+            if len(baseline) != 0
+            else 1
+        )
 
-    pyplot.legend()
+        label = variant if variant != algorithm else "Baseline"
+        label = f"{algorithm} (CAMPARY)" if is_reference else label
+
+        label += (
+            f" ({biggest_speedup:.1f}x)"
+            if not math.isnan(biggest_speedup) and biggest_speedup != 1
+            else ""
+        )
+
+        pyplot.plot(
+            input_sizes,
+            performances,
+            label=label,
+            color=COLORS[index] if not is_reference else "green",
+            marker=MARKERS[index] if not is_reference else "o",
+            linestyle="-" if not is_reference else "--",
+        )
+
+    unit = "[flops/cycle]" if performance_column == "Performance" else "cycles"
+
+    handles, labels = pyplot.gca().get_legend_handles_labels()
+    pyplot.legend(reversed(handles), reversed(labels))
 
     finalize_plot(
-        x_label="Input size (n)",
+        x_label="Input size",
         y_label=f"{performance_column} {unit}",
         title=algorithm,
-        file_name=f"{performance_column.lower()}_vs_input_size_{algorithm}.png",
+        file_name=f"{performance_column.lower()}_vs_input_size_{algorithm}.pdf",
         is_show=ALGORITHM_FILTER in algorithm if ALGORITHM_FILTER is not None else True,
     )
 
@@ -223,7 +253,7 @@ def plot_roofline(
         "Operational Intensity (flops/byte)",
         "Performance (flops/cycle)",
         title,
-        f"{filename}.png",
+        f"{filename}.pdf",
         is_show=is_show,
     )
 
@@ -264,6 +294,8 @@ def finalize_plot(
     """Finalize the plot and save it to a file."""
     pyplot.xlabel(x_label)
     pyplot.ylabel(y_label)
+    pyplot.grid(axis="y")
+    pyplot.tight_layout()
     pyplot.title(title)
     pyplot.savefig(path.join(results_path, file_name))
 

@@ -653,12 +653,12 @@ int main()
     benchmark_multiplication(output_file, multiplication3, "Multiplication3",
                              get_optimized_multiplication_flops);
 
-    benchmark_fourmultiplications(output_file, fourtimesmultiplicationversion0,
-                                  "FourMultiplications0");
-    benchmark_fourmultiplications(output_file, fourtimesmultiplicationversion1,
-                                  "FourMultiplications1");
-    benchmark_fourmultiplications(output_file, fourtimesmultiplicationversion3,
-                                  "FourMultiplications3");
+    // benchmark_fourmultiplications(output_file, fourtimesmultiplicationversion0,
+    //                               "FourMultiplications0");
+    // benchmark_fourmultiplications(output_file, fourtimesmultiplicationversion1,
+    //                               "FourMultiplications1");
+    // benchmark_fourmultiplications(output_file, fourtimesmultiplicationversion3,
+    //                               "FourMultiplications3");
 
     benchmark_multiplication(output_file, multiplication_fast, "MultiplicationFast",
                              get_fast_multiplication_flops);
