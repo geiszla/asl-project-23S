@@ -20,8 +20,8 @@ PERFORMANCE_BOUND_SIMD = 24  # flops/cycle
 # Change it to, e.g., "Addition" or "Multiplication" to only show those graphs
 ALGORITHM_FILTER = "???"
 
-COLORS = ["gray", "purple", "blue", "orange", "red", "cyan", "black"]
-MARKERS = ["P", "D", "v", "^", "s", "x", "H"]
+COLORS = ["gray", "purple", "blue", "orange", "red", "cyan", "black", "green"]
+MARKERS = ["P", "D", "v", "^", "s", "x", "H", "o"]
 
 script_path = Path(__file__).parent.resolve()
 results_path = path.join(script_path, "..", "results")
@@ -67,7 +67,6 @@ def main():
                 plot_optimizations(
                     fast_data,
                     algorithm,
-                    title="VecSumFast roofline",
                     filename="roofline_VecSumFast",
                 )
             )
@@ -98,7 +97,7 @@ def plot_performance(
     pyplot.xscale("log", base=2)
 
     if performance_column == "Performance":
-        pyplot.ylim([0, 2.1])
+        pyplot.ylim([0, 0.8 if max(optimization_data["Performance"]) < 0.8 else 2.1])
 
     pyplot.gca().get_xaxis().set_major_formatter(ScalarFormatter())
 
@@ -107,8 +106,6 @@ def plot_performance(
 
     for index, variant in enumerate(variants):
         variant_data = optimization_data[optimization_data["Variant"] == variant]
-        input_sizes = variant_data["Input size"]
-        performances = variant_data[performance_column]
 
         is_reference = index == len(variants) - 1
 
@@ -128,8 +125,8 @@ def plot_performance(
         )
 
         pyplot.plot(
-            input_sizes,
-            performances,
+            variant_data["Input size"],
+            variant_data[performance_column],
             label=label,
             color=COLORS[index] if not is_reference else "green",
             marker=MARKERS[index] if not is_reference else "o",
@@ -153,7 +150,6 @@ def plot_performance(
 def plot_optimizations(
     optimization_data: pandas.DataFrame,
     algorithm: str,
-    title: str = None,
     filename: str = None,
 ):
     """Calculate operational intensity and performance of the algorithm variants
@@ -181,7 +177,6 @@ def plot_optimizations(
 
     plot_roofline(
         variant_runs,
-        title=f"{algorithm} roofline" if title is None else title,
         filename=f"roofline_{algorithm}" if filename is None else filename,
         is_show=ALGORITHM_FILTER in algorithm if ALGORITHM_FILTER is not None else True,
     )
@@ -192,7 +187,6 @@ def plot_optimizations(
 def plot_roofline(
     runs: list[Run],
     is_connect=True,
-    title: str = "Roofline model",
     filename: str = "roofline",
     is_show=True,
 ):
@@ -206,14 +200,14 @@ def plot_roofline(
     )
 
     limit = PERFORMANCE_BOUND / BANDWIDTH
-    plot_vertical_line(limit, f"π/β without SIMD ({limit:.2f})", "log")
+    plot_vertical_line(limit)
 
     # Draw bandwidth bound
     x_coordinates = numpy.logspace(numpy.log10(0.001), numpy.log10(10), 100)
     y_coordinates = x_coordinates * BANDWIDTH
 
     pyplot.text(
-        x_coordinates[10] * 2,
+        x_coordinates[10] * 1.8,
         y_coordinates[10],
         f"bound based on β ({BANDWIDTH} * I)",
         color="tab:blue",
@@ -228,32 +222,37 @@ def plot_roofline(
         pyplot.plot(
             [run.operational_intensity for run in runs[:-1]],
             [run.performance for run in runs[:-1]],
-            marker="o",
+            color="blue",
+            marker="^",
             label=runs[0].algorithm,
         )
 
         pyplot.plot(
             runs[-1].operational_intensity,
             runs[-1].performance,
-            marker="^",
-            label=runs[-1].variant,
+            color="green",
+            marker="o",
+            label=f"{runs[-1].algorithm} (CAMPARY)",
         )
     else:
-        for run in runs:
-            pyplot.plot(
-                run.operational_intensity,
-                run.performance,
-                marker="o",
-                label=run.algorithm,
-            )
+        # Exclude non-fast variant of VecSum from the plots
+        for index, run in enumerate(runs):
+            if index != 1:
+                pyplot.plot(
+                    run.operational_intensity,
+                    run.performance,
+                    marker="^",
+                    color=COLORS[index],
+                    label=run.algorithm,
+                )
 
     pyplot.legend()
 
     finalize_plot(
         "Operational Intensity [flops/byte]",
         "Performance [flops/cycle]",
-        title,
-        f"{filename}.pdf",
+        title="",
+        file_name=f"{filename}.pdf",
         is_show=is_show,
     )
 
@@ -262,17 +261,21 @@ def plot_roofline(
 
 
 def plot_vertical_line(
-    x_position: float, label: str, scale: Union[Literal["log"], Literal["linear"]]
+    x_position: float,
+    label: str = "",
+    scale: Union[Literal["log"], Literal["linear"]] = "log",
 ):
     """Plot a vertical line at the given x position."""
     pyplot.axvline(x=x_position, color="tab:orange")  # L1 cache
-    pyplot.text(
-        x_position - (50 if scale == "linear" else x_position * 0.4),
-        20,
-        label,
-        rotation=90,
-        color="tab:orange",
-    )
+
+    if label != "":
+        pyplot.text(
+            x_position - (50 if scale == "linear" else x_position * 0.4),
+            20,
+            label,
+            rotation=90,
+            color="tab:orange",
+        )
 
 
 def plot_horizontal_line(
@@ -281,7 +284,7 @@ def plot_horizontal_line(
     """Plot a horizontal line at the given y position."""
     pyplot.axhline(y=y_position, color="tab:red")  # L1 cache
     pyplot.text(
-        10e-4 * 1.5,
+        2,
         y_position - (50 if scale == "linear" else y_position * 0.35),
         label,
         color="tab:red",
