@@ -144,7 +144,7 @@ def plot_performance(
     finalize_plot(
         x_label="Input size",
         y_label=f"{performance_column} {unit}",
-        title=algorithm,
+        title="",
         file_name=f"{performance_column.lower()}_vs_input_size_{algorithm}.pdf",
         is_show=ALGORITHM_FILTER in algorithm if ALGORITHM_FILTER is not None else True,
     )
@@ -250,8 +250,8 @@ def plot_roofline(
     pyplot.legend()
 
     finalize_plot(
-        "Operational Intensity (flops/byte)",
-        "Performance (flops/cycle)",
+        "Operational Intensity [flops/byte]",
+        "Performance [flops/cycle]",
         title,
         f"{filename}.pdf",
         is_show=is_show,
